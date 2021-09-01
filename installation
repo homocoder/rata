@@ -11,3 +11,5 @@ vim /etc/wsl.conf
 hostname = pikunche
 generateHosts = false
 
+wsl --distribution Ubuntu-20.04 --user root --exec bash -c "/etc/init.d/ssh start"
+wsl --distribution Ubuntu-20.04 --user selknam --exec bash -c "/home/selknam/opt/dss901/bin/dss start"
