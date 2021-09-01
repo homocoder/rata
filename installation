@@ -1,0 +1,13 @@
+wsl --set-default-version 1
+wsl --install -d Ubuntu-20.04
+wsl --set-default-version 2
+wsl --install -d Ubuntu
+
+wsl --distribution Ubuntu       --user root --exec bash -c "apt update ; apt -y upgrade"
+wsl --distribution Ubuntu-20.04 --user root --exec bash -c "apt update ; apt -y upgrade"
+
+vim /etc/wsl.conf
+[network]
+hostname = pikunche
+generateHosts = false
+
