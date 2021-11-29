@@ -1,4 +1,4 @@
-def get_finnhub(symbol, interval, forex=True, crypto=False, exchange='OANDA', hours=100, token='boq33onrh5rdr1qtpl3g'):
+def get_finnhub(symbol, interval, forex=True, crypto=False, exchange='OANDA', hours=100, token='c6emgsqad3ie37m1crq0'):
     from datetime import datetime as dt
     import pandas as pd
     import requests
