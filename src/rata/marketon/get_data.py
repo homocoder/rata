@@ -37,9 +37,11 @@ def get_finnhub(symbol, interval, forex=True, crypto=False, exchange='OANDA', ho
     df['tstamp'] = pd.to_datetime(df['unix_tstamp'], unit='s')
     df['symbol'] = symbol
     df['interval'] = interval
-    df = df[['tstamp', 'unix_tstamp', 'symbol', 'interval', 'open', 'high', 'low', 'close', 'volume', 'status']].set_index(['tstamp']).sort_index()
+    df['query_tstamp'] = dt.now()
+    df = df[['query_tstamp', 'tstamp', 'unix_tstamp', 'symbol', 'interval', 'open', 'high', 'low', 'close', 'volume', 'status']].set_index(['query_tstamp']).sort_index()
 
     min_rates = int(df.iloc[-1:].index[0].isoformat()[14:16])
+    min_rates = int(df['tstamp'].iloc[-1].isoformat()[14:16])
     min_now =   int(dt.now().isoformat()[14:16])
     if min_rates == min_now:
         if interval != '1m':
