@@ -2,7 +2,5 @@
     "dbhost"   : "localhost",
     "dbport"   : 27017,
     "db"       : "rata",
-    "dbcol"    : "rates_5m",
-    "symbol"   : "EURUSD",
-    "interval" : 5
+    "dbcol"    : "rates_5m"
 }
