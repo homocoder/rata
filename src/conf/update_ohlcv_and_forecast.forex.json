@@ -8,6 +8,10 @@
         "interval" : 5
     },
     {
+        "symbol"   : "JPYCAD",
+        "interval" : 5
+    },
+    {
         "symbol"   : "AUDJPY",
         "interval" : 5
     }
