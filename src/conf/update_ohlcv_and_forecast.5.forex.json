@@ -1,0 +1,38 @@
+[
+    {
+        "symbol"   : "AUDUSD",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDJPY",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "AUDCHF",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDCAD",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPAUD",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURUSD",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURGBP",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDCHF",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPNZD",
+        "interval" : 5
+    }
+]
