@@ -1,68 +1,19 @@
 # %%
-def is_float(element) -> bool:
-    try:
-        float(element)
-        return True
-    except ValueError:
-        return False
-
-def is_int(element) -> bool:
-    try:
-        int(element)
-        return True
-    except ValueError:
-        return False
-
-# split a multivariate sequence into samples
-def split_sequences(sequences, n_steps_in, n_steps_out):
-    from numpy import array
-    X, y = list(), list()
-    for i in range(len(sequences)):
-        # find the end of this pattern
-        end_ix = i + n_steps_in
-        out_end_ix = end_ix + n_steps_out-1
-        # check if we are beyond the dataset
-        if out_end_ix > len(sequences):
-            break
-        # gather input and output parts of the pattern
-        
-        seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1:out_end_ix, -1]
-        X.append(seq_x)
-        y.append(seq_y)
-    return array(X), array(y)
-
-# %%
 from sys import argv
-import flaml
+from rata.utils import parse_argv
 
 fake_argv = 'prepare_dataset.py --db_host=localhost --db_port=27017 --db_name=rata --symbol=EURUSD --interval=5'
-
 fake_argv = fake_argv.split()
-
 argv = fake_argv ####
 
-_conf = dict()
-for i in argv[1:]:
-    if '=' in i:
-        param = i.split('=')
-        _conf[param[0].replace('--', '')] = param[1]
+_conf = parse_argv(argv)
 
-for i in _conf:
-    b = _conf[i]
-    if   b == 'True':
-        _conf[i] = True
-    elif b == 'False':
-        _conf[i] = False
-    elif is_int(b):
-        _conf[i] = int(b)
-    elif is_float(b):
-        _conf[i] = float(b)
-_conf
 
-# %%
+## %%
+# Global imports
 import pandas as pd
 import datetime as dt
-from rata.marketon import get_data
+
 from pymongo import MongoClient
 from tpot import TPOTRegressor # to avoid the f* warning about NN
 import tensorflow as tf
@@ -90,12 +41,19 @@ for i in range(1, autocorrelation_lag):
     df['close_roc_' + str(i)] = df['close'].pct_change(i)
 df['close_shift_1'] = df['close_roc_1'].shift(-1) # to see the future
 df
-#dataset = df.dropna().copy()
-#dataset
+import ta
+MACD = ta.trend.MACD(close=df['close'], window_fast=12, window_slow=26, window_sign=9)
+macd        = pd.DataFrame(MACD.macd())
+macd_diff   = pd.DataFrame(MACD.macd_diff())
+macd_signal = pd.DataFrame(MACD.macd_signal())
+df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
+df
 # %%
 X_columns = list()
 for c in df.columns:
     if 'close_roc' in c:
+        X_columns.append(c)
+    if 'MACD' in c:
         X_columns.append(c)
 
 y_column = 'close_shift_1'
@@ -112,6 +70,8 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, shuffl
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape, X_forecast.shape, '\n')
 X_forecast
 
+#%%
+######                  MODELS    ############
 # %%
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
@@ -214,52 +174,26 @@ y_pred = model.predict(X_test)
 mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)
 y_forecast = model.predict(X_forecast)
 mae, y_forecast
-# %%
-# AutoKerasReggresor
-# %%
-# AutoKeras Timeseries forecaster
 
-# %%
-#FLAML
 
 # %%
 # LSTM # Input: X, y
-# Config
-import numpy as np
-nsamples = len(X)
-ncolumns = len(X.columns)
-# choose a number of time steps
-n_steps_in, n_steps_out = 90, 1
-
-# multivariate multi-step data preparation
-
-# define input sequence # convert to [rows, columns] structure
-
-in_seq = list()
-for i in range(ncolumns):
-    in_seq.append(X.iloc[:, i].values.reshape((nsamples, 1))) ### X here
-
-out_seq = y    ### y here
-out_seq = out_seq.values.reshape((len(out_seq), 1))
-
-# horizontally stack columns
-in_seq.append(out_seq)
-dataset = np.hstack(tuple(in_seq)) # here, in_seq contains in_seq and out_seq, just for var economy
-
-# covert into input/output
-XX, YY = split_sequences(dataset, n_steps_in, n_steps_out)
-print(XX.shape, YY.shape)
-
-# the dataset knows the number of features, e.g. 2
-n_features = XX.shape[2]
-
-XX_train, XX_test, YY_train, YY_test = train_test_split(XX, YY, test_size=0.05, shuffle=False)
-print(XX_train.shape, YY_train.shape, XX_test.shape, YY_test.shape)
-
+from rata.utils import lstm_prep
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Dense
 from sklearn.metrics import mean_absolute_error
+
+# Create the XX, YY sequences from X, y
+n_steps_in, n_steps_out = 90, 1
+XX, YY = lstm_prep(X=X, y=y, n_steps_in=n_steps_in, n_steps_out=n_steps_out)
+XX_train, XX_test, YY_train, YY_test = train_test_split(XX, YY, test_size=0.05, shuffle=False)
+print(XX_train.shape, YY_train.shape, XX_test.shape, YY_test.shape)
+### TODO: Extract XX_forecast
+
+# the dataset knows the number of features, e.g. 2
+n_features = XX.shape[2]
+print(n_features)
 
 # define model
 model = Sequential()
@@ -275,6 +209,7 @@ YY_pred = model.predict(XX_test)
 mae = mean_absolute_error(y_true=YY_test, y_pred=YY_pred)
 #YY_forecast = model.predict(XX_forecast)
 mae
+
 # %%
 #from flaml import AutoML
 
@@ -310,3 +245,11 @@ mae
 # %%
 # Ludwig by Uber
 # Prophet
+
+# %%
+# AutoKerasReggresor
+# %%
+# AutoKeras Timeseries forecaster
+
+# %%
+#FLAML
