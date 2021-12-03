@@ -33,7 +33,15 @@ df_query = df.copy()
 
 df = df_query.copy()
 import ta
+## Tech indicators
+### MACD: example: MACD_diff_12_26_roc_9
 MACD = ta.trend.MACD(close=df['close'], window_fast=12, window_slow=26, window_sign=9)
+macd        = pd.DataFrame(MACD.macd())
+macd_diff   = pd.DataFrame(MACD.macd_diff())
+macd_signal = pd.DataFrame(MACD.macd_signal())
+df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
+
+MACD = ta.trend.MACD(close=df['close'], window_fast=7, window_slow=21, window_sign=9)
 macd        = pd.DataFrame(MACD.macd())
 macd_diff   = pd.DataFrame(MACD.macd_diff())
 macd_signal = pd.DataFrame(MACD.macd_signal())
@@ -46,12 +54,8 @@ for i in range(1, autocorrelation_lag):
     df['MACD_sign_12_26_roc_' + str(i)] = df['MACD_sign_12_26'].pct_change(i)
     df['MACD_12_26_roc_' + str(i)]      = df['MACD_12_26'].pct_change(i)
 
-
-
-df['close_shift_1'] = df['close_roc_1'].shift(-1) # to see the future
-df
-
-
+# y_target
+df['y_close_shift_1'] = df['close_roc_1'].shift(-1) # to see the future
 df
 
 # %%
@@ -70,7 +74,7 @@ df.dropna(inplace=True)
 
 X = df[X_columns]
 y = df[y_column]
-X
+X.isna().sum()
 # %%
 ### Outputs train & tests 
 from sklearn.model_selection import train_test_split
@@ -157,7 +161,6 @@ mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)
 y_forecast = model.predict(X_forecast)
 mae, y_forecast
 
-.
 # %%
 from rata.marketoff import tpot_conf
 from tpot import TPOTRegressor
@@ -190,11 +193,11 @@ from rata.utils import lstm_prep
 from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Dense
-from sklearn.metrics import mean_absolute_error
-import tensorflow as tf
-from keras.losses import MeanSquaredError, MeanAbsoluteError
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error
+from keras.losses import MeanSquaredError, MeanAbsoluteError
 from keras.metrics import MeanAbsoluteError, MeanSquaredLogarithmicError
+import tensorflow as tf
 
 # Create the XX, YY sequences from X, y
 n_steps_in, n_steps_out = 90, 1
@@ -210,7 +213,7 @@ print(n_features)
 # define model
 model = Sequential()
 model.add(LSTM(90, activation='relu', return_sequences=True, input_shape=(n_steps_in, n_features)))
-model.add(LSTM(30, activation='relu', return_sequences=True))
+#model.add(LSTM(30, activation='relu', return_sequences=True))
 model.add(LSTM(90, activation='relu'))
 model.add(Dense(n_steps_out))
 model.compile(optimizer='adam', loss='mse', metrics=[tf.keras.metrics.MeanAbsoluteError(), tf.keras.metrics.MeanSquaredLogarithmicError()])
