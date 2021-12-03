@@ -8,19 +8,12 @@ argv = fake_argv ####
 
 _conf = parse_argv(argv)
 
-
 ## %%
 # Global imports
 import pandas as pd
 import datetime as dt
 
 from pymongo import MongoClient
-from tpot import TPOTRegressor # to avoid the f* warning about NN
-import tensorflow as tf
-
-from keras.losses import MeanSquaredError, MeanAbsoluteError
-from sklearn.model_selection import train_test_split
-from keras.metrics import MeanAbsoluteError, MeanSquaredLogarithmicError
 
 client = MongoClient(_conf['db_host'], _conf['db_port'])
 db = client[_conf['db_name']]
@@ -33,22 +26,36 @@ mydoc = collection.find({'symbol': _conf['symbol']}).sort('tstamp', 1)#.skip(col
 df = pd.DataFrame(mydoc)
 df = df.groupby(['interval',  'status', 'symbol', 'tstamp', 'unix_tstamp', ]).mean()
 df = df.reset_index()[['tstamp', 'interval', 'symbol', 'open', 'high', 'low', 'close', 'volume']].sort_values('tstamp')
-df
+df_query = df.copy()
 
 # %%
-autocorrelation_lag = 10
-for i in range(1, autocorrelation_lag):
-    df['close_roc_' + str(i)] = df['close'].pct_change(i)
-df['close_shift_1'] = df['close_roc_1'].shift(-1) # to see the future
-df
+### Feat eng
+
+df = df_query.copy()
 import ta
 MACD = ta.trend.MACD(close=df['close'], window_fast=12, window_slow=26, window_sign=9)
 macd        = pd.DataFrame(MACD.macd())
 macd_diff   = pd.DataFrame(MACD.macd_diff())
 macd_signal = pd.DataFrame(MACD.macd_signal())
 df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
+
+autocorrelation_lag = 10
+for i in range(1, autocorrelation_lag):
+    df['close_roc_' + str(i)] = df['close'].pct_change(i)
+    df['MACD_diff_12_26_roc_' + str(i)] = df['MACD_diff_12_26'].pct_change(i)
+    df['MACD_sign_12_26_roc_' + str(i)] = df['MACD_sign_12_26'].pct_change(i)
+    df['MACD_12_26_roc_' + str(i)]      = df['MACD_12_26'].pct_change(i)
+
+
+
+df['close_shift_1'] = df['close_roc_1'].shift(-1) # to see the future
 df
+
+
+df
+
 # %%
+### Outputs X, y
 X_columns = list()
 for c in df.columns:
     if 'close_roc' in c:
@@ -63,8 +70,9 @@ df.dropna(inplace=True)
 
 X = df[X_columns]
 y = df[y_column]
-
+X
 # %%
+### Outputs train & tests 
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, shuffle=False)
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape, X_forecast.shape, '\n')
@@ -149,6 +157,7 @@ mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)
 y_forecast = model.predict(X_forecast)
 mae, y_forecast
 
+.
 # %%
 from rata.marketoff import tpot_conf
 from tpot import TPOTRegressor
@@ -175,7 +184,6 @@ mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)
 y_forecast = model.predict(X_forecast)
 mae, y_forecast
 
-
 # %%
 # LSTM # Input: X, y
 from rata.utils import lstm_prep
@@ -183,6 +191,10 @@ from keras.models import Sequential
 from keras.layers import LSTM
 from keras.layers import Dense
 from sklearn.metrics import mean_absolute_error
+import tensorflow as tf
+from keras.losses import MeanSquaredError, MeanAbsoluteError
+from sklearn.model_selection import train_test_split
+from keras.metrics import MeanAbsoluteError, MeanSquaredLogarithmicError
 
 # Create the XX, YY sequences from X, y
 n_steps_in, n_steps_out = 90, 1

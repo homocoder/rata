@@ -11,3 +11,9 @@ requests
 scipy
 statsmodels
 pymongo
+ta
+tensorflow
+keras
+tpot
+catboost
+xgboost
