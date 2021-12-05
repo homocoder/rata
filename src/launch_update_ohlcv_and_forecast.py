@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'update_ohlcv_and_forecast.py  --db_host=localhost --db_port=27017 --db_name=rata --symbol=EURUSD --interval=5 --kind=forex'
+fake_argv = 'launch_update_ohlcv_and_forecast.py  --db_conf=conf/db.json --conf=conf/update_ohlcv_and_forecast.15.forex.json '
 fake_argv = fake_argv.split()
 #argv = fake_argv ####
 _conf = parse_argv(argv=argv)

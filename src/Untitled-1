@@ -1,0 +1,6 @@
+{'db_host': 'localhost',
+ 'db_port': 27017,
+ 'db_name': 'rata',
+ 'symbol': 'EURUSD',
+ 'interval': 5,
+ 'kind': 'forex'}

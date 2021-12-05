@@ -4,7 +4,7 @@ from rata.utils import parse_argv
 
 fake_argv = 'update_ohlcv_and_forecast.py  --db_host=localhost --db_port=27017 --db_name=rata --symbol=EURUSD --interval=5 --kind=forex'
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+argv = fake_argv ####
 _conf = parse_argv(argv=argv)
 _conf
 # %%

@@ -5,15 +5,15 @@ from numpy.core.function_base import logspace
 from scipy.sparse.construct import random
 from rata.utils import parse_argv
 
-fake_argv  = 'prepare_dataset.py --db_host=localhost --db_port=27017 --db_name=rata --symbol=EURUSD --interval=15 '
-fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
-fake_argv += '--forecast_shift=3 --autocorrelation_lag=10 --autocorrelation_lag_step=1 --n_rows=2800 '
+fake_argv  = 'prepare_and_model_regressor.py --db_host=localhost --db_port=27017 --db_name=rata --symbol=USDJPY --interval=15 '
+fake_argv += '--include_raw_rates=False --include_autocorrs=True --include_all_ta=False '
+fake_argv += '--forecast_shift=3 --autocorrelation_lag=8 --autocorrelation_lag_step=2 --n_rows=3000 '
 
 fake_argv = fake_argv.split()
-argv = fake_argv ####
+#argv = fake_argv ####
 
 _conf = parse_argv(argv)
-
+print(_conf)
 ## %%
 # Global imports
 import pandas as pd
@@ -45,11 +45,12 @@ df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds
 print(df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])])
 #%%
 ### Feat eng
+
+## Tech indicators
+df = df_query.copy()
+
 if _conf['include_all_ta']:
     import ta
-
-    ## Tech indicators
-    df = df_query.copy()
 
     # Clean NaN values
     df = ta.utils.dropna(df)
@@ -67,7 +68,10 @@ df = df.iloc[-_conf['n_rows'] - 300 :]
 print('Count Nan2:', (df.isna().sum()).sum())
 nancols = df.isna().sum()
 nancols = nancols[nancols > 0]
-print(len(nancols), nancols.index)
+if len(nancols > 0):
+    print(len(nancols), nancols.index)
+else:
+    print(len(nancols))
 
 df.set_index(['tstamp'], inplace=True, drop=True)
 df.drop(['interval', 'symbol'], inplace=True, axis=1)
@@ -118,10 +122,11 @@ df['y_close_shift_' + str(_conf['forecast_shift'])] = df['x_close_roc_' + str(_c
 y_column = 'y_close_shift_' + str(_conf['forecast_shift'])
 
 # Before deleting rows NaNs, save the X_forecast
-X_forecast = df[X_columns].iloc[ -_conf['forecast_shift']: , : ].iloc[0 : 1, :]
+X_forecast = df[X_columns].iloc[-1:]
 
-# Delete the forecast row and consolidate final X and y
-df.drop(X_forecast.index, inplace=True)
+# Delete the forecast rowS and consolidate final X and y
+X_forecast_indexes = df[X_columns].iloc[ -_conf['forecast_shift']: , : ].index
+df.drop(X_forecast_indexes, inplace=True)
 
 # Delete NaNs and consolidate final X and y: AVOID THIS!
 df = df.iloc[-_conf['n_rows'] : ]
@@ -129,11 +134,13 @@ print('Count Nan3:', (df.isna().sum()).sum())
 nancols = df.isna().sum()
 nancols = nancols[nancols > 0]
 print(len(nancols))
+
 df.replace([np.inf, -np.inf], np.nan, inplace=True)
 print('Count Nan4:', (df.isna().sum()).sum())
 nancols = df.isna().sum()
 nancols = nancols[nancols > 0]
 print(len(nancols))
+
 df.dropna(inplace=True, axis=1)  # Delete columns that already have NaNs!!!!!!!
 print('Count Nan5:', (df.isna().sum()).sum())
 nancols = df.isna().sum()
@@ -168,7 +175,7 @@ print(len(nancols), nancols.index)
 ######                  MODELS    ############
 # %%
 from xgboost import XGBRegressor
-from sklearn.metrics import mean_absolute_error, explained_variance_score, r2_score, 
+from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, explained_variance_score, r2_score
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 model = XGBRegressor(random_state=seed)
@@ -184,4 +191,4 @@ for feat, importance in zip(X.columns, model.feature_importances_):
 pd.DataFrame(feature_importance).sort_values(by='score', ascending=False).head(12)
 # %%
 
-# Outputs: delta_minutes, total_duration, mae*100, rmse
+# Outputs: total_duration, mae*100, rmse, metrics, feature_importance, delta_minutes
