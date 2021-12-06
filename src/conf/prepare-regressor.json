@@ -1,11 +1,11 @@
 [
     {
-        "include_raw_rates": [true, false], 
+        "include_raw_rates": [true, false],
         "include_autocorrs": [true],
         "include_all_ta": [true, false],
         "forecast_shift": [1, 3, 5],
         "autocorrelation_lag": [6, 8, 10],
         "autocorrelation_lag_step": [1, 2],
-        "n_rows": [1800, 2400, 3000] 
+        "n_rows": [1800, 2400, 3000]
     }
 ]

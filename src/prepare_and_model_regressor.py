@@ -1,8 +1,5 @@
 # %%
 from sys import argv
-
-from numpy.core.function_base import logspace
-from scipy.sparse.construct import random
 from rata.utils import parse_argv
 
 fake_argv  = 'prepare_and_model_regressor.py --db_host=localhost --db_port=27017 --db_name=rata --symbol=USDJPY --interval=15 '
@@ -19,6 +16,8 @@ print(_conf)
 import pandas as pd
 import datetime as dt
 import numpy as np
+
+t0 = dt.datetime.now().timestamp()
 
 from pymongo import MongoClient
 
@@ -42,7 +41,8 @@ df_diff_intervals = pd.DataFrame(df_query['tstamp'])
 df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
 df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
 df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds() / -60
-print(df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])])
+
+df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
 #%%
 ### Feat eng
 
@@ -116,6 +116,7 @@ for c in df.columns:
 
 # %%
 ### Outputs X, y
+# join Symbol1 and Symbol2 here.
 
 # y_target
 df['y_close_shift_' + str(_conf['forecast_shift'])] = df['x_close_roc_' + str(_conf['forecast_shift'])].shift(-_conf['forecast_shift']) # to see the future
@@ -181,14 +182,44 @@ seed = int(dt.datetime.now().strftime('%S%f'))
 model = XGBRegressor(random_state=seed)
 model.fit(X_train, y_train)
 y_pred = model.predict(X_test)
-mae = mean_absolute_error(y_true=y_test, y_pred=y_pred)
+
+mae =  mean_absolute_error(y_true=y_test, y_pred=y_pred)
+mape = mean_absolute_percentage_error(y_true=y_test, y_pred=y_pred)
+evs = explained_variance_score(y_true=y_test, y_pred=y_pred)
+r2 = r2_score(y_true=y_test, y_pred=y_pred)
+
 y_forecast = model.predict(X_forecast)
 print(mae, y_forecast)
 
 feature_importance = list()
 for feat, importance in zip(X.columns, model.feature_importances_):
     feature_importance.append({'feature_name': feat, 'score': importance})
-pd.DataFrame(feature_importance).sort_values(by='score', ascending=False).head(12)
+df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
 # %%
+t1 = dt.datetime.now().timestamp()
+total_time = t1 - t0
+print('Total time:', total_time)
 
-# Outputs: total_duration, mae*100, rmse, metrics, feature_importance, delta_minutes
+# Regressor Outputs: id,  total_duration, mae*100, rmse, metrics, df_feature_importance{}, df_delta_minutes{}
+# mae, mape, evs, r2, df_feature_importance, df_delta_minutes
+
+_conf['id']    = dt.datetime.now()
+_conf['model'] = 'XGBRegressor'
+_conf['mae']   = mae
+_conf['mape']  = mape
+_conf['evs']   = evs
+_conf['r2']    = r2
+_conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
+_conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
+
+client.close()
+client = MongoClient(_conf['db_host'], _conf['db_port'])
+db = client['models_regressors_' + _conf['db_name']]
+
+db_col = _conf['symbol'] + '_' + str(_conf['interval'])
+collection = db[db_col]
+
+collection.insert_one(_conf, {'$set': _conf})
+client.close()
+
+# %%
