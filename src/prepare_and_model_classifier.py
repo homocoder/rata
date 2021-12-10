@@ -3,7 +3,7 @@ from sys import argv
 from rata.utils import parse_argv
 
 fake_argv  = 'prepare_and_model_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=USDJPY --interval=5 '
-fake_argv += '--include_raw_rates=False --include_autocorrs=True --include_all_ta=False '
+fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=False '
 fake_argv += '--forecast_shift=3 --autocorrelation_lag=8 --autocorrelation_lag_step=2 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.001'
 
@@ -113,13 +113,14 @@ for c in df.columns:
 ### Outputs X, y
 # join Symbol1 and Symbol2 here.
 
-X_check_columns = ['open', 'high', 'low', 'close', 'volume']
+X_check_columns = ['x_open', 'x_high', 'x_low', 'x_close', 'x_volume']
 y_check_columns = list()
 
 # y_target
 y_column = 'y_close_shift_' + str(_conf['forecast_shift'])
 y_check_columns.append(y_column)
-df[y_column] = df['x_close_roc_' + str(_conf['forecast_shift'])].shift(-_conf['forecast_shift']) # to see the future
+#df[y_column] = df['x_close_roc_' + str(_conf['forecast_shift'])].shift(-_conf['forecast_shift']) # to see the future
+df[y_column] = df['x_close_roc_1'].shift(-_conf['forecast_shift']) # to see the future
 X_check_columns.append('x_close_roc_' + str(_conf['forecast_shift']))
 df[y_column + '_sign'] = df[y_column].mask(df[y_column] > 0, 1).mask(df[y_column] < 0, -1)
 df[y_column + '_sign_rolling_sum'] = df[y_column + '_sign'].rolling(_conf['forecast_shift']).sum()
@@ -167,6 +168,8 @@ for c in df.columns:
 X_forecast = X_forecast[X_columns]
 X = df[X_columns]
 y = df[y_column]
+X_check = df[X_check_columns]
+y_check = df[y_check_columns]
 
 print('Count Nan6:', X.isna().sum())
 print('Final X_columns', X.columns.sort_values())
@@ -195,8 +198,7 @@ df_delta_minutes
 ### Outputs train & tests 
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, shuffle=False)
-X_check = X_test[X_check_columns]
-y_check = y_test[y_check_columns]
+
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape, X_forecast.shape, '\n')
 print('Count Nan7:', (df.isna().sum()).sum())
 nancols = X_train.isna().sum()
@@ -232,6 +234,8 @@ Xy_test['y_test'] = y_test
 Xy_test['y_pred'] = y_pred
 Xy_test['y_proba_0'] = y_proba[ : , 0]
 Xy_test['y_proba_1'] = y_proba[ : , 1]
+
+Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
 
 feature_importance = list()
 for feat, importance in zip(X.columns, model.feature_importances_):
