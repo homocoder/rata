@@ -2,9 +2,9 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'update_ohlcv_and_forecast.py  --db_host=localhost --db_port=27017 --db_name=rata --symbol=EURUSD --interval=5 --kind=forex'
+fake_argv = 'update_ohlcv_and_forecast.py  --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=EURUSD --interval=5 --kind=forex'
 fake_argv = fake_argv.split()
-argv = fake_argv ####
+#argv = fake_argv ####
 _conf = parse_argv(argv=argv)
 _conf
 # %%
@@ -17,8 +17,8 @@ from pymongo import MongoClient
 from rata.marketon import get_data
 
 client = MongoClient(_conf['db_host'], _conf['db_port'])
-db = client[_conf['db_name']]
-db_col = 'rates_' + _conf['symbol'] + '_' + str(_conf['interval'])
+db = client[_conf['dbs_prefix'] + '_rates']
+db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 
 if not db_col in db.list_collection_names():

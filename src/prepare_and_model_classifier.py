@@ -2,12 +2,13 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'prepare_and_model_regressor.py --db_host=localhost --db_port=27017 --db_name=rata --symbol=USDJPY --interval=15 '
+fake_argv  = 'prepare_and_model_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=USDJPY --interval=5 '
 fake_argv += '--include_raw_rates=False --include_autocorrs=True --include_all_ta=False '
 fake_argv += '--forecast_shift=3 --autocorrelation_lag=8 --autocorrelation_lag_step=2 --n_rows=3000 '
+fake_argv += '--profit_threshold=0.001'
 
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+argv = fake_argv ####
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -35,14 +36,6 @@ df = df.reset_index()[['tstamp', 'interval', 'symbol', 'open', 'high', 'low', 'c
 df_query = df.copy()
 del df
 
-# %%
-#df_diff_intervals = pd.DataFrame(df_query.index)
-df_diff_intervals = pd.DataFrame(df_query['tstamp'])
-df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
-df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
-df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds() / -60
-
-df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
 #%%
 ### Feat eng
 
@@ -75,6 +68,8 @@ else:
 
 df.set_index(['tstamp'], inplace=True, drop=True)
 df.drop(['interval', 'symbol'], inplace=True, axis=1)
+
+# Tech indicators
 
 ### AUTOCORRSs
 if _conf['include_autocorrs']:
@@ -118,9 +113,24 @@ for c in df.columns:
 ### Outputs X, y
 # join Symbol1 and Symbol2 here.
 
+X_check_columns = ['open', 'high', 'low', 'close', 'volume']
+y_check_columns = list()
+
 # y_target
-df['y_close_shift_' + str(_conf['forecast_shift'])] = df['x_close_roc_' + str(_conf['forecast_shift'])].shift(-_conf['forecast_shift']) # to see the future
 y_column = 'y_close_shift_' + str(_conf['forecast_shift'])
+y_check_columns.append(y_column)
+df[y_column] = df['x_close_roc_' + str(_conf['forecast_shift'])].shift(-_conf['forecast_shift']) # to see the future
+X_check_columns.append('x_close_roc_' + str(_conf['forecast_shift']))
+df[y_column + '_sign'] = df[y_column].mask(df[y_column] > 0, 1).mask(df[y_column] < 0, -1)
+df[y_column + '_sign_rolling_sum'] = df[y_column + '_sign'].rolling(_conf['forecast_shift']).sum()
+df[y_column + '_rolling_sum'] = df[y_column].rolling(_conf['forecast_shift']).sum()
+y_check_columns.append(y_column + '_rolling_sum')
+
+df[y_column + '_invest'] = df[y_column + '_rolling_sum'].mask(df[y_column + '_rolling_sum'] > _conf['profit_threshold'], 1).mask(df[y_column + '_rolling_sum'] <= _conf['profit_threshold'], 0)
+
+y_column = y_column + '_invest'
+
+#%%
 
 # Before deleting rows NaNs, save the X_forecast
 X_forecast = df[X_columns].iloc[-1:]
@@ -163,9 +173,30 @@ print('Final X_columns', X.columns.sort_values())
 X_forecast
 
 # %%
+#df_diff_intervals = pd.DataFrame(df_query.index)
+df_diff_intervals = pd.DataFrame(df_query['tstamp'])
+df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
+df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
+df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds() / -60
+
+df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
+df_delta_minutes
+
+# %%
+#df_diff_intervals = pd.DataFrame(df_query.index)
+df_diff_intervals = pd.DataFrame(X.reset_index()['tstamp'])
+df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
+df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
+df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds() / -60
+
+df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
+df_delta_minutes
+# %%
 ### Outputs train & tests 
 from sklearn.model_selection import train_test_split
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, shuffle=False)
+X_check = X_test[X_check_columns]
+y_check = y_test[y_check_columns]
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape, X_forecast.shape, '\n')
 print('Count Nan7:', (df.isna().sum()).sum())
 nancols = X_train.isna().sum()
@@ -175,21 +206,32 @@ print(len(nancols), nancols.index)
 #%%
 ######                  MODELS    ############
 # %%
-from xgboost import XGBRegressor
-from sklearn.metrics import mean_absolute_error, mean_absolute_percentage_error, explained_variance_score, r2_score
+from xgboost import XGBClassifier
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 
 seed = int(dt.datetime.now().strftime('%S%f'))
-model = XGBRegressor(random_state=seed)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
 
-mae =  mean_absolute_error(y_true=y_test, y_pred=y_pred)
-mape = mean_absolute_percentage_error(y_true=y_test, y_pred=y_pred)
-evs = explained_variance_score(y_true=y_test, y_pred=y_pred)
-r2 = r2_score(y_true=y_test, y_pred=y_pred)
+model = XGBClassifier(random_state=seed, validate_parameters=True, booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'] )
+#scale_pos_weight
+# lamdba
+# alfa
+
+model.fit(X_train, y_train)
+y_pred =  model.predict(X_test)
+y_proba = model.predict_proba(X_test)
+
+tn, fp, fn, tp  = confusion_matrix(y_true=y_test, y_pred=y_pred).ravel()
+precision = precision_score(y_true=y_test, y_pred=y_pred)
+recall    = recall_score(y_true=y_test, y_pred=y_pred)
 
 y_forecast = model.predict(X_forecast)
-print(mae, y_forecast)
+print(precision, recall, y_forecast)
+
+Xy_test = X_test
+Xy_test['y_test'] = y_test
+Xy_test['y_pred'] = y_pred
+Xy_test['y_proba_0'] = y_proba[ : , 0]
+Xy_test['y_proba_1'] = y_proba[ : , 1]
 
 feature_importance = list()
 for feat, importance in zip(X.columns, model.feature_importances_):
@@ -220,7 +262,7 @@ db = client[_conf['dbs_prefix'] + '_regressors']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 
-collection.insert_one(_conf, {'$set': _conf})
+#collection.insert_one(_conf, {'$set': _conf})
 client.close()
 
 # %%

@@ -1,5 +1,5 @@
 {
-    "db_host"   : "localhost",
-    "db_port"   : 27017,
-    "db_name"   : "rata"
+    "db_host"      : "localhost",
+    "db_port"      : 27017,
+    "dbs_prefix"   : "rata_test"
 }
