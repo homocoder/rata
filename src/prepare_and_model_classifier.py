@@ -3,9 +3,9 @@ from sys import argv
 from rata.utils import parse_argv
 
 fake_argv  = 'prepare_and_model_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=USDJPY --interval=5 '
-fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=False '
-fake_argv += '--forecast_shift=3 --autocorrelation_lag=8 --autocorrelation_lag_step=2 --n_rows=3000 '
-fake_argv += '--profit_threshold=0.001'
+fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
+fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=5 --n_rows=3000 '
+fake_argv += '--profit_threshold=0.001 --test_size=0.5'
 
 fake_argv = fake_argv.split()
 argv = fake_argv ####
@@ -121,15 +121,19 @@ y_column = 'y_close_shift_' + str(_conf['forecast_shift'])
 y_check_columns.append(y_column)
 #df[y_column] = df['x_close_roc_' + str(_conf['forecast_shift'])].shift(-_conf['forecast_shift']) # to see the future
 df[y_column] = df['x_close_roc_1'].shift(-_conf['forecast_shift']) # to see the future
-X_check_columns.append('x_close_roc_' + str(_conf['forecast_shift']))
+X_check_columns.append('x_close_roc_1')
 df[y_column + '_sign'] = df[y_column].mask(df[y_column] > 0, 1).mask(df[y_column] < 0, -1)
 df[y_column + '_sign_rolling_sum'] = df[y_column + '_sign'].rolling(_conf['forecast_shift']).sum()
 df[y_column + '_rolling_sum'] = df[y_column].rolling(_conf['forecast_shift']).sum()
 y_check_columns.append(y_column + '_rolling_sum')
 
-df[y_column + '_invest'] = df[y_column + '_rolling_sum'].mask(df[y_column + '_rolling_sum'] > _conf['profit_threshold'], 1).mask(df[y_column + '_rolling_sum'] <= _conf['profit_threshold'], 0)
 
+df[y_column + '_invest'] = df[y_column + '_rolling_sum']
+df[y_column + '_invest'] = 0
+df[y_column + '_invest'] = df[y_column + '_invest'].mask(df[y_column + '_rolling_sum'] >  _conf['profit_threshold'], 1)
+df[y_column + '_invest'] = df[y_column + '_invest'].mask(df[y_column + '_rolling_sum'] < -_conf['profit_threshold'], 2)
 y_column = y_column + '_invest'
+y_check_columns.append(y_column)
 
 #%%
 
@@ -197,7 +201,7 @@ df_delta_minutes
 # %%
 ### Outputs train & tests 
 from sklearn.model_selection import train_test_split
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.05, shuffle=False)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=_conf['test_size'], shuffle=False)
 
 print(X_train.shape, y_train.shape, X_test.shape, y_test.shape, X_forecast.shape, '\n')
 print('Count Nan7:', (df.isna().sum()).sum())
@@ -208,12 +212,56 @@ print(len(nancols), nancols.index)
 #%%
 ######                  MODELS    ############
 # %%
+# MultiClass classifier
+from xgboost import XGBClassifier
+from sklearn.metrics import confusion_matrix, balanced_accuracy_score, precision_score, recall_score
+
+seed = int(dt.datetime.now().strftime('%S%f'))
+
+model = XGBClassifier(random_state=seed, validate_parameters=True, booster='gbtree',
+         use_label_encoder=False)
+#scale_pos_weight
+# lamdba
+# alfa
+
+model.fit(X_train, y_train)
+y_pred =  model.predict(X_test)
+y_proba = model.predict_proba(X_test)
+
+cm = confusion_matrix(y_true=y_test, y_pred=y_pred).ravel()
+precision_buy  = precision_score(y_true=y_test, y_pred=y_pred, average='weighted', labels=[1])
+recall_buy     = recall_score   (y_true=y_test, y_pred=y_pred, average='weighted', labels=[1])
+accuracy_buy   = balanced_accuracy_score (y_true=y_test, y_pred=y_pred)
+precision_sell = precision_score(y_true=y_test, y_pred=y_pred, average='weighted', labels=[2])
+recall_sell    = recall_score   (y_true=y_test, y_pred=y_pred, average='weighted', labels=[2])
+accuracy_sell  = balanced_accuracy_score (y_true=y_test, y_pred=y_pred)
+
+y_forecast = model.predict(X_forecast)
+print(precision_buy, recall_buy, accuracy_buy, y_forecast)
+print(precision_sell, recall_sell, accuracy_sell, y_forecast)
+
+Xy_test = X_test
+Xy_test['y_test'] = y_test
+Xy_test['y_pred'] = y_pred
+Xy_test['y_proba_0'] = y_proba[ : , 0]
+Xy_test['y_proba_1'] = y_proba[ : , 1] ### TODO:aqui vovvvovooyyyy
+
+Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
+
+feature_importance = list()
+for feat, importance in zip(X.columns, model.feature_importances_):
+    feature_importance.append({'feature_name': feat, 'score': importance})
+df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
+# %%
+# %%
+# Binary classifier. BUY
 from xgboost import XGBClassifier
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 
-model = XGBClassifier(random_state=seed, validate_parameters=True, booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'] )
+model = XGBClassifier(random_state=seed, validate_parameters=True, booster='gbtree',
+        objective='binary:logistic', eval_metric=['logloss', 'error'], use_label_encoder=False )
 #scale_pos_weight
 # lamdba
 # alfa
@@ -225,6 +273,7 @@ y_proba = model.predict_proba(X_test)
 tn, fp, fn, tp  = confusion_matrix(y_true=y_test, y_pred=y_pred).ravel()
 precision = precision_score(y_true=y_test, y_pred=y_pred)
 recall    = recall_score(y_true=y_test, y_pred=y_pred)
+accuracy  = accuracy_score(y_true=y_test, y_pred=y_pred)
 
 y_forecast = model.predict(X_forecast)
 print(precision, recall, y_forecast)
@@ -234,6 +283,7 @@ Xy_test['y_test'] = y_test
 Xy_test['y_pred'] = y_pred
 Xy_test['y_proba_0'] = y_proba[ : , 0]
 Xy_test['y_proba_1'] = y_proba[ : , 1]
+Xy_test['y_proba_2'] = y_proba[ : , 2]
 
 Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
 
@@ -241,7 +291,9 @@ feature_importance = list()
 for feat, importance in zip(X.columns, model.feature_importances_):
     feature_importance.append({'feature_name': feat, 'score': importance})
 df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
+
 # %%
+
 t1 = dt.datetime.now().timestamp()
 total_time = t1 - t0
 print('Total time:', total_time)
