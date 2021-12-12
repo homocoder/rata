@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'prepare_and_model_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=USDJPY --interval=5 '
+fake_argv  = 'prepare_and_model_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=USDJPY --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=7 --autocorrelation_lag=3 --autocorrelation_lag_step=1 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True'
@@ -201,31 +201,36 @@ print('Total time: ', dt.datetime.now().timestamp() - t0)
 #%%
 # */* MODELS */* #
 client = MongoClient(_conf['db_host'], _conf['db_port'])
-_conf['id']             = dt.datetime.now()
-
+_conf['id_tstamp']             = dt.datetime.now()
 
 # %%
 # */*   CLF. BIN. BL. BUY.   */* #
 t0 = dt.datetime.now().timestamp()
 from xgboost import XGBClassifier
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 
-model = XGBClassifier(validate_parameters=True, random_state=seed, use_label_encoder=False,
-        booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'])
+estimator_clf = XGBClassifier(validate_parameters=True, random_state=seed, use_label_encoder=False,
+                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'])
+cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
+space = dict()
+model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
+                        scoring=['accuracy', 'precision', 'recall'])
 
-model.fit(X_train, y_train)
+model.fit(X, y.mask(y == 2, 0)) # Buy only
+X_test = X.copy()
+y_test = y.mask(y == 2, 0).copy()
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
 
-tn, fp, fn, tp  = confusion_matrix(y_true=y_test, y_pred=y_pred).ravel()
-precision = precision_score(y_true=y_test, y_pred=y_pred)
-recall    = recall_score(y_true=y_test, y_pred=y_pred)
-accuracy  = accuracy_score(y_true=y_test, y_pred=y_pred)
+accuracy  = model.cv_results_['mean_test_accuracy'][0]
+precision = model.cv_results_['mean_test_precision'][0]
+recall    = model.cv_results_['mean_test_recall'][0]
 
 y_forecast = model.predict(X_forecast)
-print(precision, recall, y_forecast)
+print(accuracy, precision, recall, y_forecast)
 
 Xy_test = X_test
 Xy_test['y_test'] = y_test
@@ -236,15 +241,17 @@ Xy_test['y_proba_1'] = y_proba[ : , 1]
 Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
 Xy.reset_index(inplace=True)
 
+xgb = model.estimator
+xgb.fit(X, y)
 feature_importance = list()
-for feat, importance in zip(X.columns, model.feature_importances_):
+for feat, importance in zip(X.columns, xgb.feature_importances_):
     feature_importance.append({'feature_name': feat, 'score': importance})
 df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
 
 _conf['model']      = 'xgb_bin_BL_buy'
-_conf['precision']  = precision_score
-_conf['recall']     = recall_score
-_conf['accuracy']   = accuracy_score
+_conf['accuracy']   = accuracy
+_conf['precision']  = precision
+_conf['recall']     = recall
 
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
@@ -255,37 +262,101 @@ _conf['total_time'] = dt.datetime.now().timestamp() - t0
 db = client[_conf['dbs_prefix'] + '_classifiers']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-collection.insert_one(_conf, {'$set': _conf})
+collection.insert_one(_conf.copy())
 
 if [_conf['store_dataset']]:
     # Change to _datasets DB
     db = client[_conf['dbs_prefix'] + '_classifiers_datasets']
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
     collection = db[db_col]
-    Xy['id'] = _conf['id']
+    Xy['id_tstamp'] = _conf['id_tstamp']
     df_dict = Xy.to_dict(orient='records')
     for r in df_dict:
         pass
         collection.insert_one(r, {'$set': r})
 
-
-
-
-
-
-#scale_pos_weight
-# lamdba
-# alfa
-
+# %%
 # */*   CLF. BIN. BL. SELL.  */* #
+t0 = dt.datetime.now().timestamp()
+from xgboost import XGBClassifier
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+
+seed = int(dt.datetime.now().strftime('%S%f'))
+
+estimator_clf = XGBClassifier(validate_parameters=True, random_state=seed, use_label_encoder=False,
+                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'])
+cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
+space = dict()
+model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
+                        scoring=['accuracy', 'precision', 'recall'])
+
+model.fit(X, y.mask(y == 1, 0).mask(y == 2, 1)) # Sell only
+X_test = X.copy()
+y_test = y.mask(y == 1, 0).mask(y == 2, 1).copy()
+y_pred =  model.predict(X_test)
+y_proba = model.predict_proba(X_test)
+
+accuracy  = model.cv_results_['mean_test_accuracy'][0]
+precision = model.cv_results_['mean_test_precision'][0]
+recall    = model.cv_results_['mean_test_recall'][0]
+
+y_forecast = model.predict(X_forecast)
+print(accuracy, precision, recall, y_forecast)
+
+Xy_test = X_test
+Xy_test['y_test'] = y_test
+Xy_test['y_pred'] = y_pred
+Xy_test['y_proba_0'] = y_proba[ : , 0]
+Xy_test['y_proba_1'] = y_proba[ : , 1]
+
+Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
+Xy.reset_index(inplace=True)
+
+xgb = model.estimator
+xgb.fit(X, y)
+feature_importance = list()
+for feat, importance in zip(X.columns, xgb.feature_importances_):
+    feature_importance.append({'feature_name': feat, 'score': importance})
+df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
+
+_conf['model']      = 'xgb_bin_BL_sell'
+_conf['accuracy']   = accuracy
+_conf['precision']  = precision
+_conf['recall']     = recall
+
+_conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
+_conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
+
+_conf['total_time'] = dt.datetime.now().timestamp() - t0
+
+# Change to _classifiers DB
+db = client[_conf['dbs_prefix'] + '_classifiers']
+db_col = _conf['symbol'] + '_' + str(_conf['interval'])
+collection = db[db_col]
+collection.insert_one(_conf.copy())
+
+if [_conf['store_dataset']]:
+    # Change to _datasets DB
+    db = client[_conf['dbs_prefix'] + '_classifiers_datasets']
+    db_col = _conf['symbol'] + '_' + str(_conf['interval'])
+    collection = db[db_col]
+    Xy['id_tstamp'] = _conf['id_tstamp']
+    df_dict = Xy.to_dict(orient='records')
+    for r in df_dict:
+        pass
+        collection.insert_one(r, {'$set': r})
+#%%
+client.close()
+
+# %%
+# ! Notes
+
 # */*   CLF. BIN. CV. BUY.   */* # 
 # */*   CLF. BIN. CV. SELL.  */* #
 # */*   CLF. BIN. RT. BUY.   */* # 
 # */*   CLF. BIN. RT. SELL.  */* #
 
-
 # BL: Baseline. Stratified K-Fold.
-# GD: Grid Search CV. 
-# RT: sample_weights. pos_label weight. wout metrics. prediction stored on RT on db and metrics calculated afterwards
-
-# %%
+# GD: Pipeline+Grid Search+Stratified. CV. [scaler, feat selector, estimator[xgb_scale_pos_weight, xgb_lambda, xgb_reg_gamma, xgb_reg_alfa]
+# RT: sample_weights. scale_pos_weight. without metrics. prediction stored on RT on db and metrics calculated afterwards
