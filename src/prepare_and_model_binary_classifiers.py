@@ -6,9 +6,8 @@ fake_argv  = 'prepare_and_model_binary_classifier.py --db_host=localhost --db_po
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=7 --autocorrelation_lag=3 --autocorrelation_lag_step=1 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True'
-
 fake_argv = fake_argv.split()
-argv = fake_argv ####
+#argv = fake_argv ####
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -264,7 +263,7 @@ db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 collection.insert_one(_conf.copy())
 
-if [_conf['store_dataset']]:
+if _conf['store_dataset']:
     # Change to _datasets DB
     db = client[_conf['dbs_prefix'] + '_classifiers_datasets']
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
@@ -336,7 +335,7 @@ db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 collection.insert_one(_conf.copy())
 
-if [_conf['store_dataset']]:
+if _conf['store_dataset']:
     # Change to _datasets DB
     db = client[_conf['dbs_prefix'] + '_classifiers_datasets']
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
