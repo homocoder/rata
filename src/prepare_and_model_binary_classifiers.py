@@ -223,6 +223,7 @@ X_test = X.copy()
 y_test = y.mask(y == 2, 0).copy()
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
+n_pos_labels = len(y_test[y_test == 1])
 
 accuracy  = model.cv_results_['mean_test_accuracy'][0]
 precision = model.cv_results_['mean_test_precision'][0]
@@ -251,6 +252,7 @@ _conf['model']      = 'xgb_bin_BL_buy'
 _conf['accuracy']   = accuracy
 _conf['precision']  = precision
 _conf['recall']     = recall
+_conf['n_pos_labels']  = n_pos_labels
 
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
@@ -295,6 +297,7 @@ X_test = X.copy()
 y_test = y.mask(y == 1, 0).mask(y == 2, 1).copy()
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
+n_pos_labels = len(y_test[y_test == 1])
 
 accuracy  = model.cv_results_['mean_test_accuracy'][0]
 precision = model.cv_results_['mean_test_precision'][0]
@@ -323,6 +326,7 @@ _conf['model']      = 'xgb_bin_BL_sell'
 _conf['accuracy']   = accuracy
 _conf['precision']  = precision
 _conf['recall']     = recall
+_conf['n_pos_labels']  = n_pos_labels
 
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')

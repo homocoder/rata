@@ -4,7 +4,7 @@ from rata.utils import parse_argv
 
 fake_argv = 'launch_update_ohlcv_and_forecast.py  --db_conf=conf/db.json --conf=conf/update_ohlcv_and_forecast.15.forex.json '
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+argv = fake_argv ####
 _conf = parse_argv(argv=argv)
 _conf
 
