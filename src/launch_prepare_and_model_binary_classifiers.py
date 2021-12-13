@@ -70,10 +70,10 @@ fd.close()
 
 #%%
 from subprocess import getoutput
-print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file + '"'))
+#print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file + '"'))
 
 #%%
 from os import remove
-remove(launch_file)
+#remove(launch_file)
 
 # %%

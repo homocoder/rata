@@ -7,6 +7,7 @@ fake_argv = fake_argv.split()
 #argv = fake_argv ####
 _conf = parse_argv(argv=argv)
 _conf
+
 # %%
 # Global imports
 import pandas as pd
@@ -52,7 +53,6 @@ df
 
 # %%
 # predict here!
-
 
 # %%
 client.close()

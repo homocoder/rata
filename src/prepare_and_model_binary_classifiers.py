@@ -5,7 +5,8 @@ from rata.utils import parse_argv
 fake_argv  = 'prepare_and_model_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=USDJPY --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=7 --autocorrelation_lag=3 --autocorrelation_lag_step=1 --n_rows=3000 '
-fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True'
+fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
+fake_argv += '--model_datetime=2021-12-10T14:50:00'
 fake_argv = fake_argv.split()
 #argv = fake_argv ####
 
@@ -17,6 +18,8 @@ print(_conf)
 import pandas as pd
 import datetime as dt
 import numpy as np
+import pickle
+import gzip
 
 t0 = dt.datetime.now().timestamp()
 
@@ -33,12 +36,13 @@ mydoc = collection.find({'symbol': _conf['symbol']}).sort('tstamp', 1)#.skip(col
 df = pd.DataFrame(mydoc)
 df = df.groupby(['interval',  'status', 'symbol', 'tstamp', 'unix_tstamp', ]).mean()
 df = df.reset_index()[['tstamp', 'interval', 'symbol', 'open', 'high', 'low', 'close', 'volume']].sort_values('tstamp')
+df = df[df['tstamp'] <= _conf['model_datetime']]
 df_query = df.copy()
 del df
 client.close()
 
 #%%
-## Tech indicators
+# */* LIB TA */* #
 df = df_query.copy()
 
 if _conf['include_all_ta']: 
@@ -68,9 +72,17 @@ else:
 df.set_index(['tstamp'], inplace=True, drop=True)
 df.drop(['interval', 'symbol'], inplace=True, axis=1)
 
-# Tech indicators
+# Momentum: RSI, StochasticOscillator
+# Trending: MACD, PSAR
+# Volume: MFI
+# PPO, MFI, Klinger, Fibonacci
 
-### AUTOCORRSs
+## Non-supervised
+# IForest
+# KNN
+# DBSCAN
+
+# */* AUTOCORRS */* #
 if _conf['include_autocorrs']:
     for c in df.columns:
         for i in range(1, _conf['autocorrelation_lag'], _conf['autocorrelation_lag_step']):
@@ -87,21 +99,11 @@ df = df2.copy()
 del df2
 print(df.shape)
 
-## RAW RATES
+# */* RAW RATES */* #
 if _conf['include_raw_rates']:
     for i in ['open', 'high', 'low', 'close', 'volume']:
         #df.rename({i: 'x_' + i}, inplace=True, axis=1)
         df['x_' + i] = df[i]
-
-# Momentum: RSI, StochasticOscillator
-# Trending: MACD, PSAR
-# Volume: MFI
-# PPO, MFI, Klinger, Fibonacci
-
-## Non-supervised
-# IForest
-# KNN
-# DBSCAN
 
 # %%
 # join Symbol1 and Symbol2 here.
@@ -176,7 +178,7 @@ print('Count Nan6:', X.isna().sum())
 print('Final X_columns', X.columns.sort_values())
 X_forecast
 
-# X, y, X_check, y_check, X_forecast
+# Outputs: X, y, X_check, y_check, X_forecast
 # %%
 
 df_diff_intervals = pd.DataFrame(df_query['tstamp'])
@@ -263,7 +265,8 @@ _conf['total_time'] = dt.datetime.now().timestamp() - t0
 db = client[_conf['dbs_prefix'] + '_classifiers']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-collection.insert_one(_conf.copy())
+_id = collection.insert_one(_conf.copy())
+_id = str(_id.inserted_id)
 
 if _conf['store_dataset']:
     # Change to _datasets DB
@@ -275,6 +278,14 @@ if _conf['store_dataset']:
     for r in df_dict:
         pass
         collection.insert_one(r, {'$set': r})
+
+# Save model to disk
+filename  = '/home/selknam/var/models/'
+filename +=  str(_conf['id_tstamp']).replace(' ', '_') + '_' + _conf['model'] + '_' + _conf['symbol'] + '_' + str(_conf['interval'])
+filename +=  '_' + str(round(_conf['precision'], 2)) + '_' + str(_conf['n_pos_labels']) + '.' + _id + '.pickle.gz'
+fd = gzip.open(filename, 'wb')
+pickle.dump(model, fd)
+fd.close()
 
 # %%
 # */*   CLF. BIN. BL. SELL.  */* #
@@ -338,6 +349,8 @@ db = client[_conf['dbs_prefix'] + '_classifiers']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 collection.insert_one(_conf.copy())
+_id = collection.insert_one(_conf.copy())
+_id = str(_id.inserted_id)
 
 if _conf['store_dataset']:
     # Change to _datasets DB
@@ -349,6 +362,14 @@ if _conf['store_dataset']:
     for r in df_dict:
         pass
         collection.insert_one(r, {'$set': r})
+
+# Save model to disk
+filename  = '/home/selknam/var/models/'
+filename +=  str(_conf['id_tstamp']).replace(' ', '_') + '_' + _conf['model'] + '_' + _conf['symbol'] + '_' + str(_conf['interval'])
+filename +=  '_' + str(round(_conf['precision'], 2)) + '_' + str(_conf['n_pos_labels']) + '.' + _id + '.pickle.gz'
+fd = gzip.open(filename, 'wb')
+pickle.dump(model, fd)
+fd.close()
 #%%
 client.close()
 
@@ -363,3 +384,10 @@ client.close()
 # BL: Baseline. Stratified K-Fold.
 # GD: Pipeline+Grid Search+Stratified. CV. [scaler, feat selector, estimator[xgb_scale_pos_weight, xgb_lambda, xgb_reg_gamma, xgb_reg_alfa]
 # RT: sample_weights. scale_pos_weight. without metrics. prediction stored on RT on db and metrics calculated afterwards
+
+#%%
+import pickle
+
+loaded_model = pickle.load(open('test.model.pickle', 'rb'))
+
+# %%

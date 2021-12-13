@@ -4,7 +4,7 @@ from rata.utils import parse_argv
 
 fake_argv  = 'launch_preare_and_model_regressor.py  --db_conf=conf/db.json '
 fake_argv += ' --symbol_conf=conf/update_ohlcv_and_forecast.15.forex.json '
-fake_argv += ' --regressor_conf=conf/prepare-regressor.json '
+fake_argv += ' --regressor_conf=conf/prepare_regressor.json '
 fake_argv = fake_argv.split()
 #argv = fake_argv ####
 _conf = parse_argv(argv=argv)

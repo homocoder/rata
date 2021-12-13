@@ -1,4 +1,4 @@
-*/1  * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_update_ohlcv_and_forecast.1.bash  2>&1 /home/selknam/log/launch_update_ohlcv_and_forecast.1.log
-*/5  * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_update_ohlcv_and_forecast.5.bash  2>&1 /home/selknam/log/launch_update_ohlcv_and_forecast.5.log
-*/15 * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_update_ohlcv_and_forecast.15.bash 2>&1 /home/selknam/log/launch_update_ohlcv_and_forecast.15.log
+*/1  * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_update_ohlcv_and_forecast.1.bash  >> /home/selknam/var/log/launch_update_ohlcv_and_forecast.1.log  2>&1
+*/5  * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_update_ohlcv_and_forecast.5.bash  >> /home/selknam/var/log/launch_update_ohlcv_and_forecast.5.log  2>&1
+*/15 * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_update_ohlcv_and_forecast.15.bash >> /home/selknam/var/log/launch_update_ohlcv_and_forecast.15.log 2>&1
 #

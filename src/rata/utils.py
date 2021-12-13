@@ -13,8 +13,17 @@ def is_int(element) -> bool:
     except ValueError:
         return False
 
+def is_isoformat(element) -> bool:
+    from datetime import datetime
+    try:
+        datetime.fromisoformat(element)
+        return True
+    except ValueError:
+        return False
+
 # %%
 def parse_argv(argv):
+    from datetime import datetime
     _conf = dict()
     for i in argv[1:]:
         if '=' in i:
@@ -31,6 +40,8 @@ def parse_argv(argv):
             _conf[i] = int(b)
         elif is_float(b):
             _conf[i] = float(b)
+        elif is_isoformat(b):
+            _conf[i] = datetime.fromisoformat(b)
     return _conf
 
 # split a multivariate sequence into samples
