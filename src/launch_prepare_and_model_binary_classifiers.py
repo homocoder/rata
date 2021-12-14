@@ -5,8 +5,9 @@ from rata.utils import parse_argv
 fake_argv  = 'launch_prepare_and_model_binary_classifiers.py  --db_conf=conf/db.json '
 fake_argv += ' --symbol_conf=conf/update_ohlcv_and_forecast.15.forex.json '
 fake_argv += ' --binary_classifiers_conf=conf/prepare_and_model_binary_classifiers.json '
+fake_argv += ' --model_datetime=2021-12-01T00:01:05 '
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+#argv = fake_argv #### !
 _conf = parse_argv(argv=argv)
 _conf
 
@@ -37,6 +38,9 @@ cmd = cmd.split('\n')[:-1]
 fd = open(_conf['binary_classifiers_conf'], 'rt')
 binary_classifiers_conf = load(fd)
 fd.close()
+
+if 'model_datetime' in _conf:
+    binary_classifiers_conf[0]['model_datetime'] = [str(_conf['model_datetime']).replace(' ', 'T')]
 
 for x in cmd:
     cmd2 = x
@@ -79,6 +83,6 @@ print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file 
 
 #%%
 from os import remove
-#remove(launch_file)
+remove(launch_file)
 
 # %%
