@@ -68,9 +68,14 @@ fd = open(launch_file, 'wt')
 fd.write(cmd2)
 fd.close()
 
+import random
+lines = open(launch_file, 'rt').readlines()
+random.shuffle(lines)
+open(launch_file, 'wt').writelines(lines)
+
 #%%
 from subprocess import getoutput
-#print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file + '"'))
+print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file + '"'))
 
 #%%
 from os import remove

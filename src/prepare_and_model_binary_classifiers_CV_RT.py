@@ -8,7 +8,7 @@ fake_argv += '--forecast_shift=5 --autocorrelation_lag=3 --autocorrelation_lag_s
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
 fake_argv += '--model_datetime=2021-12-13T17:00:00'
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+argv = fake_argv ####
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -37,7 +37,6 @@ df = pd.DataFrame(mydoc)
 df = df.groupby(['interval',  'status', 'symbol', 'tstamp', 'unix_tstamp', ]).mean()
 df = df.reset_index()[['tstamp', 'interval', 'symbol', 'open', 'high', 'low', 'close', 'volume']].sort_values('tstamp')
 df = df[df['tstamp'] <= _conf['model_datetime']]
-_conf['model_datetime'] = df.iloc[-1]['tstamp'].to_pydatetime() # adjust model_datetime to match the last timestamp
 df_query = df.copy()
 del df
 client.close()
@@ -375,13 +374,82 @@ if _conf['store_dataset']:
         pass
         collection.insert_one(r, {'$set': r})
 
+# %%
+# */*   CLF. BIN. RT. BUY.   */* #
+from xgboost import XGBClassifier
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler, RobustScaler
+from sklearn.feature_selection import SelectFwe, SelectFpr, SelectFdr
+from sklearn.pipeline import Pipeline
+
+seed = int(dt.datetime.now().strftime('%S%f'))
+model_name = 'xgb_bin_RT_buy'
+t0 = dt.datetime.now().timestamp()
+X_train = X.copy()
+y_train = y.mask(y == 2, 0).copy()
+n_pos_labels = len(y_train[y_train == 1])
+
+model = Pipeline([
+        ('scaler', StandardScaler()),
+        ('features', SelectFpr()),
+        #('pca', PCA()),
+
+        ('clf', XGBClassifier(validate_parameters=True, random_state=seed, use_label_encoder=False,
+                booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'],
+                #sample_weight=[i for i in range(1, len(X) + 1)],
+                scale_pos_weight=100 - (n_pos_labels / _conf['n_rows']) * 100)
+        )
+    ])
+
+model.fit(X_train, y_train) # Buy only
+
+accuracy  = 0
+precision = 0
+recall    = 0
+
+y_forecast = model.predict(X_forecast)
+print(accuracy, precision, recall, y_forecast)
+
+clf = model.named_steps['clf']
+feature_importance = list()
+for feat, importance in zip(X.columns, clf.feature_importances_):
+    feature_importance.append({'feature_name': feat, 'score': importance})
+df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
+
+# Save model to disk
+model_filename  = '/home/selknam/var/models/' # TODO: hardcoded
+model_filename +=  str(_conf['id_tstamp']).replace(' ', '_') + '_' + model_name + '_' + _conf['symbol'] + '_' + str(_conf['interval'])
+model_filename +=  '_' + str(round(precision, 2)) + '_' + str(n_pos_labels) + '.pickle.gz'
+fd = gzip.open(model_filename, 'wb')
+pickle.dump(model, fd)
+fd.close()
+
+_conf['model']      = model_name
+_conf['accuracy']   = accuracy
+_conf['precision']  = precision
+_conf['recall']     = recall
+_conf['n_pos_labels']  = n_pos_labels
+
+_conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
+_conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
+_conf['model_filename']     = model_filename
+
+_conf['total_time'] = dt.datetime.now().timestamp() - t0
+
+# Change to _classifiers DB
+db = client[_conf['dbs_prefix'] + '_classifiers']
+db_col = _conf['symbol'] + '_' + str(_conf['interval'])
+collection = db[db_col]
+_id = collection.insert_one(_conf.copy())
+_id = str(_id.inserted_id)
+
 #%%
 client.close()
 
 # %%
 # ! Notes
 
-# */*   CLF. BIN. RT. SELL.  */* #
+
 # */*   CLF. BIN. RT. SELL.  */* #
 
 # BL: Baseline. Stratified K-Fold.

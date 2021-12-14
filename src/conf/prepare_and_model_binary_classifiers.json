@@ -10,6 +10,6 @@
         "profit_threshold": [0.0008, 0.001, 0.0012],
         "test_size": [0.05],
         "store_dataset": [false],
-        "model_datetime": ["2021-12-13T14:50:09"]
+        "model_datetime": ["2021-12-14T04:00:00"]
     }
 ]
