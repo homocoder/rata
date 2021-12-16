@@ -6,9 +6,9 @@ fake_argv  = 'forecast_binary_classifier.py --db_host=localhost --db_port=27017 
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=5 --autocorrelation_lag=3 --autocorrelation_lag_step=1 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
-fake_argv += '--model_datetime=2021-12-13T17:00:00'
+fake_argv += '--forecast_datetime=2021-12-16T09:20:00 '
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+argv = fake_argv ####
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -198,59 +198,39 @@ df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds
 df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
 print(df_delta_minutes)
 
-print('Total time: ', dt.datetime.now().timestamp() - t0) 
+print('Total time: ', dt.datetime.now().timestamp() - t0)
 
 #%%
 # */* MODELS */* #
 client = MongoClient(_conf['db_host'], _conf['db_port'])
 _conf['id_tstamp']             = dt.datetime.now()
 
+db = client[_conf['dbs_prefix'] + '_classifiers']
+db_col = _conf['symbol'] + '_' + str(_conf['interval'])
+collection = db[db_col]
+mydoc = collection.find({'symbol': _conf['symbol']}).sort('model_datetime', 1).skip(collection.count_documents({}) - 12) #
+df = pd.DataFrame(mydoc)
+
+
+
+
 # %%
 # */*   CLF. BIN. BL. BUY.   */* #
 model_name = 'xgb_bin_BL_buy'
 t0 = dt.datetime.now().timestamp()
-from xgboost import XGBClassifier
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 
-estimator_clf = XGBClassifier(validate_parameters=True, random_state=seed, use_label_encoder=False,
-                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'])
-cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
-space = dict()
-model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
-                        scoring=['accuracy', 'precision', 'recall'])
+# Load model from disk
+model_filename  = '/home/selknam/var/models/' # TODO: hardcoded
+model_filename +=  
 
-model.fit(X, y.mask(y == 2, 0)) # Buy only
-X_test = X.copy()
-y_test = y.mask(y == 2, 0).copy()
-y_pred =  model.predict(X_test)
-y_proba = model.predict_proba(X_test)
-n_pos_labels = len(y_test[y_test == 1])
-
-accuracy  = model.cv_results_['mean_test_accuracy'][0]
-precision = model.cv_results_['mean_test_precision'][0]
-recall    = model.cv_results_['mean_test_recall'][0]
+fd = gzip.open(model_filename, 'wb')
+pickle.dump(model, fd)
+fd.close()
 
 y_forecast = model.predict(X_forecast)
-print(accuracy, precision, recall, y_forecast)
 
-Xy_test = X_test
-Xy_test['y_test'] = y_test
-Xy_test['y_pred'] = y_pred
-Xy_test['y_proba_0'] = y_proba[ : , 0]
-Xy_test['y_proba_1'] = y_proba[ : , 1]
-
-Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
-Xy.reset_index(inplace=True)
-
-xgb = model.estimator
-xgb.fit(X, y)
-feature_importance = list()
-for feat, importance in zip(X.columns, xgb.feature_importances_):
-    feature_importance.append({'feature_name': feat, 'score': importance})
-df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
 
 # Save model to disk
 model_filename  = '/home/selknam/var/models/' # TODO: hardcoded
