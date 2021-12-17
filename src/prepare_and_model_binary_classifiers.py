@@ -4,11 +4,11 @@ from rata.utils import parse_argv
 
 fake_argv  = 'prepare_and_model_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=EURUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
-fake_argv += '--forecast_shift=5 --autocorrelation_lag=3 --autocorrelation_lag_step=1 --n_rows=3000 '
+fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
-fake_argv += '--model_datetime=2021-12-13T17:00:00'
+fake_argv += '--model_datetime=2031-12-13T17:00:00'
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+argv = fake_argv ####
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -172,8 +172,8 @@ for c in df.columns:
 X_forecast = X_forecast[X_columns]
 X = df[X_columns]
 y = df[y_column]
-X_check = df[X_check_columns]
-y_check = df[y_check_columns]
+X_check = df[X_check_columns].copy()
+y_check = df[y_check_columns].copy()
 
 print('Count Nan6:', X.isna().sum())
 print('Final X_columns', X.columns.sort_values())
@@ -225,6 +225,7 @@ model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
 model.fit(X, y.mask(y == 2, 0)) # Buy only
 X_test = X.copy()
 y_test = y.mask(y == 2, 0).copy()
+y_check[y_column + '_buy'] = y_test
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
 n_pos_labels = len(y_test[y_test == 1])
@@ -266,6 +267,7 @@ _conf['precision']  = precision
 _conf['recall']     = recall
 _conf['n_pos_labels']  = n_pos_labels
 
+_conf['y_check'] = y_check.to_dict(orient='records')
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
@@ -310,6 +312,7 @@ model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
 model.fit(X, y.mask(y == 1, 0).mask(y == 2, 1)) # Sell only
 X_test = X.copy()
 y_test = y.mask(y == 1, 0).mask(y == 2, 1).copy()
+y_check[y_column + '_sell'] = y_test
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
 n_pos_labels = len(y_test[y_test == 1])
@@ -351,8 +354,10 @@ _conf['precision']  = precision
 _conf['recall']     = recall
 _conf['n_pos_labels']  = n_pos_labels
 
+_conf['y_check'] = y_check.to_dict(orient='records')
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
+_conf['y_check']             = y_check.iloc[-30:].reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
 
 _conf['total_time'] = dt.datetime.now().timestamp() - t0
