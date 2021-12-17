@@ -7,9 +7,9 @@ fake_argv  = 'forecast_binary_classifier.py --db_host=localhost --db_port=27017 
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
-fake_argv += '--forecast_datetime=2021-12-17T17:57:00 '
+fake_argv += '--forecast_datetime=2031-12-17T19:35:00 '
 fake_argv = fake_argv.split()
-argv = fake_argv ####
+#argv = fake_argv ####
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -229,6 +229,10 @@ if len(df) == 0:
 if X_forecast.index[0].to_pydatetime() != _conf['forecast_datetime']:
     raise BaseException('Requested forecast_datetime is different than the one on dataset')
 
+client = MongoClient(_conf['db_host'], _conf['db_port'])
+db = client[_conf['dbs_prefix'] + '_classifiers_forecasts']
+_conf['id_tstamp']             = dt.datetime.now()
+
 for i in range(0, len(df)):
     row = df.iloc[i]
     model_filename = row['model_filename']
@@ -242,8 +246,17 @@ for i in range(0, len(df)):
     y_forecast = model.predict(X_forecast[X_columns])
     y_proba = model.predict_proba(X_forecast[X_columns])
     print(y_forecast, y_proba)
+    row['forecast_datetime'] = _conf['forecast_datetime']
+    row['y_proba_0']  = y_proba[ : , 0]
+    row['y_proba_1']  = y_proba[ : , 1]
+    row['y_forecast'] = y_forecast[0]
+    row['id_stamp']   = _conf['id_tstamp']
+    # Change to _forecasts DB
 
-#%%
+    db_col = _conf['symbol'] + '_' + str(_conf['interval'])
+    collection = db[db_col]
+    _id = collection.insert_one(_conf.copy())
+    _id = str(_id.inserted_id)
 
 
 #%%

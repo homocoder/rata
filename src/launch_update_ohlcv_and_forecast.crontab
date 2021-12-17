@@ -3,4 +3,5 @@
 */15 * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_update_ohlcv_and_forecast.15.bash >> /home/selknam/var/log/launch_update_ohlcv_and_forecast.15.log 2>&1
 06   * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_prepare_and_model_binary_classifiers.bash >> /home/selknam/var/log/launch_prepare_and_model_binary_classifiers.log 2>&1
 36   * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_prepare_and_model_binary_classifiers.bash >> /home/selknam/var/log/launch_prepare_and_model_binary_classifiers.log 2>&1
+*/5  * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_forecast_binary_classifiers.bash >> /home/selknam/var/log/launch_forecast_binary_classifiers.log 2>&1
 #

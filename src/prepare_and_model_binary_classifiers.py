@@ -198,7 +198,7 @@ df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds
 df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
 print(df_delta_minutes)
 
-print('Total time: ', dt.datetime.now().timestamp() - t0) 
+print('Total time: ', dt.datetime.now().timestamp() - t0)
 
 #%%
 # */* MODELS */* #
