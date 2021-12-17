@@ -8,7 +8,7 @@ fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
 fake_argv += '--model_datetime=2031-12-13T17:00:00'
 fake_argv = fake_argv.split()
-argv = fake_argv ####
+#argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -267,7 +267,7 @@ _conf['precision']  = precision
 _conf['recall']     = recall
 _conf['n_pos_labels']  = n_pos_labels
 
-_conf['y_check'] = y_check.to_dict(orient='records')
+_conf['y_check'] = y_check.reset_index().to_dict(orient='records')
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
@@ -357,7 +357,6 @@ _conf['n_pos_labels']  = n_pos_labels
 _conf['y_check'] = y_check.to_dict(orient='records')
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
-_conf['y_check']             = y_check.iloc[-30:].reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
 
 _conf['total_time'] = dt.datetime.now().timestamp() - t0
