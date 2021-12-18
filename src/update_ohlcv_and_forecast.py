@@ -36,7 +36,7 @@ else:
 
 print('Hours back: ', hours_back)
 
-df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], kind=_conf['kind'], hours=hours_back)
+df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange='COINBASE', kind=_conf['kind'], hours=hours_back)
 df.index = df.index.to_series().apply(dt.datetime.isoformat)
 df.reset_index(inplace=True)
 df_dict = df.to_dict(orient='records')

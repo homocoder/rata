@@ -3,13 +3,13 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'forecast_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=EURUSD --interval=5 '
+fake_argv  = 'forecast_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=BTCUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
-fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
+fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=False '
 fake_argv += '--forecast_datetime=2031-12-17T19:35:00 '
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+#argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -211,6 +211,7 @@ db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 mydoc = collection.find({'symbol': _conf['symbol']}).sort('model_datetime', 1)#.skip(collection.count_documents({}) - 12) #
 df = pd.DataFrame(mydoc)
+print(_conf)
 #df.drop(['feature_importance', 'delta_minutes'], axis=1, inplace=True)
 df = df[df['model_datetime'] <= _conf['forecast_datetime']]
 df['model_how_old'] = (_conf['forecast_datetime'] - df['model_datetime']).dt.total_seconds()
@@ -247,15 +248,16 @@ for i in range(0, len(df)):
     y_proba = model.predict_proba(X_forecast[X_columns])
     print(y_forecast, y_proba)
     row['forecast_datetime'] = _conf['forecast_datetime']
-    row['y_proba_0']  = y_proba[ : , 0]
-    row['y_proba_1']  = y_proba[ : , 1]
+    row['y_proba_0']  = y_proba[ : , 0][0]
+    row['y_proba_1']  = y_proba[ : , 1][0]
     row['y_forecast'] = y_forecast[0]
     row['id_stamp']   = _conf['id_tstamp']
     # Change to _forecasts DB
 
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
     collection = db[db_col]
-    _id = collection.insert_one(row)
+    print(type(row))
+    _id = collection.insert_one(row.to_dict())
     _id = str(_id.inserted_id)
 
 #%%
