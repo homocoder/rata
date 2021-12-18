@@ -255,9 +255,8 @@ for i in range(0, len(df)):
 
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
     collection = db[db_col]
-    _id = collection.insert_one(_conf.copy())
+    _id = collection.insert_one(row)
     _id = str(_id.inserted_id)
-
 
 #%%
 client.close()
