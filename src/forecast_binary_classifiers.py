@@ -247,15 +247,15 @@ for i in range(0, len(df)):
     y_proba = model.predict_proba(X_forecast[X_columns])
     print(y_forecast, y_proba)
     row['forecast_datetime'] = _conf['forecast_datetime']
-    row['y_proba_0']  = y_proba[ : , 0]
-    row['y_proba_1']  = y_proba[ : , 1]
+    row['y_proba_0']  = y_proba[ : , 0][0]
+    row['y_proba_1']  = y_proba[ : , 1][0]
     row['y_forecast'] = y_forecast[0]
     row['id_stamp']   = _conf['id_tstamp']
     # Change to _forecasts DB
 
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
     collection = db[db_col]
-    _id = collection.insert_one(row)
+    _id = collection.insert_one(row.to_dict())
     _id = str(_id.inserted_id)
 
 #%%
