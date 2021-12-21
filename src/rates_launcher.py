@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'launch_update_ohlcv_and_forecast.py  --db_conf=conf/db.json --conf=conf/update_ohlcv_and_forecast.15.forex.json '
+fake_argv = 'rates.py --db_conf=conf/db.json --conf=conf/rates_launcher.5.json '
 fake_argv = fake_argv.split()
 #argv = fake_argv ####
 _conf = parse_argv(argv=argv)
@@ -29,11 +29,11 @@ for i in symbol_conf:
     symbol_params = db_params
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
-    cmd += 'python /home/selknam/dev/rata/src/update_ohlcv_and_forecast.py ' + symbol_params + ' --kind=forex & \n'
+    cmd += 'python /home/selknam/dev/rata/src/rates.py ' + symbol_params + ' --kind=forex & \n'
 print(cmd)
 
 id_xp = datetime.now().strftime('%Y%m%d-%H%M%S')
-launch_file = '/tmp/launch_update_ohlcv_and_script.' + id_xp + '.' + _conf['conf'].split('/')[1] + '.bash'
+launch_file = '/home/selknam/var/scripts/rates_launch.' + id_xp + '.' + _conf['conf'].split('/')[1] + '.bash'
 
 fd = open(launch_file, 'wt')
 fd.write(cmd)
@@ -42,9 +42,3 @@ fd.close()
 #%%
 from subprocess import getoutput
 print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file + '"'))
-
-#%%
-from os import remove
-remove(launch_file)
-
-# %%

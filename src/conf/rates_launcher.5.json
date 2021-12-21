@@ -1,0 +1,272 @@
+[
+    {
+        "symbol"   : "BTCUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BTCEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BTCAUD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "LTCBTC",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "LTCEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "LTCUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "LTCAUD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "ETHUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "ETHEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "ETHAUD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "XRPUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "XRPEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "XRPAUD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BNBUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BNBEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BNBAUD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "DOGEUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "DOGEEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "DOGEAUD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "AUDUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDJPY",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "AUDCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDCAD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPAUD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURGBP",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPNZD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPJPY",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "NZDUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURJPY",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^AXJO",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "XIN9.FGI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^STOXX50E",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^FCHI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^GDAXI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^HSI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^N225",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^NSEI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^AEX",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^STI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^FTSE",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^NDX",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^RUT",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^GSPC",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^DJI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^VIX",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "SPY",
+        "kind"     : "etf",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "TVIXF",
+        "kind"     : "etf",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GLD",
+        "kind"     : "etf",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "SPEU",
+        "kind"     : "etf",
+        "interval" : 5
+    }  
+]

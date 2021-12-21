@@ -277,5 +277,3 @@ client.close()
 #import pickle
 
 #loaded_model = pickle.load(open('test.model.pickle', 'rb'))
-
-# %%
