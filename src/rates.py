@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=EURUSD --interval=5 --kind=forex'
+fake_argv = 'rates.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --symbol=ETHUSD --interval=5 --kind=crypto'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -40,23 +40,18 @@ if _conf['kind'] == 'forex':
     exchange = 'OANDA'
 if _conf['kind'] == 'crypto':
     exchange = 'COINBASE'
-if _conf['kind'] == 'etf':
-    exchange = 'OANDA' # TODO: exchange
 
-df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange='COINBASE', kind=_conf['kind'], hours=hours_back)
+from random import random
+from time import sleep
+sleep(random() * 5)
+
+df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
 df.index = df.index.to_series().apply(dt.datetime.isoformat)
 df.reset_index(inplace=True)
 df_dict = df.to_dict(orient='records')
 
 for r in df_dict:
     collection.update_one(r, {'$set': r}, upsert=True)
-
-# %%
-mydoc = collection.find({'symbol': _conf['symbol']}).sort('tstamp', 1).skip(collection.count_documents({}) - 9)
-df = pd.DataFrame(mydoc)
-df = df.groupby(['interval',  'status', 'symbol', 'tstamp', 'unix_tstamp', ]).mean()
-df = df.reset_index()[['tstamp', 'interval', 'symbol', 'open', 'high', 'low', 'close', 'volume']].sort_values('tstamp')
-df
 
 # %%
 client.close()

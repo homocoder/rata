@@ -168,5 +168,105 @@
         "symbol"   : "EURJPY",
         "kind"     : "forex",
         "interval" : 5
-    }
+    },
+    {
+        "symbol"   : "^AXJO",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "XIN9.FGI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^STOXX50E",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^FCHI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^GDAXI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^HSI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^N225",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^NSEI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^AEX",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^STI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^FTSE",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^NDX",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^RUT",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^GSPC",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^DJI",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "^VIX",
+        "kind"     : "index",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "SPY",
+        "kind"     : "etf",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "TVIXF",
+        "kind"     : "etf",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GLD",
+        "kind"     : "etf",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "SPEU",
+        "kind"     : "etf",
+        "interval" : 5
+    }  
 ]

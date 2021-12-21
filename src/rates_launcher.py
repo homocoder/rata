@@ -29,11 +29,11 @@ for i in symbol_conf:
     symbol_params = db_params
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
-    cmd += 'python /home/selknam/dev/rata/src/rates.py ' + symbol_params + ' & \n'
+    cmd += 'timeout 30 python /home/selknam/dev/rata/src/rates.py ' + symbol_params + ' & \n'
 print(cmd)
 
 id_xp = datetime.now().strftime('%Y%m%d-%H%M%S')
-launch_file = '/home/selknam/var/scripts/rates_launch.' + id_xp + '.' + _conf['conf'].split('/')[1] + '.bash'
+launch_file = '/home/selknam/var/scripts/rates_launcher.' + id_xp + '.' + _conf['conf'].split('/')[1] + '.bash'
 
 fd = open(launch_file, 'wt')
 fd.write(cmd)
