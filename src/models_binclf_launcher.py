@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'model_binclf.py  --db_conf=conf/db.json '
+fake_argv  = 'models_binclf.py  --db_conf=conf/db.json '
 fake_argv += ' --symbol_conf=conf/rates_launcher.5.json '
 fake_argv += ' --model_binclf_conf=conf/model_binclf.json '
 fake_argv += ' --model_datetime=2021-12-01T00:01:05 '
@@ -32,7 +32,7 @@ for i in symbol_conf:
     symbol_params = db_params
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
-    cmd += 'time python /home/selknam/dev/rata/src/model_binclf.py ' + symbol_params + '  \n'
+    cmd += 'time python /home/selknam/dev/rata/src/models_binclf.py ' + symbol_params + '  \n'
 cmd = cmd.split('\n')[:-1]
 
 fd = open(_conf['binclf_conf'], 'rt')
@@ -66,7 +66,7 @@ for c in cmd:
         cmd2 += c +  params + ' \n'
 
 id_xp = datetime.now().strftime('%Y%m%d-%H%M%S')
-launch_file = '/tmp/model_binclf_launcher.' + id_xp + '.' + _conf['symbol_conf'].split('/')[1] + '.bash'
+launch_file = '/home/selknam/var/scripts/models_binclf_launcher.' + id_xp + '.' + _conf['symbol_conf'].split('/')[1] + '.bash'
 
 fd = open(launch_file, 'wt')
 fd.write(cmd2)
