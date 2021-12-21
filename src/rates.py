@@ -4,7 +4,7 @@ from rata.utils import parse_argv
 
 fake_argv = 'rates.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=EURUSD --interval=5 --kind=forex'
 fake_argv = fake_argv.split()
-#argv = fake_argv ####
+#argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
 _conf
 
@@ -35,6 +35,13 @@ else:
     hours_back = (t3.seconds // 3600) + 1
 
 print('Hours back: ', hours_back)
+
+if _conf['kind'] == 'forex':
+    exchange = 'OANDA'
+if _conf['kind'] == 'crypto':
+    exchange = 'COINBASE'
+if _conf['kind'] == 'etf':
+    exchange = 'OANDA' # TODO: exchange
 
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange='COINBASE', kind=_conf['kind'], hours=hours_back)
 df.index = df.index.to_series().apply(dt.datetime.isoformat)
