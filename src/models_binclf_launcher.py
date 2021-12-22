@@ -32,7 +32,7 @@ for i in symbol_conf:
     symbol_params = db_params
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
-    cmd += 'time python /home/selknam/dev/rata/src/models_binclf.py ' + symbol_params + '  \n'
+    cmd += 'time python -u /home/selknam/dev/rata/src/models_binclf.py ' + symbol_params + '  \n'
 cmd = cmd.split('\n')[:-1]
 
 fd = open(_conf['models_binclf_conf'], 'rt')

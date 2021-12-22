@@ -2,13 +2,13 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'forecast_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --symbol=BTCUSD --interval=5 '
+fake_argv  = 'forecasts_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=BTCUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=False '
 fake_argv += '--forecast_datetime=2031-12-17T19:35:00 '
 fake_argv = fake_argv.split()
-argv = fake_argv #### *!
+#argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
