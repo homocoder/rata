@@ -5,12 +5,12 @@
         "interval" : 5
     },
     {
-        "symbol"   : "BTCEUR",
+        "symbol"   : "BINANCE:BTCEUR",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "BTCAUD",
+        "symbol"   : "BINANCE:BTCAUD",
         "kind"     : "crypto",
         "interval" : 5
     },
@@ -30,7 +30,7 @@
         "interval" : 5
     },
     {
-        "symbol"   : "LTCAUD",
+        "symbol"   : "KRAKEN:LTCAUD",
         "kind"     : "crypto",
         "interval" : 5
     },
@@ -45,52 +45,52 @@
         "interval" : 5
     },
     {
-        "symbol"   : "ETHAUD",
+        "symbol"   : "BINANCE:ETHAUD",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "XRPUSD",
+        "symbol"   : "BINANCE:XRPEUR",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "XRPEUR",
+        "symbol"   : "BITFINEX:XRPUSD",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "XRPAUD",
+        "symbol"   : "BINANCE:XRPAUD",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "BNBUSD",
+        "symbol"   : "BINANCE:BNBUSDT",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "BNBEUR",
+        "symbol"   : "BINANCE:BNBEUR",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "BNBAUD",
+        "symbol"   : "BINANCE:BNBAUD",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "DOGEUSD",
+        "symbol"   : "BINANCE:DOGEAUD",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "DOGEEUR",
+        "symbol"   : "BITMEX:DOGEUSD",
         "kind"     : "crypto",
         "interval" : 5
     },
     {
-        "symbol"   : "DOGEAUD",
+        "symbol"   : "BINANCE:DOGEAUD",
         "kind"     : "crypto",
         "interval" : 5
     },

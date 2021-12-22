@@ -2,10 +2,20 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --symbol=ETHUSD --interval=5 --kind=crypto'
+fake_argv = 'rates.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --symbol=BINANCE:BTCEUR --interval=5 --kind=crypto'
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
+argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
+_conf
+
+# %%
+if _conf['kind'] == 'forex':
+    exchange = 'OANDA'
+if _conf['kind'] == 'crypto':
+    exchange = 'COINBASE'
+if ':' in _conf['symbol']:
+    exchange        = _conf['symbol'].split(':')[0]
+    _conf['symbol'] = _conf['symbol'].split(':')[1]
 _conf
 
 # %%
@@ -36,14 +46,9 @@ else:
 
 print('Hours back: ', hours_back)
 
-if _conf['kind'] == 'forex':
-    exchange = 'OANDA'
-if _conf['kind'] == 'crypto':
-    exchange = 'COINBASE'
-
 from random import random
 from time import sleep
-sleep(random() * 5)
+sleep(random() * 3)
 
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
 df.index = df.index.to_series().apply(dt.datetime.isoformat)
