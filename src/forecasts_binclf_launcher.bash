@@ -1,4 +1,5 @@
 interval=$1
+sleep 15
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
   python /home/selknam/dev/rata/src/forecasts_binclf_launcher.py \

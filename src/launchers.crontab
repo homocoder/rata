@@ -1,5 +1,3 @@
-*/5  * * * *  bash /home/selknam/dev/rata/src/rates_launcher.bash 5         >> /home/selknam/var/log/rates_launcher.5.log        2>&1
-06   * * * *  bash /home/selknam/dev/rata/src/models_binclf_launcher.bash 5 >> /home/selknam/var/log/models_binclf_launcher.log  2>&1
-
-*/5  * * * *  nice -n 0 bash /home/selknam/dev/rata/src/launch_forecast_binary_classifiers.bash >> /home/selknam/var/log/launch_forecast_binary_classifiers.log 2>&1
-#
+*/5  * * * *  bash /home/selknam/dev/rata/src/rates_launcher.bash 5             >> /home/selknam/var/log/rates_launcher.5.log                 2>&1
+06   * * * *  bash /home/selknam/dev/rata/src/models_binclf_launcher.bash 5     >> /home/selknam/var/log/models_binclf_launcher.bash.5.log    2>&1
+*/5  * * * *  bash /home/selknam/dev/rata/src/forecasts_binclf_launcher.bash 5  >> /home/selknam/var/log/forecasts_binclf_launcher.5.bash.log 2>&1
