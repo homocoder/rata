@@ -1,15 +1,14 @@
 # %%
-
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'forecast_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=BTCUSD --interval=5 '
+fake_argv  = 'forecast_binary_classifier.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --symbol=BTCUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=False '
 fake_argv += '--forecast_datetime=2031-12-17T19:35:00 '
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
+argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -35,7 +34,7 @@ collection = db[db_col]
 mydoc = collection.find({'symbol': _conf['symbol']}).sort('tstamp', 1)#.skip(collection.count_documents({}) - 2000) # 
 
 df = pd.DataFrame(mydoc)
-df = df.groupby(['interval',  'status', 'symbol', 'tstamp', 'unix_tstamp']).mean()
+df = df.groupby(['interval', 'status', 'symbol', 'tstamp', 'unix_tstamp']).mean()
 df = df.reset_index()[['tstamp', 'interval', 'symbol', 'open', 'high', 'low', 'close', 'volume']].sort_values('tstamp')
 df = df[df['tstamp'] <= _conf['forecast_datetime']]
 _conf['forecast_datetime'] = df.iloc[-1]['tstamp'].to_pydatetime() # adjust forecast_datetime to match the last timestamp
@@ -199,14 +198,15 @@ df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds
 df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
 print(df_delta_minutes)
 
-print('Total time: ', dt.datetime.now().timestamp() - t0)
+dataprep_time = dt.datetime.now().timestamp() - t0
+print('Data preparation time: ', dataprep_time)
 
 #%%
 # */* MODELS */* #
 client = MongoClient(_conf['db_host'], _conf['db_port'])
 _conf['id_tstamp']             = dt.datetime.now()
 
-db = client[_conf['dbs_prefix'] + '_classifiers']
+db = client[_conf['dbs_prefix'] + '_models_binclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 mydoc = collection.find({'symbol': _conf['symbol']}).sort('model_datetime', 1)#.skip(collection.count_documents({}) - 12) #
@@ -231,11 +231,12 @@ if X_forecast.index[0].to_pydatetime() != _conf['forecast_datetime']:
     raise BaseException('Requested forecast_datetime is different than the one on dataset')
 
 client = MongoClient(_conf['db_host'], _conf['db_port'])
-db = client[_conf['dbs_prefix'] + '_classifiers_forecasts']
+db = client[_conf['dbs_prefix'] + '_forecasts_binclf']
 _conf['id_tstamp']             = dt.datetime.now()
 
 for i in range(0, len(df)):
     row = df.iloc[i]
+    row.drop('_id', inplace=True)
     model_filename = row['model_filename']
     feature_importance = row['feature_importance']
     X_columns = pd.DataFrame(feature_importance)['feature_name'].values
@@ -251,12 +252,15 @@ for i in range(0, len(df)):
     row['y_proba_0']  = y_proba[ : , 0][0]
     row['y_proba_1']  = y_proba[ : , 1][0]
     row['y_forecast'] = y_forecast[0]
-    row['id_stamp']   = _conf['id_tstamp']
+    row['id_tstamp_model'] = row['id_tstamp']
+    row['id_tstamp']   = _conf['id_tstamp']
+    row['total_time_model'] = row['total_time']
+    row['dataprep_time'] = dataprep_time
+    row['forecast_time']   = dt.datetime.now().timestamp() - t0
+    
     # Change to _forecasts DB
-
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
     collection = db[db_col]
-    print(type(row))
     _id = collection.insert_one(row.to_dict())
     _id = str(_id.inserted_id)
 

@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'launch_forecast_binary_classifiers.py  --db_conf=conf/db.json '
+fake_argv  = 'launch_forecast_binary_classifiers.py --db_conf=conf/db.json '
 fake_argv += ' --symbol_conf=conf/update_ohlcv_and_forecast.5.crypto.json '
 fake_argv += ' --binary_classifiers_conf=conf/forecast_binary_classifiers.json '
 #fake_argv += ' --forecast_datetime=2021-12-01T00:01:05 '

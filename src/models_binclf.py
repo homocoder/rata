@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'models_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --symbol=EURUSD --interval=5 '
+fake_argv  = 'models_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=EURUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
@@ -198,7 +198,8 @@ df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds
 df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
 print(df_delta_minutes)
 
-print('Total time: ', dt.datetime.now().timestamp() - t0)
+dataprep_time = dt.datetime.now().timestamp() - t0
+print('Data Preparation time: ', dataprep_time)
 
 #%%
 # */* MODELS */* #
@@ -272,7 +273,7 @@ _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
 
-_conf['total_time'] = dt.datetime.now().timestamp() - t0
+_conf['fit_time'] = dt.datetime.now().timestamp() - t0
 
 # Change to _models_binclf DB
 db = client[_conf['dbs_prefix'] + '_models_binclf']
@@ -359,7 +360,7 @@ _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
 
-_conf['total_time'] = dt.datetime.now().timestamp() - t0
+_conf['fit_time'] = dt.datetime.now().timestamp() - t0
 
 # Change to _models_binclf DB
 db = client[_conf['dbs_prefix'] + '_models_binclf']
