@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------- NOTEBOOK-CELL: CODE
 # -*- coding: utf-8 -*-
 import dataiku
@@ -13,7 +12,7 @@ _conf = {'db_host': 'localhost',
 }
 
 client = MongoClient(_conf['db_host'], _conf['db_port'])
-db = client[_conf['dbs_prefix'] + '_forecasts_binclf']
+db = client[_conf['dbs_prefix'] + '_models_binclf']
 
 # -------------------------------------------------------------------------------- NOTEBOOK-CELL: CODE
 df_out= pd.DataFrame()
@@ -21,9 +20,10 @@ df_out= pd.DataFrame()
 for collection in db.list_collection_names():
     mydoc = db[collection].find({}).sort('tstamp', 1)
     df = pd.DataFrame(mydoc)
+    #df.drop(['feature_importance', 'delta_minutes', 'y_check'], axis=1, inplace=True)
     df_out = df_out.append(df)
 
 # -------------------------------------------------------------------------------- NOTEBOOK-CELL: CODE
 # Write recipe outputs
-rt_forecasts_binclf = dataiku.Dataset("rt_forecasts_binclf")
-rt_forecasts_binclf.write_with_schema(df_out)
+rt_models_binclf = dataiku.Dataset("rt_models_binclf")
+rt_models_binclf.write_with_schema(df_out)

@@ -204,7 +204,6 @@ print('Data preparation time: ', dataprep_time)
 #%%
 # */* MODELS */* #
 client = MongoClient(_conf['db_host'], _conf['db_port'])
-_conf['id_tstamp']             = dt.datetime.now()
 
 db = client[_conf['dbs_prefix'] + '_models_binclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
@@ -220,7 +219,6 @@ df = df[df['model_how_old'] < 7200] # TODO: hardcoded, 2 hours
 # %%
 # */*   CLF. BIN. FORECAST.   */* #
 model_name = 'xgb_bin_BL_buy'
-t0 = dt.datetime.now().timestamp()
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 
@@ -232,9 +230,11 @@ if X_forecast.index[0].to_pydatetime() != _conf['forecast_datetime']:
 
 client = MongoClient(_conf['db_host'], _conf['db_port'])
 db = client[_conf['dbs_prefix'] + '_forecasts_binclf']
+
 _conf['id_tstamp']             = dt.datetime.now()
 
 for i in range(0, len(df)):
+    t0 = dt.datetime.now().timestamp()
     row = df.iloc[i]
     row.drop('_id', inplace=True)
     model_filename = row['model_filename']
@@ -254,7 +254,6 @@ for i in range(0, len(df)):
     row['y_forecast'] = y_forecast[0]
     row['id_tstamp_model'] = row['id_tstamp']
     row['id_tstamp']   = _conf['id_tstamp']
-    row['total_time_model'] = row['total_time']
     row['dataprep_time'] = dataprep_time
     row['forecast_time']   = dt.datetime.now().timestamp() - t0
     

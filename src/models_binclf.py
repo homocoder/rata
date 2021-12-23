@@ -205,6 +205,7 @@ print('Data Preparation time: ', dataprep_time)
 # */* MODELS */* #
 client = MongoClient(_conf['db_host'], _conf['db_port'])
 _conf['id_tstamp']             = dt.datetime.now()
+_conf['dataprep_time'] = dataprep_time
 
 # %%
 # */*   CLF. BIN. BL. BUY.   */* #
@@ -397,5 +398,3 @@ client.close()
 #import pickle
 
 #loaded_model = pickle.load(open('test.model.pickle', 'rb'))
-
-# %%

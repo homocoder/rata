@@ -29,7 +29,7 @@ for i in symbol_conf:
     symbol_params = db_params
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
-    cmd += 'timeout 30 python -u /home/selknam/dev/rata/src/rates.py ' + symbol_params + ' & \n'
+    cmd += 'timeout 5 python -u /home/selknam/dev/rata/src/rates.py ' + symbol_params + ' & \n'
 print(cmd)
 
 id_xp = datetime.now().strftime('%Y%m%d-%H%M%S')
