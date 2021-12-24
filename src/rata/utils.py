@@ -89,3 +89,10 @@ def lstm_prep(X, y, n_steps_in=9, n_steps_out=1):
     print(XX.shape, YY.shape)
 
     return XX, YY
+
+def sort_human(l):
+    import re
+    convert = lambda text: float(text) if text.isdigit() else text
+    alphanum = lambda key: [convert(c) for c in re.split('([-+]?[0-9]*\.?[0-9]*)', key)]
+    l.sort(key=alphanum)
+    return l
