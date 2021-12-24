@@ -269,7 +269,7 @@ _conf['precision']  = precision
 _conf['recall']     = recall
 _conf['n_pos_labels']  = n_pos_labels
 
-_conf['y_check'] = y_check.reset_index().iloc[-30:].to_dict(orient='records')
+_conf['y_check'] = y_check.reset_index().iloc[-15:].to_dict(orient='records')
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
