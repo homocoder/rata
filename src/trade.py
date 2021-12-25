@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --trade_datetime=2021-12-24T12:00:00'
+fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --trade_datetime=2021-12-22T12:00:00'
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -73,11 +73,23 @@ df_out= pd.DataFrame()
 filter     = {'model_datetime': {'$gt': _conf['trade_datetime']}}
 proyection = {'y_check': 0, 'feature_importance': 0, 'delta_minutes': 0}
 for collection in db.list_collection_names():  
-    mydoc = db[collection].find(filter, proyection) 
+    mydoc = db[collection].find(filter, proyection)
     df = pd.DataFrame(mydoc)[columns]
     df_out = df_out.append(df)
 
 # %%
 df_models['forecast_datetime'] = df_models['tstamp']
-df_forecasts = df_models.merge(df_out, on=['symbol', 'interval', 'forecast_datetime'])
+df_forecasts = df_out.merge(df_models, on=['symbol', 'interval', 'forecast_datetime'])
 # %%
+df_forecasts
+
+# %%
+# Change to _datasets_binclf DB
+db = client[_conf['dbs_prefix'] + '_trade']
+db_col = 'trade'
+collection = db[db_col]
+
+df_dict = df_forecasts.to_dict(orient='records')
+for r in df_dict:
+    pass
+    collection.insert_one(r, {'$set': r})
