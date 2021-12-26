@@ -4,7 +4,7 @@ from rata.utils import parse_argv
 
 fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --trade_datetime=2021-12-22T12:00:00'
 fake_argv = fake_argv.split()
-argv = fake_argv #### *!
+#argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
 _conf
 

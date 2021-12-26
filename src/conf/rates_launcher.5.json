@@ -1,0 +1,57 @@
+[
+    {
+        "symbol"   : "BTCUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BTCEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "LTCBTC",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "LTCEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "LTCUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "ETHUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "ETHEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "HITBTC:XRPEUR",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BITMEX:XRPUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BITMEX:BNBUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "BITMEX:DOGEUSD",
+        "kind"     : "crypto",
+        "interval" : 5
+    }
+]

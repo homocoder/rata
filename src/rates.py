@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=BINANCE:BTCEUR --interval=5 --kind=crypto'
+fake_argv = 'rates.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=BINANCE:BNBAUD --kind=crypto --interval=5 --rates_datetime=2021-12'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -60,3 +60,4 @@ for r in df_dict:
 
 # %%
 client.close()
+# %%

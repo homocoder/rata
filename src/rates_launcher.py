@@ -41,4 +41,4 @@ fd.close()
 
 #%%
 from subprocess import getoutput
-print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file + '"'))
+#print(getoutput('bash -c "source /home/selknam/.bashrc &&  bash ' + launch_file + '"'))
