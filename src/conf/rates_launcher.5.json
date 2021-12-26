@@ -48,5 +48,80 @@
         "symbol"   : "BITMEX:DOGEUSD",
         "kind"     : "crypto",
         "interval" : 5
+    },
+    {
+        "symbol"   : "AUDUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDJPY",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "AUDCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDCAD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPAUD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURGBP",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "USDCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPNZD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPJPY",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "NZDUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPUSD",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "GBPCHF",
+        "kind"     : "forex",
+        "interval" : 5
+    },
+    {
+        "symbol"   : "EURJPY",
+        "kind"     : "forex",
+        "interval" : 5
     }
 ]

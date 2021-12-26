@@ -214,7 +214,7 @@ print(_conf)
 #df.drop(['feature_importance', 'delta_minutes'], axis=1, inplace=True)
 df = df[df['model_datetime'] <= _conf['forecast_datetime']]
 df['model_how_old'] = (_conf['forecast_datetime'] - df['model_datetime']).dt.total_seconds()
-df = df[df['model_how_old'] < 7200] # TODO: hardcoded, 2 hours
+df = df[df['model_how_old'] < 3600] # TODO: hardcoded, 2 hours
 
 # %%
 # */*   CLF. BIN. FORECAST.   */* #
