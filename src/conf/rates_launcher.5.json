@@ -35,11 +35,6 @@
         "interval" : 5
     },
     {
-        "symbol"   : "HITBTC:XRPEUR",
-        "kind"     : "crypto",
-        "interval" : 5
-    },
-    {
         "symbol"   : "BITMEX:XRPUSD",
         "kind"     : "crypto",
         "interval" : 5

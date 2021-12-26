@@ -2,13 +2,13 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'models_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=EURUSD --interval=5 '
+fake_argv  = 'models_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=BTCUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
-fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
-fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=True '
-fake_argv += '--model_datetime=2031-12-13T17:00:00'
+fake_argv += '--forecast_shift=7 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
+fake_argv += '--profit_threshold=0.0089 --test_size=0.9 --store_dataset=False '
+fake_argv += '--model_datetime=2021-12-24T04:50:00'
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
+argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -214,23 +214,31 @@ t0 = dt.datetime.now().timestamp()
 from xgboost import XGBClassifier
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+from sklearnex import patch_sklearn
+patch_sklearn()
+
+y_test = y.mask(y == 2, 0).copy()
+y_check[y_column + '_buy'] = y_test
+n_pos_labels = len(y_test[y_test == 1])
+n_neg_labels = len(y_test) - n_pos_labels
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 
-estimator_clf = XGBClassifier(validate_parameters=True, random_state=seed, use_label_encoder=False,
-                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'])
-cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
+estimator_clf = XGBClassifier(validate_parameters=True, random_state=int(dt.datetime.now().strftime('%S%f')),
+                    use_label_encoder=False,
+                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'],
+                    scale_pos_weight=0.5, n_jobs=-1)
+                    
+cv = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
 space = dict()
 model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
                         scoring=['accuracy', 'precision', 'recall'])
 
-model.fit(X, y.mask(y == 2, 0)) # Buy only
+model.fit(X, y_test) # Buy only
 X_test = X.copy()
-y_test = y.mask(y == 2, 0).copy()
-y_check[y_column + '_buy'] = y_test
+
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
-n_pos_labels = len(y_test[y_test == 1])
 
 accuracy  = model.cv_results_['mean_test_accuracy'][0]
 precision = model.cv_results_['mean_test_precision'][0]
@@ -280,8 +288,8 @@ _conf['fit_time'] = dt.datetime.now().timestamp() - t0
 db = client[_conf['dbs_prefix'] + '_models_binclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-_id = collection.insert_one(_conf.copy())
-_id = str(_id.inserted_id)
+#_id = collection.insert_one(_conf.copy())
+#_id = str(_id.inserted_id)
 
 if _conf['store_dataset']:
     # Change to _datasets_binclf DB
@@ -301,23 +309,30 @@ t0 = dt.datetime.now().timestamp()
 from xgboost import XGBClassifier
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+from sklearnex import patch_sklearn
+patch_sklearn()
+
+y_test =y.mask(y == 1, 0).mask(y == 2, 1).copy()
+y_check[y_column + '_sell'] = y_test
+n_pos_labels = len(y_test[y_test == 1])
+n_neg_labels = len(y_test) - n_pos_labels
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 
-estimator_clf = XGBClassifier(validate_parameters=True, random_state=seed, use_label_encoder=False,
-                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'])
-cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=seed)
+estimator_clf = XGBClassifier(validate_parameters=True, random_state=int(dt.datetime.now().strftime('%S%f')),
+                    use_label_encoder=False,
+                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'],
+                    scale_pos_weight=0.5, n_jobs=-1)
+cv = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
 space = dict()
 model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
                         scoring=['accuracy', 'precision', 'recall'])
 
-model.fit(X, y.mask(y == 1, 0).mask(y == 2, 1)) # Sell only
+model.fit(X, y_test) # Sell only
 X_test = X.copy()
-y_test = y.mask(y == 1, 0).mask(y == 2, 1).copy()
-y_check[y_column + '_sell'] = y_test
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
-n_pos_labels = len(y_test[y_test == 1])
+
 
 accuracy  = model.cv_results_['mean_test_accuracy'][0]
 precision = model.cv_results_['mean_test_precision'][0]
@@ -356,7 +371,7 @@ _conf['precision']  = precision
 _conf['recall']     = recall
 _conf['n_pos_labels']  = n_pos_labels
 
-_conf['y_check'] = y_check.reset_index().iloc[-30:].to_dict(orient='records')
+_conf['y_check'] = y_check.reset_index().iloc[-15:].to_dict(orient='records')
 _conf['feature_importance'] = df_feature_importance.to_dict(orient='records')
 _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_dict(orient='records')
 _conf['model_filename']  = model_filename
@@ -367,8 +382,8 @@ _conf['fit_time'] = dt.datetime.now().timestamp() - t0
 db = client[_conf['dbs_prefix'] + '_models_binclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-_id = collection.insert_one(_conf.copy())
-_id = str(_id.inserted_id)
+#_id = collection.insert_one(_conf.copy())
+#_id = str(_id.inserted_id)
 
 if _conf['store_dataset']:
     # Change to _datasets_binclf DB

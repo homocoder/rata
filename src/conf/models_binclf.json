@@ -6,10 +6,10 @@
         "include_all_ta": [true],        
         "autocorrelation_lag": [18],
         "autocorrelation_lag_step": [3],
-        "n_rows": [3000],
+        "n_rows": [3000, 1500],
         "test_size": [0.05],
         "profit_threshold": [0.0005, 0.0008, 0.0013, 0.0021, 0.0034, 0.0055, 0.0089, 0.0144],
-        "forecast_shift": [1, 3, 5, 7, 9, 11, 13, 15],
+        "forecast_shift": [6, 12, 18, 24],
         "store_dataset": [false]        
     }
 ]
