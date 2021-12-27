@@ -6,4 +6,4 @@ cd /home/selknam/dev/rata/src && \
     --db_conf=conf/db.json \
     --symbol_conf=conf/rates_launcher.$interval.json \
     --models_binclf_conf=conf/models_binclf.json
-    #--models_datetime=2021-12-01T00:01:05 
+    #--model_datetime=2021-12-01T00:01:05 
