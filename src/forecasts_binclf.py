@@ -2,10 +2,10 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'forecasts_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata_test --symbol=BTCUSD --interval=5 '
+fake_argv  = 'forecasts_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=AUDUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
-fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
-fake_argv += '--profit_threshold=0.0008 --test_size=0.9 --store_dataset=False '
+fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=1000 '
+fake_argv += '--profit_threshold=0.001 --test_size=0.9 --store_dataset=False '
 fake_argv += '--forecast_datetime=2031-12-17T19:35:00 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
@@ -211,7 +211,7 @@ collection = db[db_col]
 mydoc = collection.find({'symbol': _conf['symbol']}).sort('model_datetime', 1)#.skip(collection.count_documents({}) - 12) #
 df = pd.DataFrame(mydoc)
 print(_conf)
-df.drop(['feature_importance', 'delta_minutes', 'y_check'], axis=1, inplace=True)
+
 df = df[df['model_datetime'] <= _conf['forecast_datetime']]
 df['model_how_old'] = (_conf['forecast_datetime'] - df['model_datetime']).dt.total_seconds()
 df = df[df['model_how_old'] < 3600] # TODO: hardcoded, 1 hour
@@ -236,7 +236,6 @@ _conf['id_tstamp']             = dt.datetime.now()
 for i in range(0, len(df)):
     t0 = dt.datetime.now().timestamp()
     row = df.iloc[i]
-    row.drop('_id', inplace=True)
     model_filename = row['model_filename']
     feature_importance = row['feature_importance']
     X_columns = pd.DataFrame(feature_importance)['feature_name'].values
@@ -260,23 +259,10 @@ for i in range(0, len(df)):
     # Change to _forecasts DB
     db_col = _conf['symbol'] + '_' + str(_conf['interval'])
     collection = db[db_col]
-    _id = collection.insert_one(row.to_dict())
-    _id = str(_id.inserted_id)
+    if 'models_datetime' in row:
+        row.drop(['models_datetime'], inplace=True)
+  
+    row.drop(['_id', 'feature_importance', 'delta_minutes', 'y_check'], inplace=True)
+    collection.insert_one(row.to_dict())
 
-#%%
 client.close()
-
-# %%
-# ! Notes
-
-# */*   CLF. BIN. RT. SELL.  */* #
-# */*   CLF. BIN. RT. SELL.  */* #
-
-# BL: Baseline. Stratified K-Fold.
-# GD: Pipeline+Grid Search+Stratified. CV. [scaler, feat selector, estimator[xgb_scale_pos_weight, xgb_lambda, xgb_reg_gamma, xgb_reg_alfa]
-# RT: sample_weights. scale_pos_weight. without metrics. prediction stored on RT on db and metrics calculated afterwards
-
-#%%
-#import pickle
-
-#loaded_model = pickle.load(open('test.model.pickle', 'rb'))

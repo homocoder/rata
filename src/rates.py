@@ -58,4 +58,3 @@ df_dict = df.to_dict(orient='records')
 for r in df_dict:
     collection.update_one(r, {'$set': r}, upsert=True)
 client.close()
-
