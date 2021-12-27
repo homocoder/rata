@@ -8,7 +8,7 @@ fake_argv += '--forecast_shift=7 --autocorrelation_lag=18 --autocorrelation_lag_
 fake_argv += '--profit_threshold=0.0089 --test_size=0.9 --store_dataset=False '
 fake_argv += '--model_datetime=2021-12-24T04:50:00'
 fake_argv = fake_argv.split()
-argv = fake_argv #### *!
+#argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -288,8 +288,7 @@ _conf['fit_time'] = dt.datetime.now().timestamp() - t0
 db = client[_conf['dbs_prefix'] + '_models_binclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-#_id = collection.insert_one(_conf.copy())
-#_id = str(_id.inserted_id)
+_id = collection.insert_one(_conf.copy())
 
 if _conf['store_dataset']:
     # Change to _datasets_binclf DB
@@ -332,7 +331,6 @@ model.fit(X, y_test) # Sell only
 X_test = X.copy()
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
-
 
 accuracy  = model.cv_results_['mean_test_accuracy'][0]
 precision = model.cv_results_['mean_test_precision'][0]
@@ -382,8 +380,7 @@ _conf['fit_time'] = dt.datetime.now().timestamp() - t0
 db = client[_conf['dbs_prefix'] + '_models_binclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-#_id = collection.insert_one(_conf.copy())
-#_id = str(_id.inserted_id)
+_id = collection.insert_one(_conf.copy())
 
 if _conf['store_dataset']:
     # Change to _datasets_binclf DB

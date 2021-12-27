@@ -211,10 +211,10 @@ collection = db[db_col]
 mydoc = collection.find({'symbol': _conf['symbol']}).sort('model_datetime', 1)#.skip(collection.count_documents({}) - 12) #
 df = pd.DataFrame(mydoc)
 print(_conf)
-#df.drop(['feature_importance', 'delta_minutes'], axis=1, inplace=True)
+df.drop(['feature_importance', 'delta_minutes', 'y_check'], axis=1, inplace=True)
 df = df[df['model_datetime'] <= _conf['forecast_datetime']]
 df['model_how_old'] = (_conf['forecast_datetime'] - df['model_datetime']).dt.total_seconds()
-df = df[df['model_how_old'] < 3600] # TODO: hardcoded, 2 hours
+df = df[df['model_how_old'] < 3600] # TODO: hardcoded, 1 hour
 
 # %%
 # */*   CLF. BIN. FORECAST.   */* #
