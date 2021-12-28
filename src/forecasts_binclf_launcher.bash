@@ -6,4 +6,4 @@ cd /home/selknam/dev/rata/src && \
     --db_conf=conf/db.json \
     --symbol_conf=conf/rates_launcher.$interval.json \
     --forecasts_binclf_conf=conf/forecasts_binclf.json \
-    --forecast_datetime=2021-12-27T11:20:05 
+    #--forecast_datetime=2021-12-27T11:20:05 
