@@ -405,8 +405,3 @@ client.close()
 # BL: Baseline. Stratified K-Fold.
 # GD: Pipeline+Grid Search+Stratified. CV. [scaler, feat selector, estimator[xgb_scale_pos_weight, xgb_lambda, xgb_reg_gamma, xgb_reg_alfa]
 # RT: sample_weights. scale_pos_weight. without metrics. prediction stored on RT on db and metrics calculated afterwards
-
-#%%
-#import pickle
-
-#loaded_model = pickle.load(open('test.model.pickle', 'rb'))

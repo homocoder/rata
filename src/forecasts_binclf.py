@@ -8,7 +8,7 @@ fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_
 fake_argv += '--profit_threshold=0.001 --test_size=0.9 --store_dataset=False '
 fake_argv += '--forecast_datetime=2021-12-28T12:00:00 '
 fake_argv = fake_argv.split()
-argv = fake_argv #### *!
+#argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -273,4 +273,3 @@ for i in range(0, len(df)):
     collection.insert_one(row.to_dict())
 
 client.close()
-# %%

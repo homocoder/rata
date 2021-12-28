@@ -7,7 +7,7 @@ fake_argv += ' --symbol_conf=conf/rates_launcher.5.json '
 fake_argv += ' --forecasts_binclf_conf=conf/forecasts_binclf.json  '
 fake_argv += ' --forecast_datetime=2021-12-28T12:00:00 '
 fake_argv = fake_argv.split()
-argv = fake_argv #### !
+#argv = fake_argv #### !
 _conf = parse_argv(argv=argv)
 _conf
 
