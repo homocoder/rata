@@ -44,3 +44,31 @@ client.close()
 # %%
 
 # %%
+#def generate_launchers(txt, txt_replace, interval, t1, t2):
+from datetime import datetime
+from sklearn.utils import shuffle
+
+txt = """interval=5
+sleep 1
+cd /home/selknam/dev/rata/src && \
+  source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
+  python -u /home/selknam/dev/rata/src/forecasts_binclf_launcher.py \
+    --db_conf=conf/db.json \
+    --symbol_conf=conf/rates_launcher.$interval.json \
+    --forecasts_binclf_conf=conf/forecasts_binclf.json \
+    --forecast_datetime=0000-00-00T00:00:00 
+"""
+txt_replace = "0000-00-00T00:00:00"
+
+t1 = datetime(2021, 12, 26, 22, 00, 0)
+t2 = datetime(2021, 12, 28, 14, 00, 0)
+
+import pandas as pd
+df = pd.DataFrame(pd.date_range(start=t1, end=t2, freq='5min'))
+df = shuffle(df)
+cmd = ''
+for i in range(0, len(df)):
+    cmd += txt.replace(txt_replace, str(df.iloc[i][0]).replace(' ', 'T'))
+
+print(cmd)
+# %%
