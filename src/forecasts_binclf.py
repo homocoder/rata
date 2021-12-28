@@ -2,13 +2,13 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'forecasts_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=AUDUSD --interval=5 '
+fake_argv  = 'forecasts_binclf.py --db_host=192.168.3.10 --db_port=27017 --dbs_prefix=rata --symbol=AUDUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=5 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=1000 '
 fake_argv += '--profit_threshold=0.001 --test_size=0.9 --store_dataset=False '
-fake_argv += '--forecast_datetime=2031-12-17T19:35:00 '
+fake_argv += '--forecast_datetime=2021-12-28T12:00:00 '
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
+argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -218,6 +218,8 @@ df = df[df['model_how_old'] < 3600] # TODO: hardcoded, 1 hour
 
 # %%
 # */*   CLF. BIN. FORECAST.   */* #
+import os
+
 model_name = 'xgb_bin_BL_buy'
 
 seed = int(dt.datetime.now().strftime('%S%f'))
@@ -240,9 +242,14 @@ for i in range(0, len(df)):
     feature_importance = row['feature_importance']
     X_columns = pd.DataFrame(feature_importance)['feature_name'].values
     
-    fd = gzip.open(model_filename, 'rb')
-    model = pickle.load(fd)
-    fd.close()
+    if os.path.isfile(model_filename):
+        fd = gzip.open(model_filename, 'rb')
+        print(model_filename)
+        model = pickle.load(fd)
+        fd.close()
+    else:
+        print('File does not exist: ', model_filename)
+        continue
 
     y_forecast = model.predict(X_forecast[X_columns])
     y_proba = model.predict_proba(X_forecast[X_columns])
@@ -266,3 +273,4 @@ for i in range(0, len(df)):
     collection.insert_one(row.to_dict())
 
 client.close()
+# %%
