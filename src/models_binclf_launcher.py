@@ -32,7 +32,8 @@ for i in symbol_conf:
     symbol_params = db_params
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
-    cmd += 'time python -u /home/selknam/dev/rata/src/models_binclf.py ' + symbol_params + '  \n'
+    cmd += 'time python -u /home/selknam/dev/rata/src/models_binclf.py '   + symbol_params + ' \n'
+    
 cmd = cmd.split('\n')[:-1]
 
 fd = open(_conf['models_binclf_conf'], 'rt')
@@ -63,7 +64,7 @@ for c in cmd:
         params = ''
         for j in i:
             params += j
-        cmd2 += c +  params + ' \n'
+        cmd2 += c + params + ' \n'
 
 id_xp = datetime.now().strftime('%Y%m%d-%H%M%S')
 launch_file = '/home/selknam/var/scripts/models_binclf_launcher.' + id_xp + '.' + _conf['symbol_conf'].split('/')[1] + '.bash'

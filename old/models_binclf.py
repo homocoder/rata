@@ -8,7 +8,7 @@ fake_argv += '--forecast_shift=7 --autocorrelation_lag=18 --autocorrelation_lag_
 fake_argv += '--profit_threshold=0.0089 --test_size=0.9 --store_dataset=False '
 fake_argv += '--model_datetime=2021-12-24T04:50:00'
 fake_argv = fake_argv.split()
-argv = fake_argv #### *!
+#argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
 print(_conf)
@@ -209,15 +209,13 @@ _conf['dataprep_time'] = dataprep_time
 
 # %%
 # */*   CLF. BIN. BL. BUY.   */* #
-from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
-#from sklearnex import patch_sklearn
-#patch_sklearn()
-
 model_name = 'xgb_bin_BL_buy'
 t0 = dt.datetime.now().timestamp()
+from xgboost import XGBClassifier
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
+from sklearnex import patch_sklearn
+patch_sklearn()
 
 y_test = y.mask(y == 2, 0).copy()
 y_check[y_column + '_buy'] = y_test
@@ -226,13 +224,10 @@ n_neg_labels = len(y_test) - n_pos_labels
 
 seed = int(dt.datetime.now().strftime('%S%f'))
 
-#estimator_clf = XGBClassifier(validate_parameters=True, random_state=int(dt.datetime.now().strftime('%S%f')),
-#                    use_label_encoder=False,
-#                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'],
-#                    scale_pos_weight=0.5, n_jobs=-1)
-
-estimator_clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')),
-                      n_jobs=-1)
+estimator_clf = XGBClassifier(validate_parameters=True, random_state=int(dt.datetime.now().strftime('%S%f')),
+                    use_label_encoder=False,
+                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'],
+                    scale_pos_weight=0.5, n_jobs=-1)
                     
 cv = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
 space = dict()
@@ -241,8 +236,6 @@ model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
 
 model.fit(X, y_test) # Buy only
 X_test = X.copy()
-
-print('Buy fit time: ', dt.datetime.now().timestamp() - t0)
 
 y_pred =  model.predict(X_test)
 y_proba = model.predict_proba(X_test)
@@ -290,14 +283,12 @@ _conf['delta_minutes']      = pd.DataFrame(df_delta_minutes).reset_index().to_di
 _conf['model_filename']  = model_filename
 
 _conf['fit_time'] = dt.datetime.now().timestamp() - t0
-print('Buy fit time: ', _conf['fit_time'])
-print('Number of positive labels', _conf['n_pos_labels'])
 
 # Change to _models_binclf DB
 db = client[_conf['dbs_prefix'] + '_models_binclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-#_id = collection.insert_one(_conf.copy())
+_id = collection.insert_one(_conf.copy())
 
 if _conf['store_dataset']:
     # Change to _datasets_binclf DB
@@ -312,7 +303,6 @@ if _conf['store_dataset']:
 
 # %%
 # */*   CLF. BIN. BL. SELL.  */* #
-raise
 model_name = 'xgb_bin_BL_sell'
 t0 = dt.datetime.now().timestamp()
 from xgboost import XGBClassifier

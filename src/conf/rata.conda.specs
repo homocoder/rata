@@ -14,3 +14,4 @@ pymongo
 catboost
 xgboost
 #pip install ta
+# sklearn intel extensions
