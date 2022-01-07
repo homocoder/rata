@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --trade_datetime=2022-01-06T15:00:00'
+fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=LTCUSD --interval=5 --trade_datetime=2021-12-29T00:00:00'
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -26,9 +26,7 @@ df_out= pd.DataFrame()
 
 query = {'model_datetime': {'$gt': _conf['trade_datetime']}}
 proyection = {'feature_importance': 0, 'delta_minutes': 0}
-symbols = db.list_collection_names()
-symbols = ['EURUSD_5', 'LTCBTC_5']
-for collection in symbols:
+for collection in [_conf['symbol'] + '_' + str(_conf['interval'])]:
     mydoc = db[collection].find(query)    
     df = pd.DataFrame(mydoc)[columns]
     df_out = df_out.append(df)
@@ -55,17 +53,14 @@ df_merge = list(df_merge)
 df_merge = [eval(i) for i in df_merge]    
 df_merge = pd.DataFrame(df_merge)
 
-
 y_check_columns = list()
 for i in df_merge.columns:
     if not ('invest' in i):
         y_check_columns.append(i)
 y_check_columns = sort_human(y_check_columns)
-df_merge = df_merge[y_check_columns].sort_values(['interval', 'symbol', 'tstamp']).tail(60)
+df_merge = df_merge[y_check_columns].sort_values(['interval', 'symbol', 'tstamp'])
 
 df_models = df_merge.groupby(['tstamp', 'symbol', 'interval'], as_index=False, sort=True).mean()
-# %%
-
 # %%
 client = MongoClient(_conf['db_host'], _conf['db_port'])
 db = client[_conf['dbs_prefix'] + '_forecasts_skbinclf']
@@ -80,24 +75,21 @@ df_out= pd.DataFrame()
 
 filter     = {'model_datetime': {'$gt': _conf['trade_datetime']}}
 proyection = {'y_check': 0, 'feature_importance': 0, 'delta_minutes': 0}
-for collection in db.list_collection_names():  
+for collection in [_conf['symbol'] + '_' + str(_conf['interval'])]:
     mydoc = db[collection].find(filter, proyection)
     df = pd.DataFrame(mydoc)[columns]
     df_out = df_out.append(df)
 
 # %%
 df_models['forecast_datetime'] = df_models['tstamp']
-df_forecasts = df_out.merge(df_models, on=['symbol', 'interval', 'forecast_datetime'])
+df_forecasts = df_out.merge(df_models, on=['symbol', 'interval', 'forecast_datetime']).sort_values(['symbol', 'interval', 'tstamp'])
 # %%
 df_forecasts
 
 # %%
 # Change to _datasets_binclf DB
 db = client[_conf['dbs_prefix'] + '_trade']
-db_col = 'trade'
+db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 
-df_dict = df_forecasts.to_dict(orient='records')
-for r in df_dict:
-    pass
-    collection.insert_one(r, {'$set': r})
+collection.insert_many(df_forecasts.to_dict(orient='records'))
