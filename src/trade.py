@@ -2,9 +2,9 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rt --trade_datetime=2021-12-22T12:00:00'
+fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --trade_datetime=2022-01-06T15:00:00'
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
+argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
 _conf
 
@@ -18,7 +18,7 @@ from rata.utils import sort_human
 
 # %%
 client = MongoClient(_conf['db_host'], _conf['db_port'])
-db = client[_conf['dbs_prefix'] + '_models_binclf']
+db = client[_conf['dbs_prefix'] + '_models_skbinclf']
 
 columns = ['symbol', 'interval', 'model_datetime', 'y_check']
 
@@ -26,7 +26,9 @@ df_out= pd.DataFrame()
 
 query = {'model_datetime': {'$gt': _conf['trade_datetime']}}
 proyection = {'feature_importance': 0, 'delta_minutes': 0}
-for collection in db.list_collection_names():
+symbols = db.list_collection_names()
+symbols = ['EURUSD_5', 'LTCBTC_5']
+for collection in symbols:
     mydoc = db[collection].find(query)    
     df = pd.DataFrame(mydoc)[columns]
     df_out = df_out.append(df)
@@ -36,6 +38,7 @@ df_group = df_out.groupby(['symbol', 'interval', 'model_datetime'], as_index=Fal
 df_group = df_group.max()[['symbol', 'interval', 'model_datetime']]
 # %%
 df_merge = set()
+
 for symbol, interval, forecast_datetime in df_group.values:
     df = df_out[(df_out['symbol'] == symbol) &
                 (df_out['interval'] == interval) &
@@ -51,16 +54,21 @@ for symbol, interval, forecast_datetime in df_group.values:
 df_merge = list(df_merge)
 df_merge = [eval(i) for i in df_merge]    
 df_merge = pd.DataFrame(df_merge)
-y_check_columns = ['tstamp', 'symbol', 'interval']
-y_check_columns += sort_human(list(df_merge.columns.drop(y_check_columns).values))
 
-df_merge = df_merge[y_check_columns]
+
+y_check_columns = list()
+for i in df_merge.columns:
+    if not ('invest' in i):
+        y_check_columns.append(i)
+y_check_columns = sort_human(y_check_columns)
+df_merge = df_merge[y_check_columns].sort_values(['interval', 'symbol', 'tstamp']).tail(60)
+
 df_models = df_merge.groupby(['tstamp', 'symbol', 'interval'], as_index=False, sort=True).mean()
 # %%
 
 # %%
 client = MongoClient(_conf['db_host'], _conf['db_port'])
-db = client[_conf['dbs_prefix'] + '_forecasts_binclf']
+db = client[_conf['dbs_prefix'] + '_forecasts_skbinclf']
 
 columns = ['symbol', 'interval', 'model_datetime', 'include_raw_rates',
            'include_autocorrs', 'include_all_ta', 'autocorrelation_lag',
