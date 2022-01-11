@@ -211,7 +211,7 @@ client = MongoClient(_conf['db_host'], _conf['db_port'])
 db = client[_conf['dbs_prefix'] + '_models_skbinclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-mydoc = collection.find({'symbol': _conf['symbol']}).sort('model_datetime', 1)#.skip(collection.count_documents({}) - 12) #
+mydoc = collection.find({})#.sort('model_datetime', 1)#.skip(collection.count_documents({}) - 12) #
 df = pd.DataFrame(mydoc)
 print(_conf)
 
@@ -279,4 +279,3 @@ for i in range(0, len(df)):
     collection.insert_one(row.to_dict())
 
 client.close()
-# %%

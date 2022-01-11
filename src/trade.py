@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=ETHUSD --interval=5 --trade_datetime=2021-12-29T00:00:00'
+fake_argv = 'trade.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=ETHUSD --interval=5 --trade_datetime=2021-12-28T00:00:00'
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -94,4 +94,5 @@ collection.insert_many(df_forecasts.to_dict(orient='records'))
 # %%
 df = df_forecasts[['profit_threshold', 'forecast_shift', 'model', 'precision', 'recall', 'tstamp', 'y_proba_1', 'y_close_shift_6_rolling_sum', 'y_close_shift_12_rolling_sum',
        'n_pos_labels', 'model_how_old', 'forecast_datetime', 'y_close_shift_6', 'y_close_shift_12', 'accuracy']].reset_index(drop=True)
-df[(df['precision'] > 0.60) & (df['recall'] > 0.60) & (df['y_proba_1'] > 0.60) & (df['profit_threshold'] > 0.0001)]
+df[(df['precision'] > 0.80) & (df['recall'] > 0.80) & (df['y_proba_1'] > 0.80) & (df['profit_threshold'] > 0.0001)]
+# %%
