@@ -11,7 +11,7 @@ requests
 scipy
 statsmodels
 pymongo
-catboost
-xgboost
+#catboost
+#xgboost
 #pip install ta
 # sklearn intel extensions
