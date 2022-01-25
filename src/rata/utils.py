@@ -44,6 +44,13 @@ def parse_argv(argv):
             _conf[i] = datetime.fromisoformat(b)
     return _conf
 
+def load_conf(file_name):
+    from json import load
+    fd = open(file_name, 'rt')
+    conf = load(fd)
+    fd.close()
+    return conf
+
 # split a multivariate sequence into samples
 def split_sequences(sequences, n_steps_in, n_steps_out):
     from numpy import array

@@ -27,8 +27,8 @@ import datetime as dt
 from pymongo import MongoClient
 from rata.marketon import get_data
 
-client = MongoClient(_conf['db_host'], _conf['db_port'])
-db = client[_conf['dbs_prefix'] + '_rates']
+client = MongoClient(_conf['db_host'], 27017)
+db = client['rates']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
 

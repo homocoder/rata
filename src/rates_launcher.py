@@ -1,37 +1,28 @@
 # %%
 from sys import argv
-from rata.utils import parse_argv
+from rata.utils import parse_argv, load_conf
 
-fake_argv = 'rates.py --db_conf=conf/db.json --conf=conf/rates_launcher.5.json '
+fake_argv = 'rates_launcher.py --conf=conf/rata.json --interval=5'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
+conf  = load_conf(_conf['conf'])
 _conf
 
 # %%
-from json import load
-from datetime import datetime
-
-fd = open(_conf['db_conf'], 'rt')
-dbconf = load(fd)
-fd.close()
-
-db_params = ''
-for i in dbconf:
-    db_params += ' --' + i + '=' + dbconf[i].__str__()
-
-fd = open(_conf['conf'], 'rt')
-symbol_conf = load(fd)
-fd.close()
-
+db_params = '--db_host=' + conf['db_host']
+symbol_conf = conf['symbols']
 cmd = ''
 for i in symbol_conf:
     symbol_params = db_params
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
+    symbol_params += ' --interval=' + str(_conf['interval'])
     cmd += 'timeout 6 python -u /home/selknam/dev/rata/src/rates.py ' + symbol_params + ' & \n'
 print(cmd)
 
+# %%
+from datetime import datetime
 id_xp = datetime.now().strftime('%Y%m%d-%H%M%S')
 launch_file = '/home/selknam/var/scripts/rates_launcher.' + id_xp + '.' + _conf['conf'].split('/')[1] + '.bash'
 
