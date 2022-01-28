@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates_check.py --db_host=localhost --interval=1 '
+fake_argv = 'rates_check.py --db_host=localhost --interval=5 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -18,8 +18,11 @@ from pymongo import MongoClient
 
 client = MongoClient(_conf['db_host'], 27017)
 db = client['rates']
+list_collection_names = db.list_collection_names()
+list_collection_names.sort()
 
-for collection in db.list_collection_names():
+for collection in list_collection_names:
+    print('\n#####: ', collection, ' #####')
     mydoc = db[collection].find({})
     df = pd.DataFrame(mydoc)
     df.sort_values(by='tstamp', ascending=True, inplace=True)
@@ -29,14 +32,15 @@ for collection in db.list_collection_names():
     df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds() / -60
 
     df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > float(_conf['interval']) * 2]
-    print()
+    print('Len: ', len(df_delta_minutes))
+    if len(df_delta_minutes > 0):
+        print('First: ', df.iloc[0]['tstamp'])
+        print('Last: ',  df.iloc[-1]['tstamp'])
     print(df_delta_minutes)
 
 
 
 # %%
-
-
 if not db_col in db.list_collection_names():
     hours_back = 80 * _conf['interval']
 else:
@@ -65,8 +69,6 @@ for r in df_dict:
 client.close()
 
 # %%
-
-
 df_diff_intervals = pd.DataFrame(df_query['tstamp'])
 df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
 df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
