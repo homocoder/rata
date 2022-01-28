@@ -38,41 +38,25 @@ for collection in list_collection_names:
         print('Last: ',  df.iloc[-1]['tstamp'])
     print(df_delta_minutes)
 
-
+# %%
+symbol   = df[['symbol'  ]].iloc[0]['symbol']
+interval = df[['interval']].iloc[0]['interval']
 
 # %%
-if not db_col in db.list_collection_names():
-    hours_back = 80 * _conf['interval']
-else:
-    mydoc = collection.find({'symbol': _conf['symbol']}).sort('tstamp', 1).skip(collection.count_documents({}) - 9)
-    df = pd.DataFrame(mydoc)
-    df = df.groupby(['close', 'high', 'interval', 'low', 'open', 'status', 'symbol', 'tstamp', 'unix_tstamp', 'volume']).max('query_tstamp')
-    df = df.reset_index()[['tstamp', 'interval', 'symbol', 'open', 'high', 'low', 'close', 'volume']].sort_values('tstamp')
-    t1 = df['tstamp'].iloc[-1]
-    t2 = dt.datetime.utcnow()
-    t3 = t2 - t1
-    hours_back = (t3.seconds // 3600) + 1
+def custom_resample_open(arraylike):
+    return arraylike.iloc[0]
 
-print('Hours back: ', hours_back)
-
-from random import random
-from time import sleep
-sleep(random() * 1)
-
-df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
-df.index = df.index.to_series().apply(dt.datetime.isoformat)
-df.reset_index(inplace=True)
-df_dict = df.to_dict(orient='records')
-
-for r in df_dict:
-    collection.update_one(r, {'$set': r}, upsert=True)
-client.close()
+def custom_resample_close(arraylike):
+    return arraylike.iloc[-1]
+    
+ts_open   = df[['tstamp', 'open'  ]].resample('5min', on='tstamp').apply(custom_resample_open)['open']
+ts_high   = df[['tstamp', 'high'  ]].resample('5min', on='tstamp').max()['high']
+ts_low    = df[['tstamp', 'low'   ]].resample('5min', on='tstamp').min()['low']
+ts_close  = df[['tstamp', 'close'  ]].resample('5min', on='tstamp').apply(custom_resample_close)['close']
+ts_volume = df[['tstamp', 'volume']].resample('5min', on='tstamp').sum()['volume']
 
 # %%
-df_diff_intervals = pd.DataFrame(df_query['tstamp'])
-df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
-df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
-df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds() / -60
-
-df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > int(_conf['interval'])]
-print(df_delta_minutes)
+df_resample = pd.concat([ts_open, ts_high, ts_low, ts_close, ts_volume], axis=1).sort_index()
+df_resample['symbol']   = symbol
+df_resample['interval'] = interval
+df_resample
