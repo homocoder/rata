@@ -1,4 +1,4 @@
-# %%
+# %% 🐭
 from sys import argv
 from rata.utils import parse_argv
 
@@ -45,6 +45,8 @@ def custom_resample_close(arraylike):
 
 if interval != _conf['interval']:
     print('\n##### Resampling: ', collection, ' #####')
+    interval = _conf['interval']
+    print('To interval:', interval)
     resample_rule = str(_conf['interval']) + 'min'  
     ts_open   = df[['tstamp', 'open'  ]].resample(resample_rule, on='tstamp').apply(custom_resample_open)['open']
     ts_high   = df[['tstamp', 'high'  ]].resample(resample_rule, on='tstamp').max()['high']
@@ -75,4 +77,47 @@ if len(df_delta_minutes > 0):
     print('First: ', df.iloc[0]['tstamp'])
     print('Last: ',  df.iloc[-1]['tstamp'])
 print(df_delta_minutes)
+# %% 🐭
+# Technical Indicators
+# TODO: https://machinelearningmastery.com/time-series-forecasting-methods-in-python-cheat-sheet/
+import ta
+MACD = ta.trend.MACD(close=df['close'], window_fast=12, window_slow=26, window_sign=9)
+macd        = pd.DataFrame(MACD.macd())
+macd_diff   = pd.DataFrame(MACD.macd_diff())
+macd_signal = pd.DataFrame(MACD.macd_signal())
+df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
+
+MACD = ta.trend.MACD(close=df['close'], window_fast=10, window_slow=21, window_sign=9)
+macd        = pd.DataFrame(MACD.macd())
+macd_diff   = pd.DataFrame(MACD.macd_diff())
+macd_signal = pd.DataFrame(MACD.macd_signal())
+df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
+
+MACD = ta.trend.MACD(close=df['close'], window_fast=7, window_slow=18, window_sign=7)
+macd        = pd.DataFrame(MACD.macd())
+macd_diff   = pd.DataFrame(MACD.macd_diff())
+macd_signal = pd.DataFrame(MACD.macd_signal())
+df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
+
+MACD = ta.trend.MACD(close=df['close'], window_fast=8, window_slow=21, window_sign=8)
+macd        = pd.DataFrame(MACD.macd())
+macd_diff   = pd.DataFrame(MACD.macd_diff())
+macd_signal = pd.DataFrame(MACD.macd_signal())
+df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
+
+KST      = ta.trend.KSTIndicator(close=df['close'])
+kst_sig  = pd.DataFrame(KST.kst_sig())
+kst      = pd.DataFrame(KST.kst())
+kst_diff = pd.DataFrame(KST.kst_diff())
+df = pd.concat([df, kst, kst_sig, kst_diff], axis=1)
+
+RSI  = ta.momentum.rsi(close=df['close'])
+KAMA = ta.momentum.kama(close=df['close'])
+OBV  = ta.volume.on_balance_volume(close=df['close'], volume=df['volume'])
+df = pd.concat([df, RSI, KAMA, OBV], axis=1)
+# %%
+# Rename columns to X_AUDCHF_5_rsi ... etc...
+for c in df.columns:
+    df.rename({c: 'X_' + symbol + '_' + str(interval) + '_' + c}, axis=1, inplace=True)
+
 # %%
