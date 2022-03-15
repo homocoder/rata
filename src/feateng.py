@@ -65,7 +65,7 @@ else:
     print('\n##### Not resampling: ', collection, ' #####')
 
 # %%
-print('\n##### Checking time gaps for: ', collection, ' #####')
+print('\n##### Checking time gaps for: ', collection, 'To interval:', interval, ' #####')
 df_diff_intervals = pd.DataFrame(df['tstamp'])
 df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
 df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
@@ -76,6 +76,7 @@ print('Len: ', len(df_delta_minutes))
 if len(df_delta_minutes > 0):
     print('First: ', df.iloc[0]['tstamp'])
     print('Last: ',  df.iloc[-1]['tstamp'])
+print('Gaps are in minutes. Showing gaps interval*3')
 print(df_delta_minutes)
 # %% 🐭
 # Technical Indicators
