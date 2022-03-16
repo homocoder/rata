@@ -120,13 +120,12 @@ df = pd.concat([df, RSI, KAMA, OBV], axis=1)
 # Rename columns to X_AUDCHF_5_rsi ... etc...
 for c in df.columns:
     df.rename({c: 'X_' + symbol + '_' + str(interval) + '_' + c}, axis=1, inplace=True)
-
-# %%
 df_feateng = df.copy()
 del df
+# %%
 
 from unicodedata import normalize
-file_name = '../tvdata/BTCUSD_1m_Momentum_Strategy_2022-03-15_63b7a.csv'
+file_name = '../tvdata/BTCUSD_3m_Momentum_Strategy_2022-03-15_b67ff.csv'
 df = pd.read_csv(file_name)
 
 columns = list()
@@ -151,6 +150,14 @@ df_tv = df.copy()
 del df
 # %%
 df_tv['tstamp'] = pd.to_datetime(df_tv['datetime'])
-df_resample = df_tv.resample('1min', on='tstamp')
+#df_resample = df_tv.resample('1min', on='tstamp').min()['tstamp', 'datetime', 'trade', 'signal', 'type', 'price', 'profit']
 #ts_high   = df[['tstamp', 'high'  ]].resample(resample_rule, on='tstamp').max()['high']
+# %%
+df_feateng.set_index('X_BTCUSD_3_tstamp', inplace=True)
+df_tv.set_index('tstamp', inplace=True)
+df_feat = df_feateng.join(df_tv).fillna(axis='rows', method='ffill')
+
+# %%
+first_tstamp = df_tv.index[0]
+
 # %%
