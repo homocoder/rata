@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=localhost --symbol=BTCUSD --interval=5 '
+fake_argv = 'feateng.py --db_host=localhost --symbol=BTCUSD --interval=3 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -121,4 +121,36 @@ df = pd.concat([df, RSI, KAMA, OBV], axis=1)
 for c in df.columns:
     df.rename({c: 'X_' + symbol + '_' + str(interval) + '_' + c}, axis=1, inplace=True)
 
+# %%
+df_feateng = df.copy()
+del df
+
+from unicodedata import normalize
+file_name = '../tvdata/BTCUSD_1m_Momentum_Strategy_2022-03-15_63b7a.csv'
+df = pd.read_csv(file_name)
+
+columns = list()
+for text in df.columns:
+    try:
+        text = unicode(text, 'utf-8')
+    except NameError: # unicode is a default on python 3
+        pass
+    for c in ['#', '/', '$', '%', ' ', '.', '-']:
+        text = text.replace(c, '')
+    text = normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8").lower()
+    columns.append(text)
+
+df.columns = columns
+df = df[['datetime', 'trade', 'signal', 'type', 'price', 'profit']].reset_index(drop=True)
+
+#%%
+df1 = df[df['type'].str.contains('Entry')].set_index('trade')
+df2 = df[df['type'].str.contains('Exit')].set_index('trade')
+df = df1.join(df2, rsuffix='_exit').reset_index()
+df_tv = df.copy()
+del df
+# %%
+df_tv['tstamp'] = pd.to_datetime(df_tv['datetime'])
+df_resample = df_tv.resample('1min', on='tstamp')
+#ts_high   = df[['tstamp', 'high'  ]].resample(resample_rule, on='tstamp').max()['high']
 # %%

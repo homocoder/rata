@@ -31,14 +31,6 @@
                 "kind"     : "crypto"
             },
             {
-                "symbol"   : "BITMEX:XRPUSD",
-                "kind"     : "crypto"
-            },
-            {
-                "symbol"   : "BITMEX:BNBUSD",
-                "kind"     : "crypto"
-            },
-            {
                 "symbol"   : "BITMEX:DOGEUSD",
                 "kind"     : "crypto"
             },
@@ -48,10 +40,6 @@
             },
             {
                 "symbol"   : "USDJPY",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "AUDCHF",
                 "kind"     : "forex"
             },
             {
@@ -67,15 +55,7 @@
                 "kind"     : "forex"
             },
             {
-                "symbol"   : "EURGBP",
-                "kind"     : "forex"
-            },
-            {
                 "symbol"   : "USDCHF",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "GBPNZD",
                 "kind"     : "forex"
             },
             {
