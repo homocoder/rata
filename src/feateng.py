@@ -154,10 +154,17 @@ df_tv['tstamp'] = pd.to_datetime(df_tv['datetime'])
 #ts_high   = df[['tstamp', 'high'  ]].resample(resample_rule, on='tstamp').max()['high']
 # %%
 df_feateng.set_index('X_BTCUSD_3_tstamp', inplace=True)
+df_feateng.sort_index(inplace=True)
+first_tstamp = df_feateng.index[0]
+last_tstamp = df_feateng.index[-1]
+
+#%%
+df_tv = df_tv[(df_tv['tstamp'] >= first_tstamp) & (df_tv['tstamp'] <= last_tstamp)]
 df_tv.set_index('tstamp', inplace=True)
-df_feat = df_feateng.join(df_tv).fillna(axis='rows', method='ffill')
+df_tv.sort_index(inplace=True)
+df_feat = df_feateng.join(df_tv).fillna(axis='rows', method='ffill').sort_index()
 
 # %%
-first_tstamp = df_tv.index[0]
+
 
 # %%
