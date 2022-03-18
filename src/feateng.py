@@ -212,25 +212,28 @@ df_feateng['Y_BTCUSD_3_roc_9_shift_10'] = df_feateng['X_BTCUSD_3_roc_9'].shift(-
 
 # Y for classification
 df_feateng['Y_BTCUSD_3_roc_3_shift_4_B'] = 0
-df_feateng['Y_BTCUSD_3_roc_3_shift_4_B'] = df_feateng['Y_BTCUSD_3_roc_3_shift_4'].mask(df_feateng['Y_BTCUSD_3_roc_3_shift_4'] > 0.3, 1)
+df_feateng['Y_BTCUSD_3_roc_3_shift_4_B'] = df_feateng['Y_BTCUSD_3_roc_3_shift_4_B'].mask(df_feateng['Y_BTCUSD_3_roc_3_shift_4'] > 0.3, 1)
 
 df_feateng['Y_BTCUSD_3_roc_6_shift_7_B'] = 0
-df_feateng['Y_BTCUSD_3_roc_6_shift_7_B'] = df_feateng['Y_BTCUSD_3_roc_6_shift_7'].mask(df_feateng['Y_BTCUSD_3_roc_6_shift_7'] > 0.3, 1)
+df_feateng['Y_BTCUSD_3_roc_6_shift_7_B'] = df_feateng['Y_BTCUSD_3_roc_6_shift_7_B'].mask(df_feateng['Y_BTCUSD_3_roc_6_shift_7'] > 0.3, 1)
 
 df_feateng['Y_BTCUSD_3_roc_9_shift_10_B'] = 0
-df_feateng['Y_BTCUSD_3_roc_9_shift_10_B'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] > 0.3, 1)
+df_feateng['Y_BTCUSD_3_roc_9_shift_10_B'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10_B'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] > 0.3, 1)
 
 
 df_feateng['Y_BTCUSD_3_roc_3_shift_4_S'] = 0
-df_feateng['Y_BTCUSD_3_roc_3_shift_4_S'] = df_feateng['Y_BTCUSD_3_roc_3_shift_4'].mask(df_feateng['Y_BTCUSD_3_roc_3_shift_4'] < -0.3, 1)
+df_feateng['Y_BTCUSD_3_roc_3_shift_4_S'] = df_feateng['Y_BTCUSD_3_roc_3_shift_4_S'].mask(df_feateng['Y_BTCUSD_3_roc_3_shift_4'] < -0.3, 1)
 
 df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'] = 0
-df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'] = df_feateng['Y_BTCUSD_3_roc_6_shift_7'].mask(df_feateng['Y_BTCUSD_3_roc_6_shift_7'] < -0.3, 1)
+df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'] = df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'].mask(df_feateng['Y_BTCUSD_3_roc_6_shift_7'] < -0.3, 1)
 
 df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = 0
-df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] < -0.3, 1)
+df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] < -0.3, 1)
 
 
 df_feateng.dropna(inplace=True)
 
 df_feateng.to_csv('BTCUSD_3m.feateng.csv')
+# %%
+
+# %%
