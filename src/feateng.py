@@ -186,6 +186,8 @@ roc_9 = pd.DataFrame(ROC_9.roc().rename('roc_9'))
 df = pd.concat([df, roc_9], axis=1)
 
 df = pd.concat([df, RSI, KAMA, OBV], axis=1)
+
+df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 df.set_index(df['tstamp'], inplace=True)
 df_feateng = df.copy()
 #del df
@@ -231,11 +233,54 @@ df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = 0
 df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] < -0.3, 1)
 
 df_feateng.dropna(inplace=True)
+df_feateng['tstamp'] = df_feateng.index
 check_time_gaps(df_feateng)
 
 df_feateng.to_csv('BTCUSD_3m.feateng.csv')
 # %%
-X = df_feateng[['X_BTCUSD_3_MACD_10_21', 'X_BTCUSD_3_roc_3', 'X_BTCUSD_3_MACD_diff_7_18', 'X_BTCUSD_3_roc_6', 'X_BTCUSD_3_MACD_sign_10_21', 'X_BTCUSD_3_MACD_diff_8_21', 'X_BTCUSD_3_MACD_diff_10_21', 'X_BTCUSD_3_obv', 'X_BTCUSD_3_roc_9', 'X_BTCUSD_3_kst', 'X_BTCUSD_3_kst_diff', 'X_BTCUSD_3_kst_sig', 'X_BTCUSD_3_MACD_8_21', 'X_BTCUSD_3_MACD_12_26', 'X_BTCUSD_3_kama', 'X_BTCUSD_3_MACD_7_18', 'X_BTCUSD_3_MACD_sign_7_18', 'X_BTCUSD_3_MACD_sign_12_26', 'X_BTCUSD_3_MACD_diff_12_26', 'X_BTCUSD_3_MACD_sign_8_21', 'X_BTCUSD_3_rsi']]
+# %%
+featsel = ['kst_diff',
+'momentum_pvo',
+'momentum_pvo_hist',
+'momentum_pvo_signal',
+'momentum_tsi',
+'momentum_uo',
+'trend_adx',
+'trend_adx_neg',
+'trend_adx_pos',
+'trend_aroon_ind',
+'trend_dpo',
+'trend_ichimoku_b',
+'trend_kst_sig',
+'trend_mass_index',
+'trend_psar_down',
+'trend_psar_up',
+'trend_sma_slow',
+'trend_stc',
+'trend_visual_ichimoku_a',
+'trend_visual_ichimoku_b',
+'volatility_atr',
+'volatility_bbw',
+'volatility_dcw',
+'volatility_kcw',
+'volatility_ui',
+'volume_adi',
+'volume_cmf',
+'volume_nvi',
+'volume_obv',
+'volume_sma_em',
+
+'MACD',
+'roc_',
+'kama']
+features_selected = set()
+for i in featsel:
+    for j in df_feateng.columns:
+        if (i in j) and ('Y_' not in j):
+            features_selected.add(j)
+features_selected = list(features_selected)
+features_selected
+X = df_feateng[features_selected]
 y = df_feateng['Y_BTCUSD_3_roc_9_shift_10_S']
 # %%
 from sklearn.ensemble import RandomForestClassifier
@@ -268,18 +313,23 @@ for train_index, test_index in cv.split(X, y):
     y_pred = X_test['fold_' + str(c) + '_y_pred']
     y_proba = pd.DataFrame(y_proba, columns=['fold_' + str(c) + '_y_proba_0', 'fold_' + str(c) + '_y_proba_1'])
     y_proba.set_index(X_test.index, inplace=True)
-    
-
     df_cv = df_cv.join(y_proba)
-    
-    
+  
     #df_cv = pd.concat([df_cv, X_test['fold_' + str(c) + '_y_pred'], X_test['fold_' + str(c) + '_y_proba']], axis=1)
     c = c + 1
-
 
 # %%
 df_cv['y_proba_1'] = df_cv[['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1']].sum(axis=1)
 
 df_cv.to_csv('Y_BTCUSD_3_roc_9_shift_10_S.csv')
+
+# %%
+dft = pd.DataFrame()
+from glob import glob
+for f in glob('../tvdata/Variabl*'):
+    dft = pd.concat([dft, pd.read_csv(f)])
+
+# %%
+
 
 # %%
