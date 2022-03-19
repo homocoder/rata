@@ -168,6 +168,11 @@ kst      = pd.DataFrame(KST.kst())
 kst_diff = pd.DataFrame(KST.kst_diff())
 df = pd.concat([df, kst, kst_sig, kst_diff], axis=1)
 
+ROC  = ta.momentum.roc(close=df['close'], window=9)
+RSI  = ta.momentum.rsi(close=df['close'])
+KAMA = ta.momentum.kama(close=df['close'])
+OBV  = ta.volume.on_balance_volume(close=df['close'], volume=df['volume'])
+
 ROC_3 = ta.momentum.ROCIndicator(close=df['close'], window=3)
 roc_3 = pd.DataFrame(ROC_3.roc().rename('roc_3'))
 df = pd.concat([df, roc_3], axis=1)
@@ -179,11 +184,6 @@ df = pd.concat([df, roc_6], axis=1)
 ROC_9 = ta.momentum.ROCIndicator(close=df['close'], window=9)
 roc_9 = pd.DataFrame(ROC_9.roc().rename('roc_9'))
 df = pd.concat([df, roc_9], axis=1)
-
-ROC  = ta.momentum.roc(close=df['close'], window=9)
-RSI  = ta.momentum.rsi(close=df['close'])
-KAMA = ta.momentum.kama(close=df['close'])
-OBV  = ta.volume.on_balance_volume(close=df['close'], volume=df['volume'])
 
 df = pd.concat([df, RSI, KAMA, OBV], axis=1)
 df.set_index(df['tstamp'], inplace=True)
@@ -230,10 +230,56 @@ df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'] = df_feateng['Y_BTCUSD_3_roc_6_shift_7_
 df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = 0
 df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] < -0.3, 1)
 
-
 df_feateng.dropna(inplace=True)
+check_time_gaps(df_feateng)
 
 df_feateng.to_csv('BTCUSD_3m.feateng.csv')
 # %%
+X = df_feateng[['X_BTCUSD_3_MACD_10_21', 'X_BTCUSD_3_roc_3', 'X_BTCUSD_3_MACD_diff_7_18', 'X_BTCUSD_3_roc_6', 'X_BTCUSD_3_MACD_sign_10_21', 'X_BTCUSD_3_MACD_diff_8_21', 'X_BTCUSD_3_MACD_diff_10_21', 'X_BTCUSD_3_obv', 'X_BTCUSD_3_roc_9', 'X_BTCUSD_3_kst', 'X_BTCUSD_3_kst_diff', 'X_BTCUSD_3_kst_sig', 'X_BTCUSD_3_MACD_8_21', 'X_BTCUSD_3_MACD_12_26', 'X_BTCUSD_3_kama', 'X_BTCUSD_3_MACD_7_18', 'X_BTCUSD_3_MACD_sign_7_18', 'X_BTCUSD_3_MACD_sign_12_26', 'X_BTCUSD_3_MACD_diff_12_26', 'X_BTCUSD_3_MACD_sign_8_21', 'X_BTCUSD_3_rsi']]
+y = df_feateng['Y_BTCUSD_3_roc_9_shift_10_S']
+# %%
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold, cross_val_score
+
+cv = StratifiedKFold(n_splits=5, random_state=int(dt.datetime.now().strftime('%S%f')), shuffle=True)
+# create model
+clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')))
+clf.class_weight = "balanced"
+# evaluate model
+scores = cross_val_score(clf, X, y, scoring='precision', cv=cv, n_jobs=-1)
+scores
+# %%
+df_cv = X
+
+c = 1
+for train_index, test_index in cv.split(X, y):
+    # create model
+    del clf
+    clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')))
+    clf.class_weight = "balanced"
+    print('Fold ', c)
+    #print("TRAIN:", train_index, "TEST:", test_index)
+    X_train, X_test = X.iloc[train_index], X.iloc[test_index]
+    y_train, y_test = y.iloc[train_index], y.iloc[test_index]
+    clf.fit(X_train, y_train)
+    y_pred  = clf.predict(X_test)
+    y_proba = clf.predict_proba(X_test)
+    X_test['fold_' + str(c) + '_y_pred'] = y_pred
+    y_pred = X_test['fold_' + str(c) + '_y_pred']
+    y_proba = pd.DataFrame(y_proba, columns=['fold_' + str(c) + '_y_proba_0', 'fold_' + str(c) + '_y_proba_1'])
+    y_proba.set_index(X_test.index, inplace=True)
+    
+
+    df_cv = df_cv.join(y_proba)
+    
+    
+    #df_cv = pd.concat([df_cv, X_test['fold_' + str(c) + '_y_pred'], X_test['fold_' + str(c) + '_y_proba']], axis=1)
+    c = c + 1
+
+
+# %%
+df_cv['y_proba_1'] = df_cv[['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1']].sum(axis=1)
+
+df_cv.to_csv('Y_BTCUSD_3_roc_9_shift_10_S.csv')
 
 # %%
