@@ -187,6 +187,10 @@ df = pd.concat([df, roc_9], axis=1)
 
 df = pd.concat([df, RSI, KAMA, OBV], axis=1)
 
+for c in df.columns.drop(['tstamp', 'close', 'symbol', 'interval']):
+    for i in range(3, 10, 3):
+        df[str(c) + '_ROCs_' + str(i)] = df[c].pct_change(i) * 100
+
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 df.set_index(df['tstamp'], inplace=True)
 df_feateng = df.copy()
@@ -198,11 +202,12 @@ file_list = [
     '../tvdata/BTCUSD_3m_Parabolic_SAR_Strategy_2022-03-15_409cf.csv'
 ]
 for file_name in file_list:
-    df_tv = read_tv_strategy(file_name=file_name)
-    print(file_name)
-    print(df_tv[(df_tv.index.minute % 3) > 0].index)
-    df_feateng = join_indicators_tv(df_indicators=df_feateng, df_tv=df_tv)
-    check_time_gaps(df_feateng)
+    pass
+    #df_tv = read_tv_strategy(file_name=file_name)
+    #print(file_name)
+    #print(df_tv[(df_tv.index.minute % 3) > 0].index)
+    #df_feateng = join_indicators_tv(df_indicators=df_feateng, df_tv=df_tv)
+    #check_time_gaps(df_feateng)
 # %%
 for c in df_feateng.columns:
     df_feateng.rename({c: 'X_' + symbol + '_' + str(interval) + '_' + c}, axis=1, inplace=True)
@@ -269,10 +274,11 @@ featsel = ['kst_diff',
 'volume_nvi',
 'volume_obv',
 'volume_sma_em',
-
 'MACD',
 'roc_',
-'kama']
+'kama',
+'close']
+#featsel = ['ROCs']
 features_selected = set()
 for i in featsel:
     for j in df_feateng.columns:
@@ -288,22 +294,21 @@ from sklearn.model_selection import StratifiedKFold, cross_val_score
 
 cv = StratifiedKFold(n_splits=5, random_state=int(dt.datetime.now().strftime('%S%f')), shuffle=True)
 # create model
-clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')))
+clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')), n_jobs=-1)
 clf.class_weight = "balanced"
 # evaluate model
 scores = cross_val_score(clf, X, y, scoring='precision', cv=cv, n_jobs=-1)
 scores
 # %%
+from sklearn.metrics import precision_score
 df_cv = X
-
 c = 1
 for train_index, test_index in cv.split(X, y):
     # create model
     del clf
-    clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')))
+    clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')), n_jobs=-1)
     clf.class_weight = "balanced"
-    print('Fold ', c)
-    #print("TRAIN:", train_index, "TEST:", test_index)
+    print('Fold ', c, len(train_index))
     X_train, X_test = X.iloc[train_index], X.iloc[test_index]
     y_train, y_test = y.iloc[train_index], y.iloc[test_index]
     clf.fit(X_train, y_train)
@@ -314,22 +319,11 @@ for train_index, test_index in cv.split(X, y):
     y_proba = pd.DataFrame(y_proba, columns=['fold_' + str(c) + '_y_proba_0', 'fold_' + str(c) + '_y_proba_1'])
     y_proba.set_index(X_test.index, inplace=True)
     df_cv = df_cv.join(y_proba)
-  
-    #df_cv = pd.concat([df_cv, X_test['fold_' + str(c) + '_y_pred'], X_test['fold_' + str(c) + '_y_proba']], axis=1)
+    print(precision_score(y_test, y_pred, pos_label=1, average='binary'))
     c = c + 1
 
 # %%
 df_cv['y_proba_1'] = df_cv[['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1']].sum(axis=1)
 
 df_cv.to_csv('Y_BTCUSD_3_roc_9_shift_10_S.csv')
-
-# %%
-dft = pd.DataFrame()
-from glob import glob
-for f in glob('../tvdata/Variabl*'):
-    dft = pd.concat([dft, pd.read_csv(f)])
-
-# %%
-
-
 # %%
