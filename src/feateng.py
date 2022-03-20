@@ -242,8 +242,10 @@ df_feateng['tstamp'] = df_feateng.index
 check_time_gaps(df_feateng)
 
 df_feateng.to_csv('BTCUSD_3m.feateng.csv')
+# END OF FEATENG
+
 # %%
-# %%
+# START OF FEATSEL
 featsel = ['kst_diff',
 'momentum_pvo',
 'momentum_pvo_hist',
