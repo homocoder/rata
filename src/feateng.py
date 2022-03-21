@@ -187,14 +187,15 @@ df = pd.concat([df, roc_9], axis=1)
 
 df = pd.concat([df, RSI, KAMA, OBV], axis=1)
 
+df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
+
 for c in df.columns.drop(['tstamp', 'close', 'symbol', 'interval']):
     for i in range(3, 10, 3):
         df[str(c) + '_ROCs_' + str(i)] = df[c].pct_change(i) * 100
 
-df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 df.set_index(df['tstamp'], inplace=True)
 df_feateng = df.copy()
-#del df
+del df
 #%%
 file_list = [
     '../tvdata/BTCUSD_3m_Momentum_Strategy_2022-03-15_b67ff.csv',
@@ -209,35 +210,38 @@ for file_name in file_list:
     #df_feateng = join_indicators_tv(df_indicators=df_feateng, df_tv=df_tv)
     #check_time_gaps(df_feateng)
 # %%
+X_prefix = 'X_' + symbol + '_' + str(interval) + '_'
 for c in df_feateng.columns:
-    df_feateng.rename({c: 'X_' + symbol + '_' + str(interval) + '_' + c}, axis=1, inplace=True)
+    df_feateng.rename({c: X_prefix + c}, axis=1, inplace=True)
+
+Y_prefix = 'Y_' + symbol + '_' + str(interval) + '_'
 
 # Y for regression
-df_feateng['Y_BTCUSD_3_roc_3_shift_4']  = df_feateng['X_BTCUSD_3_roc_3'].shift(-4) # to see the future
-df_feateng['Y_BTCUSD_3_roc_6_shift_7']  = df_feateng['X_BTCUSD_3_roc_6'].shift(-7) # to see the future
-df_feateng['Y_BTCUSD_3_roc_9_shift_10'] = df_feateng['X_BTCUSD_3_roc_9'].shift(-10) # to see the future
+df_feateng[Y_prefix + 'roc_3_shift_4']  = df_feateng[X_prefix + 'roc_3'].shift(-4) # to see the future
+df_feateng[Y_prefix + 'roc_6_shift_7']  = df_feateng[X_prefix + 'roc_6'].shift(-7) # to see the future
+df_feateng[Y_prefix + 'roc_9_shift_10'] = df_feateng[X_prefix + 'roc_9'].shift(-10) # to see the future
 
 # Y for classification
-df_feateng['Y_BTCUSD_3_roc_3_shift_4_B'] = 0
-df_feateng['Y_BTCUSD_3_roc_3_shift_4_B'] = df_feateng['Y_BTCUSD_3_roc_3_shift_4_B'].mask(df_feateng['Y_BTCUSD_3_roc_3_shift_4'] > 0.3, 1)
+df_feateng[Y_prefix + 'roc_3_shift_4_B'] = 0
+df_feateng[Y_prefix + 'roc_3_shift_4_B'] = df_feateng[Y_prefix + 'roc_3_shift_4_B'].mask(df_feateng[Y_prefix + 'roc_3_shift_4'] > 0.3, 1)
 
-df_feateng['Y_BTCUSD_3_roc_6_shift_7_B'] = 0
-df_feateng['Y_BTCUSD_3_roc_6_shift_7_B'] = df_feateng['Y_BTCUSD_3_roc_6_shift_7_B'].mask(df_feateng['Y_BTCUSD_3_roc_6_shift_7'] > 0.3, 1)
+df_feateng[Y_prefix + 'roc_6_shift_7_B'] = 0
+df_feateng[Y_prefix + 'roc_6_shift_7_B'] = df_feateng[Y_prefix + 'roc_6_shift_7_B'].mask(df_feateng[Y_prefix + 'roc_6_shift_7'] > 0.3, 1)
 
-df_feateng['Y_BTCUSD_3_roc_9_shift_10_B'] = 0
-df_feateng['Y_BTCUSD_3_roc_9_shift_10_B'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10_B'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] > 0.3, 1)
+df_feateng[Y_prefix + 'roc_9_shift_10_B'] = 0
+df_feateng[Y_prefix + 'roc_9_shift_10_B'] = df_feateng[Y_prefix + 'roc_9_shift_10_B'].mask(df_feateng[Y_prefix + 'roc_9_shift_10'] > 0.3, 1)
 
 
-df_feateng['Y_BTCUSD_3_roc_3_shift_4_S'] = 0
-df_feateng['Y_BTCUSD_3_roc_3_shift_4_S'] = df_feateng['Y_BTCUSD_3_roc_3_shift_4_S'].mask(df_feateng['Y_BTCUSD_3_roc_3_shift_4'] < -0.3, 1)
+df_feateng[Y_prefix + 'roc_3_shift_4_S'] = 0
+df_feateng[Y_prefix + 'roc_3_shift_4_S'] = df_feateng[Y_prefix + 'roc_3_shift_4_S'].mask(df_feateng[Y_prefix + 'roc_3_shift_4'] < -0.3, 1)
 
-df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'] = 0
-df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'] = df_feateng['Y_BTCUSD_3_roc_6_shift_7_S'].mask(df_feateng['Y_BTCUSD_3_roc_6_shift_7'] < -0.3, 1)
+df_feateng[Y_prefix + 'roc_6_shift_7_S'] = 0
+df_feateng[Y_prefix + 'roc_6_shift_7_S'] = df_feateng[Y_prefix + 'roc_6_shift_7_S'].mask(df_feateng[Y_prefix + 'roc_6_shift_7'] < -0.3, 1)
 
-df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = 0
-df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'] = df_feateng['Y_BTCUSD_3_roc_9_shift_10_S'].mask(df_feateng['Y_BTCUSD_3_roc_9_shift_10'] < -0.3, 1)
+df_feateng[Y_prefix + 'roc_9_shift_10_S'] = 0
+df_feateng[Y_prefix + 'roc_9_shift_10_S'] = df_feateng[Y_prefix + 'roc_9_shift_10_S'].mask(df_feateng[Y_prefix + 'roc_9_shift_10'] < -0.3, 1)
 
-df_feateng.dropna(inplace=True)
+#df_feateng.dropna(inplace=True)
 df_feateng['tstamp'] = df_feateng.index
 check_time_gaps(df_feateng)
 
@@ -276,20 +280,33 @@ featsel = ['kst_diff',
 'volume_nvi',
 'volume_obv',
 'volume_sma_em',
+
 'MACD',
-'roc_',
 'kama',
 'close']
-#featsel = ['ROCs']
+
 features_selected = set()
 for i in featsel:
     for j in df_feateng.columns:
         if (i in j) and ('Y_' not in j):
             features_selected.add(j)
 features_selected = list(features_selected)
-features_selected
+
+df_feateng = df_feateng[features_selected]
+
+featsel = ['ROCs']
+features_selected = set()
+for i in featsel:
+    for j in df_feateng.columns:
+        if (i in j) and ('Y_' not in j):
+            features_selected.add(j)
+features_selected = list(features_selected)
+
 X = df_feateng[features_selected]
-y = df_feateng['Y_BTCUSD_3_roc_9_shift_10_S']
+
+
+# %%
+y = df_feateng[Y_prefix + 'roc_9_shift_10_S']
 # %%
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_score
@@ -327,5 +344,5 @@ for train_index, test_index in cv.split(X, y):
 # %%
 df_cv['y_proba_1'] = df_cv[['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1']].sum(axis=1)
 
-df_cv.to_csv('Y_BTCUSD_3_roc_9_shift_10_S.csv')
+df_cv.to_csv(Y_prefix + 'roc_9_shift_10_S.csv')
 # %%
