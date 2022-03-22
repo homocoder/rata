@@ -138,110 +138,48 @@ check_time_gaps(df)
 # Technical Indicators
 # TODO: https://machinelearningmastery.com/time-series-forecasting-methods-in-python-cheat-sheet/
 import ta
-MACD = ta.trend.MACD(close=df['close'], window_fast=12, window_slow=26, window_sign=9)
-macd        = pd.DataFrame(MACD.macd())
-macd_diff   = pd.DataFrame(MACD.macd_diff())
-macd_signal = pd.DataFrame(MACD.macd_signal())
-df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
-
-MACD = ta.trend.MACD(close=df['close'], window_fast=10, window_slow=21, window_sign=9)
-macd        = pd.DataFrame(MACD.macd())
-macd_diff   = pd.DataFrame(MACD.macd_diff())
-macd_signal = pd.DataFrame(MACD.macd_signal())
-df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
-
-MACD = ta.trend.MACD(close=df['close'], window_fast=7, window_slow=18, window_sign=7)
-macd        = pd.DataFrame(MACD.macd())
-macd_diff   = pd.DataFrame(MACD.macd_diff())
-macd_signal = pd.DataFrame(MACD.macd_signal())
-df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
-
-MACD = ta.trend.MACD(close=df['close'], window_fast=8, window_slow=21, window_sign=8)
-macd        = pd.DataFrame(MACD.macd())
-macd_diff   = pd.DataFrame(MACD.macd_diff())
-macd_signal = pd.DataFrame(MACD.macd_signal())
-df = pd.concat([df, macd_diff, macd_signal, macd], axis=1)
-
-KST      = ta.trend.KSTIndicator(close=df['close'])
-kst_sig  = pd.DataFrame(KST.kst_sig())
-kst      = pd.DataFrame(KST.kst())
-kst_diff = pd.DataFrame(KST.kst_diff())
-df = pd.concat([df, kst, kst_sig, kst_diff], axis=1)
-
-ROC  = ta.momentum.roc(close=df['close'], window=9)
-RSI  = ta.momentum.rsi(close=df['close'])
-KAMA = ta.momentum.kama(close=df['close'])
-OBV  = ta.volume.on_balance_volume(close=df['close'], volume=df['volume'])
-
-ROC_3 = ta.momentum.ROCIndicator(close=df['close'], window=3)
-roc_3 = pd.DataFrame(ROC_3.roc().rename('roc_3'))
-df = pd.concat([df, roc_3], axis=1)
-
-ROC_6 = ta.momentum.ROCIndicator(close=df['close'], window=6)
-roc_6 = pd.DataFrame(ROC_6.roc().rename('roc_6'))
-df = pd.concat([df, roc_6], axis=1)
-
-ROC_9 = ta.momentum.ROCIndicator(close=df['close'], window=9)
-roc_9 = pd.DataFrame(ROC_9.roc().rename('roc_9'))
-df = pd.concat([df, roc_9], axis=1)
-
-df = pd.concat([df, RSI, KAMA, OBV], axis=1)
+for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
+    for i in range(3, 10, 3):
+        df[str(c) + '_ROC_' + str(i)] = df[c].pct_change(i) * 100
 
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
-
-for c in df.columns.drop(['tstamp', 'close', 'symbol', 'interval']):
-    for i in range(3, 10, 3):
-        df[str(c) + '_ROCs_' + str(i)] = df[c].pct_change(i) * 100
-
 df.set_index(df['tstamp'], inplace=True)
 df_feateng = df.copy()
 del df
-#%%
-file_list = [
-    '../tvdata/BTCUSD_3m_Momentum_Strategy_2022-03-15_b67ff.csv',
-    '../tvdata/BTCUSD_3m_Pivot_Reversal_Strategy_2022-03-15_433a0.csv',
-    '../tvdata/BTCUSD_3m_Parabolic_SAR_Strategy_2022-03-15_409cf.csv'
-]
-for file_name in file_list:
-    pass
-    #df_tv = read_tv_strategy(file_name=file_name)
-    #print(file_name)
-    #print(df_tv[(df_tv.index.minute % 3) > 0].index)
-    #df_feateng = join_indicators_tv(df_indicators=df_feateng, df_tv=df_tv)
-    #check_time_gaps(df_feateng)
 # %%
 X_prefix = 'X_' + symbol + '_' + str(interval) + '_'
 for c in df_feateng.columns:
     df_feateng.rename({c: X_prefix + c}, axis=1, inplace=True)
 
 Y_prefix = 'Y_' + symbol + '_' + str(interval) + '_'
+# %%
 
 # Y for regression
-df_feateng[Y_prefix + 'roc_3_shift_4']  = df_feateng[X_prefix + 'roc_3'].shift(-4) # to see the future
-df_feateng[Y_prefix + 'roc_6_shift_7']  = df_feateng[X_prefix + 'roc_6'].shift(-7) # to see the future
-df_feateng[Y_prefix + 'roc_9_shift_10'] = df_feateng[X_prefix + 'roc_9'].shift(-10) # to see the future
+df_feateng[Y_prefix + 'close_ROC_3_shift_4']  = df_feateng[X_prefix + 'close_ROC_3'].shift(-4) # to see the future
+df_feateng[Y_prefix + 'close_ROC_6_shift_7']  = df_feateng[X_prefix + 'close_ROC_6'].shift(-7) # to see the future
+df_feateng[Y_prefix + 'close_ROC_9_shift_10'] = df_feateng[X_prefix + 'close_ROC_9'].shift(-10) # to see the future
 
 # Y for classification
-df_feateng[Y_prefix + 'roc_3_shift_4_B'] = 0
-df_feateng[Y_prefix + 'roc_3_shift_4_B'] = df_feateng[Y_prefix + 'roc_3_shift_4_B'].mask(df_feateng[Y_prefix + 'roc_3_shift_4'] > 0.3, 1)
+df_feateng[Y_prefix + 'close_ROC_3_shift_4_B'] = 0
+df_feateng[Y_prefix + 'close_ROC_3_shift_4_B'] = df_feateng[Y_prefix + 'close_ROC_3_shift_4_B'].mask(df_feateng[Y_prefix + 'close_ROC_3_shift_4'] > 0.3, 1)
 
-df_feateng[Y_prefix + 'roc_6_shift_7_B'] = 0
-df_feateng[Y_prefix + 'roc_6_shift_7_B'] = df_feateng[Y_prefix + 'roc_6_shift_7_B'].mask(df_feateng[Y_prefix + 'roc_6_shift_7'] > 0.3, 1)
+df_feateng[Y_prefix + 'close_ROC_6_shift_7_B'] = 0
+df_feateng[Y_prefix + 'close_ROC_6_shift_7_B'] = df_feateng[Y_prefix + 'close_ROC_6_shift_7_B'].mask(df_feateng[Y_prefix + 'close_ROC_6_shift_7'] > 0.3, 1)
 
-df_feateng[Y_prefix + 'roc_9_shift_10_B'] = 0
-df_feateng[Y_prefix + 'roc_9_shift_10_B'] = df_feateng[Y_prefix + 'roc_9_shift_10_B'].mask(df_feateng[Y_prefix + 'roc_9_shift_10'] > 0.3, 1)
+df_feateng[Y_prefix + 'close_ROC_9_shift_10_B'] = 0
+df_feateng[Y_prefix + 'close_ROC_9_shift_10_B'] = df_feateng[Y_prefix + 'close_ROC_9_shift_10_B'].mask(df_feateng[Y_prefix + 'close_ROC_9_shift_10'] > 0.3, 1)
 
 
-df_feateng[Y_prefix + 'roc_3_shift_4_S'] = 0
-df_feateng[Y_prefix + 'roc_3_shift_4_S'] = df_feateng[Y_prefix + 'roc_3_shift_4_S'].mask(df_feateng[Y_prefix + 'roc_3_shift_4'] < -0.3, 1)
+df_feateng[Y_prefix + 'close_ROC_3_shift_4_S'] = 0
+df_feateng[Y_prefix + 'close_ROC_3_shift_4_S'] = df_feateng[Y_prefix + 'close_ROC_3_shift_4_S'].mask(df_feateng[Y_prefix + 'close_ROC_3_shift_4'] < -0.3, 1)
 
-df_feateng[Y_prefix + 'roc_6_shift_7_S'] = 0
-df_feateng[Y_prefix + 'roc_6_shift_7_S'] = df_feateng[Y_prefix + 'roc_6_shift_7_S'].mask(df_feateng[Y_prefix + 'roc_6_shift_7'] < -0.3, 1)
+df_feateng[Y_prefix + 'close_ROC_6_shift_7_S'] = 0
+df_feateng[Y_prefix + 'close_ROC_6_shift_7_S'] = df_feateng[Y_prefix + 'close_ROC_6_shift_7_S'].mask(df_feateng[Y_prefix + 'close_ROC_6_shift_7'] < -0.3, 1)
 
-df_feateng[Y_prefix + 'roc_9_shift_10_S'] = 0
-df_feateng[Y_prefix + 'roc_9_shift_10_S'] = df_feateng[Y_prefix + 'roc_9_shift_10_S'].mask(df_feateng[Y_prefix + 'roc_9_shift_10'] < -0.3, 1)
+df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'] = 0
+df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'] = df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'].mask(df_feateng[Y_prefix + 'close_ROC_9_shift_10'] < -0.3, 1)
 
-#df_feateng.dropna(inplace=True)
+df_feateng.dropna(inplace=True)
 df_feateng['tstamp'] = df_feateng.index
 check_time_gaps(df_feateng)
 
@@ -280,11 +218,8 @@ featsel = ['kst_diff',
 'volume_nvi',
 'volume_obv',
 'volume_sma_em',
-
-'MACD',
-'kama',
-'close']
-
+'_close'
+]
 features_selected = set()
 for i in featsel:
     for j in df_feateng.columns:
@@ -292,24 +227,26 @@ for i in featsel:
             features_selected.add(j)
 features_selected = list(features_selected)
 
-df_feateng = df_feateng[features_selected]
+X_columns  = features_selected
+y_column_close_ROC_3_shift_4_B = Y_prefix + 'close_ROC_3_shift_4_B'
+y_column_close_ROC_3_shift_4_S = Y_prefix + 'close_ROC_3_shift_4_S'
 
-featsel = ['ROCs']
-features_selected = set()
-for i in featsel:
-    for j in df_feateng.columns:
-        if (i in j) and ('Y_' not in j):
-            features_selected.add(j)
-features_selected = list(features_selected)
+y_column_close_ROC_6_shift_7_B = Y_prefix + 'close_ROC_6_shift_7_B'
+y_column_close_ROC_6_shift_7_S = Y_prefix + 'close_ROC_6_shift_7_S'
 
-X = df_feateng[features_selected]
-
+y_column_close_ROC_9_shift_10_B = Y_prefix + 'close_ROC_9_shift_10_B'
+y_column_close_ROC_9_shift_10_S = Y_prefix + 'close_ROC_9_shift_10_S'
 
 # %%
-y = df_feateng[Y_prefix + 'roc_9_shift_10_S']
-# %%
+# START MODELS
+y_column = y_column_close_ROC_6_shift_7_B
+
+X = df_feateng[X_columns]
+y = df_feateng[y_column]
+
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold, cross_val_score
+from sklearn.metrics import precision_score
 
 cv = StratifiedKFold(n_splits=5, random_state=int(dt.datetime.now().strftime('%S%f')), shuffle=True)
 # create model
@@ -317,9 +254,8 @@ clf = RandomForestClassifier(random_state=int(dt.datetime.now().strftime('%S%f')
 clf.class_weight = "balanced"
 # evaluate model
 scores = cross_val_score(clf, X, y, scoring='precision', cv=cv, n_jobs=-1)
-scores
-# %%
-from sklearn.metrics import precision_score
+print('DB: ', scores)
+
 df_cv = X
 c = 1
 for train_index, test_index in cv.split(X, y):
@@ -342,7 +278,9 @@ for train_index, test_index in cv.split(X, y):
     c = c + 1
 
 # %%
-df_cv['y_proba_1'] = df_cv[['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1']].sum(axis=1)
+df_cv[y_column + '_proba_1'] = df_cv[['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1']].sum(axis=1)
+df_cv.drop(['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1'], axis=1, inplace=True)
+df_cv.drop(['fold_1_y_proba_0', 'fold_2_y_proba_0', 'fold_3_y_proba_0', 'fold_4_y_proba_0', 'fold_5_y_proba_0'], axis=1, inplace=True)
 
-df_cv.to_csv(Y_prefix + 'roc_9_shift_10_S.csv')
+df_cv.to_csv(Y_prefix + 'close_ROC_9_shift_10_S.csv')
 # %%
