@@ -41,3 +41,4 @@ for db_col in db.list_collection_names():
         collection.insert_many(df.to_dict(orient='records'))
 
 client.close()
+# %%
