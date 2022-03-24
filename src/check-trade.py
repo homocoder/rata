@@ -1,5 +1,7 @@
 # %%
 import pandas as pd
+pd.options.display.max_rows = 50000
+pd.options.display.width = 200
 df = pd.read_csv('/home/selknam/var/BTCUSD_3.forecast.csv')
 
 columns = ['tstamp']
@@ -12,6 +14,8 @@ for c in df.columns:
 df = df[columns]
 df['tstamp'] = pd.to_datetime(df['tstamp'])
 df.set_index('tstamp', inplace=True)
-df.sort_values(by='tstamp', inplace=True)
-print(df.tail(60))
+#df.sort_values(by='tstamp', inplace=True)
+print(df)
 
+
+# %%

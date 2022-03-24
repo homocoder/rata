@@ -133,7 +133,7 @@ if interval != _conf['interval']:
 else:
     print('\n##### Not resampling: ', collection, ' #####')
 
-df = df[-3000:]
+df = df[-3100:]
 check_time_gaps(df)
 # %% 🐭
 # Technical Indicators
@@ -180,7 +180,7 @@ df_feateng[Y_prefix + 'close_ROC_6_shift_7_S'] = df_feateng[Y_prefix + 'close_RO
 df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'] = 0
 df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'] = df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'].mask(df_feateng[Y_prefix + 'close_ROC_9_shift_10'] < -0.3, 1)
 
-X_pred = df_feateng[-10:]
+X_pred = df_feateng[-1:]
 df_feateng.dropna(inplace=True)
 df_feateng['tstamp'] = df_feateng.index
 check_time_gaps(df_feateng)
@@ -252,7 +252,7 @@ X      = df_feateng[X_columns]
 X_pred = X_pred[X_columns]
 
 # %%
-# FORECAST 2890, 10
+# FORECAST 3000, 10
 df_forecast = X_pred
 for y_column in y_columns:
     y = df_feateng[y_column]
