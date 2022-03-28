@@ -48,7 +48,7 @@ print('Hours back: ', hours_back)
 
 from random import random
 from time import sleep
-sleep(random() * 1)
+sleep(random() * 3)
 
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
 df.index = df.index.to_series().apply(dt.datetime.isoformat)

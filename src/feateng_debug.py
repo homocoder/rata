@@ -13,26 +13,6 @@ _conf
 import pandas as pd
 import datetime as dt
 
-def join_indicators_tv(df_indicators, df_tv):
-    # Join df indicators and df tv strategies
-    df_indicators.sort_index(inplace=True)
-    first_tstamp_indicators = df_indicators.index[0]
-    last_tstamp_indicators  = df_indicators.index[-1]
-
-    df_tv.sort_index(inplace=True)
-    df_tv.drop('tstamp', axis=1, inplace=True)
-    first_tstamp_tv = df_tv.index[0]
-    last_tstamp_tv  = df_tv.index[-1]
-
-    df_tv.drop(df_tv.tail(1).index, inplace=True) # drop last 2 rows
-    df_tv = df_tv[(df_tv.index >= first_tstamp_indicators) & (df_tv.index <= last_tstamp_indicators)]
-    df_indicators = df_indicators[(df_indicators.index >= first_tstamp_tv) & (df_indicators.index <= last_tstamp_tv)]
-
-    df_feateng = df_indicators.join(df_tv).fillna(axis='rows', method='ffill').sort_index()
-    df_feateng.dropna(inplace=True)
-    df_feateng['tstamp'] = df_feateng.index
-    return df_feateng
-
 def custom_resample_open(arraylike):
     from numpy import NaN
     if len(arraylike) == 0:
@@ -62,38 +42,6 @@ def check_time_gaps(df):
     print('Gaps are in minutes. Showing gaps interval*3')
     print(df_delta_minutes)
 
-def read_tv_strategy(file_name):
-    from unicodedata import normalize
-    from pandas import read_csv
-    
-    df = read_csv(file_name)
-
-    columns = list()
-    for text in df.columns:
-        try:
-            text = unicode(text, 'utf-8')
-        except NameError: # unicode is a default on python 3
-            pass
-        for c in ['#', '/', '$', '%', ' ', '.', '-']:
-            text = text.replace(c, '')
-        text = normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8").lower()
-        columns.append(text)
-
-    strategy_name = file_name.split('_')[-4]
-
-    df.columns = columns
-    df = df[['datetime', 'trade', 'signal', 'type', 'price', 'profit']].reset_index(drop=True)
-    df1 = df[df['type'].str.contains('Entry')].set_index('trade')
-    df2 = df[df['type'].str.contains('Exit')].set_index('trade')
-    df = df1.join(df2, rsuffix='_exit').reset_index()
-    datetime_tmp = pd.to_datetime(df['datetime']).dt.round(freq='3min')
-
-    for c in df.columns:
-        df.rename({c: c + '_' + strategy_name}, axis=1, inplace=True)
-    df['tstamp'] = datetime_tmp
-
-    df.set_index(df['tstamp'], inplace=True)
-    return df
 
 # %%
 from pymongo import MongoClient
@@ -133,7 +81,7 @@ if interval != _conf['interval']:
 else:
     print('\n##### Not resampling: ', collection, ' #####')
 
-df = df[-2500:]
+df = df[-3100:]
 check_time_gaps(df)
 # %% 🐭
 # Technical Indicators
@@ -156,9 +104,9 @@ Y_prefix = 'Y_' + symbol + '_' + str(interval) + '_'
 # %%
 
 # Y for regression
-df_feateng[Y_prefix + 'close_ROC_3_shift_4']  = df_feateng[X_prefix + 'close_ROC_3'].shift(-3) # to see the future
-df_feateng[Y_prefix + 'close_ROC_6_shift_7']  = df_feateng[X_prefix + 'close_ROC_6'].shift(-6) # to see the future
-df_feateng[Y_prefix + 'close_ROC_9_shift_10'] = df_feateng[X_prefix + 'close_ROC_9'].shift(-9) # to see the future
+df_feateng[Y_prefix + 'close_ROC_3_shift_4']  = df_feateng[X_prefix + 'close_ROC_3'].shift(-4) # to see the future
+df_feateng[Y_prefix + 'close_ROC_6_shift_7']  = df_feateng[X_prefix + 'close_ROC_6'].shift(-7) # to see the future
+df_feateng[Y_prefix + 'close_ROC_9_shift_10'] = df_feateng[X_prefix + 'close_ROC_9'].shift(-10) # to see the future
 
 # Y for classification
 df_feateng[Y_prefix + 'close_ROC_3_shift_4_B'] = 0
@@ -252,7 +200,7 @@ X      = df_feateng[X_columns].reindex(sorted(df_feateng[X_columns].columns), ax
 X_pred = X_pred[X_columns].reindex(sorted(X_pred[X_columns].columns), axis=1)
 
 # %%
-# FORECAST 2500, 10
+# FORECAST 3000, 10
 df_forecast = X_pred
 for y_column in y_columns:
     y = df_feateng[y_column]

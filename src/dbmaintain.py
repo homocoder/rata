@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'dbmaintain --db_host=localhost --db_port=27017 '
+fake_argv = 'dbmaintqain --db_host=localhost --db_port=27017 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)

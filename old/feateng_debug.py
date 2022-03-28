@@ -133,7 +133,7 @@ if interval != _conf['interval']:
 else:
     print('\n##### Not resampling: ', collection, ' #####')
 
-df = df[-2500:]
+df = df[-3100:]
 check_time_gaps(df)
 # %% 🐭
 # Technical Indicators
@@ -156,9 +156,9 @@ Y_prefix = 'Y_' + symbol + '_' + str(interval) + '_'
 # %%
 
 # Y for regression
-df_feateng[Y_prefix + 'close_ROC_3_shift_4']  = df_feateng[X_prefix + 'close_ROC_3'].shift(-3) # to see the future
-df_feateng[Y_prefix + 'close_ROC_6_shift_7']  = df_feateng[X_prefix + 'close_ROC_6'].shift(-6) # to see the future
-df_feateng[Y_prefix + 'close_ROC_9_shift_10'] = df_feateng[X_prefix + 'close_ROC_9'].shift(-9) # to see the future
+df_feateng[Y_prefix + 'close_ROC_3_shift_4']  = df_feateng[X_prefix + 'close_ROC_3'].shift(-4) # to see the future
+df_feateng[Y_prefix + 'close_ROC_6_shift_7']  = df_feateng[X_prefix + 'close_ROC_6'].shift(-7) # to see the future
+df_feateng[Y_prefix + 'close_ROC_9_shift_10'] = df_feateng[X_prefix + 'close_ROC_9'].shift(-10) # to see the future
 
 # Y for classification
 df_feateng[Y_prefix + 'close_ROC_3_shift_4_B'] = 0
@@ -181,7 +181,7 @@ df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'] = 0
 df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'] = df_feateng[Y_prefix + 'close_ROC_9_shift_10_S'].mask(df_feateng[Y_prefix + 'close_ROC_9_shift_10'] < -0.3, 1)
 
 X_pred = df_feateng[-1:]
-df_feateng.dropna(inplace=True)
+#df_feateng.dropna(inplace=True)
 df_feateng['tstamp'] = df_feateng.index
 check_time_gaps(df_feateng)
 
@@ -190,9 +190,9 @@ check_time_gaps(df_feateng)
 # %%
 # START OF FEATSEL
 featsel = ['kst_diff',
-'momentum_pvo',#
-'momentum_pvo_hist',#
-'momentum_pvo_signal',#
+'momentum_pvo',
+'momentum_pvo_hist',
+'momentum_pvo_signal',
 'momentum_tsi',
 'momentum_uo',
 'trend_adx',
@@ -219,7 +219,7 @@ featsel = ['kst_diff',
 'volume_nvi',
 'volume_obv',
 'volume_sma_em',
-'_close' #
+'_close'
 ]
 features_selected = set()
 for i in featsel:
@@ -251,8 +251,9 @@ y_columns = [y_column_close_ROC_3_shift_4_B,  y_column_close_ROC_3_shift_4_S,
 X      = df_feateng[X_columns].reindex(sorted(df_feateng[X_columns].columns), axis=1)
 X_pred = X_pred[X_columns].reindex(sorted(X_pred[X_columns].columns), axis=1)
 
+
 # %%
-# FORECAST 2500, 10
+# FORECAST 2890, 10
 df_forecast = X_pred
 for y_column in y_columns:
     y = df_feateng[y_column]
@@ -264,7 +265,7 @@ for y_column in y_columns:
     y_proba = pd.DataFrame(y_proba, columns=[y_column + '_proba_0', y_column + '_proba_1'])
     y_proba.set_index(X_pred.index, inplace=True)
     df_forecast = df_forecast.join(y_proba)
-df_forecast.to_csv('BTCUSD_3.forecast_1.csv', mode='a', header=False)
+df_forecast.to_csv('BTCUSD_3.forecast-debug.csv', mode='a', header=False)
 
 #%%
 # CV FOLD 5
@@ -297,4 +298,6 @@ for y_column in y_columns:
     df_cv.drop(['fold_1_y_proba_1', 'fold_2_y_proba_1', 'fold_3_y_proba_1', 'fold_4_y_proba_1', 'fold_5_y_proba_1'], axis=1, inplace=True)
     df_cv.drop(['fold_1_y_proba_0', 'fold_2_y_proba_0', 'fold_3_y_proba_0', 'fold_4_y_proba_0', 'fold_5_y_proba_0'], axis=1, inplace=True)
 
-df_cv.to_csv(Y_prefix + 'close_ROC_shift.csv')
+#df_cv.to_csv(Y_prefix + 'close_ROC_shift.csv')
+
+# %%
