@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates.py --db_host=localhost --symbol=BINANCE:BNBAUD --kind=crypto --interval=5 '
+fake_argv = 'rates.py --db_host=localhost --symbol=BTCUSD --kind=crypto --interval=5 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -34,6 +34,7 @@ collection = db[db_col]
 
 if not db_col in db.list_collection_names():
     hours_back = 80 * _conf['interval']
+    #hours_back = 160 * _conf['interval']
 else:
     mydoc = collection.find({'symbol': _conf['symbol']}).sort('tstamp', 1).skip(collection.count_documents({}) - 9)
     df = pd.DataFrame(mydoc)
@@ -43,6 +44,7 @@ else:
     t2 = dt.datetime.utcnow()
     t3 = t2 - t1
     hours_back = (t3.seconds // 3600) + 1
+    #hours_back = 160
 
 print('Hours back: ', hours_back)
 
@@ -52,8 +54,10 @@ sleep(random() * 3)
 
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
 df.index = df.index.to_series().apply(dt.datetime.isoformat)
+df = df.sort_values(by='tstamp')[-3:]
 df.reset_index(inplace=True)
 df_dict = df.to_dict(orient='records')
 
 collection.insert_many(df_dict)
 client.close()
+# %%

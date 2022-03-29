@@ -29,58 +29,6 @@
             {
                 "symbol"   : "ETHEUR",
                 "kind"     : "crypto"
-            },
-            {
-                "symbol"   : "BITMEX:DOGEUSD",
-                "kind"     : "crypto"
-            },
-            {
-                "symbol"   : "AUDUSD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "USDJPY",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "USDCAD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "GBPAUD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "EURUSD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "USDCHF",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "GBPJPY",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "EURCHF",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "NZDUSD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "GBPUSD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "GBPCHF",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "EURJPY",
-                "kind"     : "forex"
             }
     ]
 }
