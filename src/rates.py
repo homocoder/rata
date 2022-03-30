@@ -54,7 +54,7 @@ sleep(random() * 3)
 
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
 df.index = df.index.to_series().apply(dt.datetime.isoformat)
-df = df.sort_values(by='tstamp')[-3:]
+df = df.sort_values(by='tstamp')[-9:]
 df.reset_index(inplace=True)
 df_dict = df.to_dict(orient='records')
 
