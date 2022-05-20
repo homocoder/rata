@@ -1,7 +1,7 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
-python=3.9
+python=3.10
 jupyter_client
 jupyter_core
 pandas
@@ -10,7 +10,7 @@ ipykernel
 requests
 scipy
 statsmodels
-pymongo
+#pymongo
 #catboost
 #xgboost
 #pip install ta

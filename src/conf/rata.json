@@ -3,33 +3,32 @@
 
     "symbols":  [
             {
-                "symbol"   : "BTCUSD",
-                "kind"     : "crypto"
+                "symbol"   : "AUDUSD",
+                "kind"     : "forex"
             },
             {
-                "symbol"   : "BTCEUR",
-                "kind"     : "crypto"
+                "symbol"   : "GBPAUD",
+                "kind"     : "forex"
             },
             {
-                "symbol"   : "LTCBTC",
-                "kind"     : "crypto"
+                "symbol"   : "GBPNZD",
+                "kind"     : "forex"
             },
             {
-                "symbol"   : "LTCEUR",
-                "kind"     : "crypto"
+                "symbol"   : "AUDCHF",
+                "kind"     : "forex"
             },
             {
-                "symbol"   : "LTCUSD",
-                "kind"     : "crypto"
+                "symbol"   : "AUDNZD",
+                "kind"     : "forex"
             },
             {
-                "symbol"   : "ETHUSD",
-                "kind"     : "crypto"
+                "symbol"   : "EURGBP",
+                "kind"     : "forex"
             },
             {
-                "symbol"   : "ETHEUR",
-                "kind"     : "crypto"
+                "symbol"   : "NZDUSD",
+                "kind"     : "forex"
             }
     ]
 }
-    
