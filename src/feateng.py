@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=localhost --symbol=BTCUSD --interval=3 '
+fake_argv = 'feateng.py --db_host=localhost --symbol=AUDUSD --interval=3 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -12,50 +12,31 @@ _conf
 # Global imports
 import pandas as pd
 import datetime as dt
-
-def join_indicators_tv(df_indicators, df_tv):
-    # Join df indicators and df tv strategies
-    df_indicators.sort_index(inplace=True)
-    first_tstamp_indicators = df_indicators.index[0]
-    last_tstamp_indicators  = df_indicators.index[-1]
-
-    df_tv.sort_index(inplace=True)
-    df_tv.drop('tstamp', axis=1, inplace=True)
-    first_tstamp_tv = df_tv.index[0]
-    last_tstamp_tv  = df_tv.index[-1]
-
-    df_tv.drop(df_tv.tail(1).index, inplace=True) # drop last 2 rows
-    df_tv = df_tv[(df_tv.index >= first_tstamp_indicators) & (df_tv.index <= last_tstamp_indicators)]
-    df_indicators = df_indicators[(df_indicators.index >= first_tstamp_tv) & (df_indicators.index <= last_tstamp_tv)]
-
-    df_feateng = df_indicators.join(df_tv).fillna(axis='rows', method='ffill').sort_index()
-    df_feateng.dropna(inplace=True)
-    df_feateng['tstamp'] = df_feateng.index
-    return df_feateng
+import psycopg2
 
 def custom_resample_open(arraylike):
     from numpy import NaN
     if len(arraylike) == 0:
         return NaN
     else:
-        return arraylike.iloc[0]
+        return arraylike['open'].iloc[0]
 
 def custom_resample_close(arraylike):
     from numpy import NaN
     if len(arraylike) == 0:
         return NaN
     else:
-        return arraylike.iloc[-1]
+        return arraylike['close'].iloc[-1]
 
 def custom_resample_volume(arraylike):
     from numpy import NaN
     if len(arraylike) == 0:
         return NaN
     else:
-        return arraylike.drop_duplicates()
+        return arraylike['volume'].drop_duplicates().sum()
 
 def check_time_gaps(df):
-    print('\n##### Checking time gaps for: ', collection, 'To interval:', interval, ' #####')
+    print('\n##### Checking time gaps for: ', _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), 'To interval:', interval, ' #####')
     df_diff_intervals = pd.DataFrame(df['tstamp'])
     df_diff_intervals['delta'] = df_diff_intervals['tstamp'] - df_diff_intervals['tstamp'].shift(-1)
     df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
@@ -103,16 +84,21 @@ def read_tv_strategy(file_name):
     return df
 
 # %%
-from pymongo import MongoClient
+conn = psycopg2.connect(
+    dbname='rata',
+    user='rata',
+    password='acab.1312',
+    host='127.0.0.1',
+    port=5432,
+)
 
-client = MongoClient(_conf['db_host'], 27017)
-db = client['rates']
-list_collection_names = db.list_collection_names()
-list_collection_names.sort()
+sql =  "select * from rates r "
+sql += "where r.symbol='" + _conf['symbol'] + "' and r.interval=1 "
+#sql += "order by tstamp desc limit 9000" # TODO: limit the number of rows
 
-collection = _conf['symbol'] + '_1'
-mydoc = db[collection].find({})
-df = pd.DataFrame(mydoc)
+df = pd.read_sql_query(sql, conn)
+#%%
+
 df.sort_values(by='tstamp', ascending=True, inplace=True)
 symbol    = df[['symbol'  ]].iloc[0]['symbol']
 interval  = int(df[['interval']].iloc[0]['interval']) # always 1
@@ -120,16 +106,19 @@ interval  = int(df[['interval']].iloc[0]['interval']) # always 1
 # %%
 
 if interval != _conf['interval']:
-    print('\n##### Resampling: ', collection, ' #####')
+    print('\n##### Resampling: ', _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
     interval = _conf['interval']
     print('To interval:', interval)
     resample_rule = str(_conf['interval']) + 'min'
-    ts_open   = df[['tstamp', 'open'  ]].resample(resample_rule, on='tstamp').apply(custom_resample_open)['open']
+    ts_open   = df[['tstamp', 'open'  ]].resample(resample_rule, on='tstamp').apply(custom_resample_open)
     ts_high   = df[['tstamp', 'high'  ]].resample(resample_rule, on='tstamp').max()['high']
     ts_low    = df[['tstamp', 'low'   ]].resample(resample_rule, on='tstamp').min()['low']
-    ts_close  = df[['tstamp', 'close' ]].resample(resample_rule, on='tstamp').apply(custom_resample_close)['close']
-    ts_volume = df[['tstamp', 'volume']].resample(resample_rule, on='tstamp').apply(custom_resample_volume)['volume']
-    ts_volume = ts_volume.apply(lambda x : x.sum())
+    ts_close  = df[['tstamp', 'close' ]].resample(resample_rule, on='tstamp').apply(custom_resample_close)
+    ts_volume = df[['tstamp', 'volume']].resample(resample_rule, on='tstamp').apply(custom_resample_volume)
+    
+    ts_open.name   = 'open'
+    ts_close.name  = 'close'
+    ts_volume.name = 'volume'
 
     df_resample = pd.concat([ts_open, ts_high, ts_low, ts_close, ts_volume], axis=1).sort_index()
     df_resample['symbol']   = symbol
@@ -139,13 +128,13 @@ if interval != _conf['interval']:
     df.reset_index(drop=False, inplace=True)
     df.dropna(inplace=True)
 else:
-    print('\n##### Not resampling: ', collection, ' #####')
+    print('\n##### Not resampling: ',  _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
 
 df = df[-2500:]
 check_time_gaps(df)
 # %% 🐭
 # Technical Indicators
-# TODO: https://machinelearningmastery.com/time-series-forecasting-methods-in-python-cheat-sheet/
+
 import ta
 for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
     for i in range(3, 10, 3):
@@ -157,10 +146,12 @@ df_feateng = df.copy()
 del df
 # %%
 X_prefix = 'X_' + symbol + '_' + str(interval) + '_'
+X_prefix = ''
 for c in df_feateng.columns:
     df_feateng.rename({c: X_prefix + c}, axis=1, inplace=True)
 
 Y_prefix = 'Y_' + symbol + '_' + str(interval) + '_'
+Y_prefix = ''
 # %%
 
 # Y for regression

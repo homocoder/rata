@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'dbmaintain --db_host=localhost --db_port=27017 '
+fake_argv = 'dbmaintain --db_host=localhost --db_port=5432 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -11,34 +11,45 @@ _conf
 # %%
 # Global imports
 import pandas as pd
-import datetime as dt
+import psycopg2
+from rata.utils import copy_from_stringio
 
 # %%
 ## */* RATES maintenance */* ##
-from pymongo import MongoClient
-from rata.marketon import get_data
 
-client = MongoClient(_conf['db_host'], _conf['db_port'])
-db = client['rates']
+conn = psycopg2.connect(
+    dbname='rata',
+    user='rata',
+    password='acab.1312',
+    host=_conf['db_host'],
+    port=_conf['db_port'],
+)
 
-for db_col in db.list_collection_names():
+sql =  "select distinct symbol from rates"
 
-    collection = db[db_col]
-    mydoc = collection.find({})
-    df = pd.DataFrame(mydoc)
+df = pd.read_sql_query(sql, conn)
+df
+#%%
+for symbol in df['symbol']:
+
+    sql =  "select * from rates where symbol='" + symbol + "'"
+    df = pd.read_sql_query(sql, conn)
+
     if len(df) == 0:
-        print('No data in ', db_col)
+        print('No data in ', symbol)
     else:
-        print('Cleaning ', db_col)
+        print('Cleaning ', symbol)
         #df['status'] = 'ok'
         df = df.groupby(['close', 'high', 'interval', 'low', 'open', 'status', 'symbol', 'tstamp', 'unix_tstamp', 'volume'], as_index=False).max()
         df = df[['query_tstamp', 'unix_tstamp', 'tstamp', 'symbol', 'interval', 'open', 'high', 'low', 'close', 'volume', 'status']].sort_values('tstamp')
-        
-        collection.drop()
-        db_bkp = client['rates']
-        #db_bkp = client['rata' + '_rates']
-        collection = db_bkp[db_col]
-        collection.insert_many(df.to_dict(orient='records'))
 
-client.close()
+        cur = conn.cursor()
+        sql =  "delete from rates where symbol='" + symbol + "'"
+        cur.execute(sql)
+        
+        copy_from_stringio(conn, df, 'rates') #TODO: error
+
+conn.commit()
+cur.close()
+conn.close()
 # %%

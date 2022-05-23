@@ -21,9 +21,12 @@ _conf
 # %%
 # Global imports
 import psycopg2
-import pandas as pd
 import datetime as dt
 from rata.marketon import get_data
+from random import random
+from time import sleep
+from rata.utils import copy_from_stringio
+
 # %%
 
 conn = psycopg2.connect(
@@ -51,36 +54,11 @@ else:
 print('Hours back: ', hours_back)
 
 #%%
-from random import random
-from time import sleep
 sleep(random() * 3)
 
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
 df = df.sort_values(by='tstamp')
 df.reset_index(inplace=True)
-
-def copy_from_stringio(conn, df, table):
-    """
-    Here we are going save the dataframe in memory 
-    and use copy_from() to copy it to the table
-    """
-    from io import StringIO
-    # save dataframe to an in memory buffer
-    buffer = StringIO()
-    df.to_csv(buffer, index=False, header=False)
-    buffer.seek(0)
-    
-    cursor = conn.cursor()
-    try:
-        cursor.copy_from(buffer, table, sep=",")
-        conn.commit()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print("Error: %s" % error)
-        conn.rollback()
-        cursor.close()
-        return 1
-    print("copy_from_stringio() done")
-    cursor.close()
 
 copy_from_stringio(conn, df, 'rates')
 # %%

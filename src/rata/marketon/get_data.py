@@ -1,4 +1,4 @@
-def get_finnhub(symbol='EURUSD', interval=5, kind='forex', exchange='OANDA', hours=100, token='c6emgsqad3ie37m1crq0'):
+def get_finnhub(symbol='EURUSD', interval=5, kind='forex', exchange='OANDA', hours=100, token='ca5qhiqad3ib7i7rp180'):
     """
     get ohlcv data from finnhub. returns a pd.DataFrame
     """
