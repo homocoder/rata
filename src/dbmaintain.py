@@ -11,29 +11,16 @@ _conf
 # %%
 # Global imports
 import pandas as pd
-import psycopg2
-from rata.utils import copy_from_stringio
+from sqlalchemy import create_engine
 
 # %%
-## */* RATES maintenance */* ##
-
-conn = psycopg2.connect(
-    dbname='rata',
-    user='rata',
-    password='acab.1312',
-    host=_conf['db_host'],
-    port=_conf['db_port'],
-)
-
+engine = create_engine('postgresql+psycopg2://rata:acab.1312@localhost:5432/rata')
 sql =  "select distinct symbol from rates"
-
-df = pd.read_sql_query(sql, conn)
-df
+df = pd.read_sql_query(sql, engine)
 #%%
 for symbol in df['symbol']:
-
     sql =  "select * from rates where symbol='" + symbol + "'"
-    df = pd.read_sql_query(sql, conn)
+    df = pd.read_sql_query(sql, engine)
 
     if len(df) == 0:
         print('No data in ', symbol)
@@ -43,13 +30,8 @@ for symbol in df['symbol']:
         df = df.groupby(['close', 'high', 'interval', 'low', 'open', 'status', 'symbol', 'tstamp', 'unix_tstamp', 'volume'], as_index=False).max()
         df = df[['query_tstamp', 'unix_tstamp', 'tstamp', 'symbol', 'interval', 'open', 'high', 'low', 'close', 'volume', 'status']].sort_values('tstamp')
 
-        cur = conn.cursor()
         sql =  "delete from rates where symbol='" + symbol + "'"
-        cur.execute(sql)
+        engine.execute(sql)
         
-        copy_from_stringio(conn, df, 'rates') #TODO: error
-
-conn.commit()
-cur.close()
-conn.close()
+        df.to_sql('rates', engine, if_exists='append', index=False)
 # %%
