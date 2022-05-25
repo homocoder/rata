@@ -24,7 +24,7 @@ df = pd.read_sql_query(sql, engine)
 
 sql = 'with '
 for s in symbols:
-    sql += s + ' as select ('
+    sql += s + ' as (select '
     for i in df.columns:
         sql += i + ' as ' + s + '_' + i + ' ,\n'
     sql = sql[:-2]
@@ -32,11 +32,23 @@ for s in symbols:
     sql += "), \n"
 sql = sql[:-3]
 sql += '\nselect * from ' + ', '.join(symbols) 
-#select * from audusd, nzdusd, audchf
-#  where audusd.tstamp=nzdusd.tstamp and nzdusd.tstamp=audchf.tstamp;
-print(sql)
-#%%
 
+first_symbol = symbols[0]
+sql += ' where ' + first_symbol
+for s in symbols:
+    sql += '_tstamp=' + s + '_tstamp and ' + s
+sql += '_tstamp=' + first_symbol + '_tstamp'
+df = pd.read_sql_query(sql, engine)
+df['tstamp'] = df[first_symbol.lower() + '_tstamp']
+
+df = df[[i for i in df.columns if '_tstamp' not in i]]
+df = df[[i for i in df.columns if '_symbol' not in i]]
+df = df[[i for i in df.columns if '_interval' not in i]]
+check_time_gaps(df, _conf)
+df.set_index('tstamp', drop=True, inplace=True)
+df.to_csv('audusd_gbpaud_audchf.csv')
+#%%
+## !!!!!!!!!!!!!!!!!!!!
 
 
 #%%
