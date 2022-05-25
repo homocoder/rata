@@ -2,9 +2,10 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=localhost --symbol=AUDUSD --interval=3 '
+
+fake_argv = 'feateng.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3'
 fake_argv = fake_argv.split()
-argv = fake_argv #### *!
+#argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
 _conf
 

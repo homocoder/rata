@@ -4,3 +4,4 @@ cd /home/selknam/dev/rata/src && \
   python -u /home/selknam/dev/rata/src/rates_launcher.py \
          --conf=conf/rata.json \
          --interval=$interval
+  python -u /home/selknam/dev/rata/src/dbmaintain.py

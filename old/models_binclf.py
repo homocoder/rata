@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'models_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=BTCUSD --interval=5 '
+fake_argv  = 'models_binclf.py --db_host=localhost --db_port=27017 --dbs_prefix=rata --symbol=BITMEX:BNBUSD --interval=5 '
 fake_argv += '--include_raw_rates=True --include_autocorrs=True --include_all_ta=True '
 fake_argv += '--forecast_shift=7 --autocorrelation_lag=18 --autocorrelation_lag_step=3 --n_rows=3000 '
 fake_argv += '--profit_threshold=0.0089 --test_size=0.9 --store_dataset=False '
@@ -11,6 +11,9 @@ fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 
 _conf = parse_argv(argv)
+if ':' in _conf['symbol']:
+    _conf['symbol'] = _conf['symbol'].split(':')[1]
+
 print(_conf)
 
 ## %%
@@ -206,39 +209,41 @@ print('Data Preparation time: ', dataprep_time)
 client = MongoClient(_conf['db_host'], _conf['db_port'])
 _conf['id_tstamp']             = dt.datetime.now()
 _conf['dataprep_time'] = dataprep_time
-
-# %%
-# */*   CLF. BIN. BL. BUY.   */* #
-model_name = 'xgb_bin_BL_buy'
-t0 = dt.datetime.now().timestamp()
-from xgboost import XGBClassifier
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
 from sklearnex import patch_sklearn
 patch_sklearn()
 
+# %%
+# */*   CLF. BIN. BL. BUY.   */* #
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import SelectFpr, SelectFromModel
+
+model_name = 'skbinclf_buy'
+t0 = dt.datetime.now().timestamp()
+
+X_test = X.copy()
 y_test = y.mask(y == 2, 0).copy()
 y_check[y_column + '_buy'] = y_test
 n_pos_labels = len(y_test[y_test == 1])
 n_neg_labels = len(y_test) - n_pos_labels
 
-seed = int(dt.datetime.now().strftime('%S%f'))
+estimator_clf = Pipeline([
+  ('scaler', StandardScaler()),
+  ('feature_selection6', SelectFromModel(RandomForestClassifier(criterion='entropy', random_state=int(dt.datetime.now().strftime('%S%f')), n_jobs=-1, class_weight='balanced_subsample', n_estimators=30))),
+  ('classification', RandomForestClassifier(criterion='entropy', random_state=int(dt.datetime.now().strftime('%S%f')), n_jobs=-1, class_weight='balanced_subsample', n_estimators=90))
+])
 
-estimator_clf = XGBClassifier(validate_parameters=True, random_state=int(dt.datetime.now().strftime('%S%f')),
-                    use_label_encoder=False,
-                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'],
-                    scale_pos_weight=0.5, n_jobs=-1)
-                    
-cv = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
+cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=int(dt.datetime.now().strftime('%S%f')))
 space = dict()
 model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
                         scoring=['accuracy', 'precision', 'recall'])
 
-model.fit(X, y_test) # Buy only
-X_test = X.copy()
+model.fit(X_test, y_test) # Buy only
 
 y_pred =  model.predict(X_test)
-y_proba = model.predict_proba(X_test)
+y_proba = model.predict_proba(X_test) # TODO: store this for easier backtesting
 
 accuracy  = model.cv_results_['mean_test_accuracy'][0]
 precision = model.cv_results_['mean_test_precision'][0]
@@ -247,19 +252,9 @@ recall    = model.cv_results_['mean_test_recall'][0]
 y_forecast = model.predict(X_forecast)
 print(accuracy, precision, recall, y_forecast)
 
-Xy_test = X_test
-Xy_test['y_test'] = y_test
-Xy_test['y_pred'] = y_pred
-Xy_test['y_proba_0'] = y_proba[ : , 0]
-Xy_test['y_proba_1'] = y_proba[ : , 1]
-
-Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
-Xy.reset_index(inplace=True)
-
-xgb = model.estimator
-xgb.fit(X, y)
+final_estimator = model.best_estimator_._final_estimator
 feature_importance = list()
-for feat, importance in zip(X.columns, xgb.feature_importances_):
+for feat, importance in zip(X_test.columns, final_estimator.feature_importances_):
     feature_importance.append({'feature_name': feat, 'score': importance})
 df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
 
@@ -285,52 +280,47 @@ _conf['model_filename']  = model_filename
 _conf['fit_time'] = dt.datetime.now().timestamp() - t0
 
 # Change to _models_binclf DB
-db = client[_conf['dbs_prefix'] + '_models_binclf']
+db = client[_conf['dbs_prefix'] + '_models_skbinclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-_id = collection.insert_one(_conf.copy())
+collection.insert_one(_conf.copy())
 
 if _conf['store_dataset']:
-    # Change to _datasets_binclf DB
-    db = client[_conf['dbs_prefix'] + '_datasets_binclf']
-    db_col = _conf['symbol'] + '_' + str(_conf['interval'])
-    collection = db[db_col]
-    Xy['id_tstamp'] = _conf['id_tstamp']
-    df_dict = Xy.to_dict(orient='records')
-    for r in df_dict:
-        pass
-        collection.insert_one(r, {'$set': r})
+    pass
+df_feature_importance
 
 # %%
 # */*   CLF. BIN. BL. SELL.  */* #
-model_name = 'xgb_bin_BL_sell'
-t0 = dt.datetime.now().timestamp()
-from xgboost import XGBClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
-from sklearnex import patch_sklearn
-patch_sklearn()
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.feature_selection import SelectFpr, SelectFromModel
 
-y_test =y.mask(y == 1, 0).mask(y == 2, 1).copy()
+model_name = 'skbinclf_sell'
+t0 = dt.datetime.now().timestamp()
+
+X_test = X.copy()
+y_test = y.mask(y == 1, 0).mask(y == 2, 1).copy()
 y_check[y_column + '_sell'] = y_test
 n_pos_labels = len(y_test[y_test == 1])
 n_neg_labels = len(y_test) - n_pos_labels
 
-seed = int(dt.datetime.now().strftime('%S%f'))
+estimator_clf = Pipeline([
+  ('scaler', StandardScaler()),
+  ('feature_selection6', SelectFromModel(RandomForestClassifier(criterion='entropy', random_state=int(dt.datetime.now().strftime('%S%f')), n_jobs=-1, class_weight='balanced_subsample', n_estimators=30))),
+  ('classification', RandomForestClassifier(criterion='entropy', random_state=int(dt.datetime.now().strftime('%S%f')), n_jobs=-1, class_weight='balanced_subsample', n_estimators=90))
+])
 
-estimator_clf = XGBClassifier(validate_parameters=True, random_state=int(dt.datetime.now().strftime('%S%f')),
-                    use_label_encoder=False,
-                    booster='gbtree', objective='binary:logistic', eval_metric=['logloss', 'error'],
-                    scale_pos_weight=0.5, n_jobs=-1)
-cv = StratifiedKFold(n_splits=2, shuffle=True, random_state=seed)
+cv = StratifiedKFold(n_splits=3, shuffle=True, random_state=int(dt.datetime.now().strftime('%S%f')))
 space = dict()
 model = GridSearchCV(estimator_clf, space, n_jobs=-1, cv=cv, refit='precision',
                         scoring=['accuracy', 'precision', 'recall'])
 
-model.fit(X, y_test) # Sell only
-X_test = X.copy()
+model.fit(X_test, y_test) # Sell only
+
 y_pred =  model.predict(X_test)
-y_proba = model.predict_proba(X_test)
+y_proba = model.predict_proba(X_test) # TODO: store this for easier backtesting
 
 accuracy  = model.cv_results_['mean_test_accuracy'][0]
 precision = model.cv_results_['mean_test_precision'][0]
@@ -339,19 +329,9 @@ recall    = model.cv_results_['mean_test_recall'][0]
 y_forecast = model.predict(X_forecast)
 print(accuracy, precision, recall, y_forecast)
 
-Xy_test = X_test
-Xy_test['y_test'] = y_test
-Xy_test['y_pred'] = y_pred
-Xy_test['y_proba_0'] = y_proba[ : , 0]
-Xy_test['y_proba_1'] = y_proba[ : , 1]
-
-Xy = Xy_test.join(other=X_check, lsuffix='L', rsuffix='R', how='outer').join(other=y_check, lsuffix='L', rsuffix='R', how='outer')
-Xy.reset_index(inplace=True)
-
-xgb = model.estimator
-xgb.fit(X, y)
+final_estimator = model.best_estimator_._final_estimator
 feature_importance = list()
-for feat, importance in zip(X.columns, xgb.feature_importances_):
+for feat, importance in zip(X_test.columns, final_estimator.feature_importances_):
     feature_importance.append({'feature_name': feat, 'score': importance})
 df_feature_importance = pd.DataFrame(feature_importance).sort_values(by='score', ascending=False)
 
@@ -377,22 +357,14 @@ _conf['model_filename']  = model_filename
 _conf['fit_time'] = dt.datetime.now().timestamp() - t0
 
 # Change to _models_binclf DB
-db = client[_conf['dbs_prefix'] + '_models_binclf']
+db = client[_conf['dbs_prefix'] + '_models_skbinclf']
 db_col = _conf['symbol'] + '_' + str(_conf['interval'])
 collection = db[db_col]
-_id = collection.insert_one(_conf.copy())
+collection.insert_one(_conf.copy())
 
 if _conf['store_dataset']:
-    # Change to _datasets_binclf DB
-    db = client[_conf['dbs_prefix'] + '_datasets_binclf']
-    db_col = _conf['symbol'] + '_' + str(_conf['interval'])
-    collection = db[db_col]
-    Xy['id_tstamp'] = _conf['id_tstamp']
-    df_dict = Xy.to_dict(orient='records')
-    for r in df_dict:
-        pass
-        collection.insert_one(r, {'$set': r})
-
+    pass
+df_feature_importance
 #%%
 client.close()
 
@@ -405,3 +377,4 @@ client.close()
 # BL: Baseline. Stratified K-Fold.
 # GD: Pipeline+Grid Search+Stratified. CV. [scaler, feat selector, estimator[xgb_scale_pos_weight, xgb_lambda, xgb_reg_gamma, xgb_reg_alfa]
 # RT: sample_weights. scale_pos_weight. without metrics. prediction stored on RT on db and metrics calculated afterwards
+# %%

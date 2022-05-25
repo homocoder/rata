@@ -54,7 +54,7 @@ else:
 print('Hours back: ', hours_back)
 
 #%%
-sleep(random() * 3)
+sleep(random() * 1)
 
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], hours=hours_back)
 df = df.sort_values(by='tstamp')
