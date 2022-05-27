@@ -32,7 +32,7 @@ from rata.utils import copy_from_stringio
 conn = psycopg2.connect(
     dbname='rata',
     user='rata',
-    password='acab.1312',
+    password='acaB.1312',
     host='127.0.0.1',
     port=5432,
 )

@@ -14,7 +14,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # %%
-engine = create_engine('postgresql+psycopg2://rata:acab.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 sql =  "select distinct symbol from rates"
 df = pd.read_sql_query(sql, engine)
 #%%

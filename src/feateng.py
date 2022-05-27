@@ -2,7 +2,6 @@
 from sys import argv
 from rata.utils import parse_argv
 
-
 fake_argv = 'feateng.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
@@ -16,12 +15,12 @@ from rata.ratalib import custom_resample_close, custom_resample_open, custom_res
 
 #%%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acab.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 2300) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 3000) + "),"
 sql += "b as (select min(tstamp) from a)"
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
@@ -64,10 +63,9 @@ check_time_gaps(df, _conf)
 # Technical Indicators
 import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
-
+# TODO: SROC3 SROC6 SROC9 SROC12
+# TODO: SROC3 SROC6 SROC9 SROC12
 #%%
 sql =  "delete from feateng where symbol='" + _conf['symbol'] + "' and interval=" + str(_conf['interval'])
 engine.execute(sql)
 df.to_sql('feateng', engine, if_exists='append', index=False)
-
-
