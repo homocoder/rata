@@ -17,7 +17,8 @@ from rata.ratalib import custom_resample_close, custom_resample_open, custom_res
 from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
-symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
+#symbols = ['AUDUSD', 'AUDCHF', 'AUDNZD']#, 'EURGBP', 'GBPNZD', 'GBPAUD', 'NZDUSD']
+symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP']#, 'NZDUSD']
 
 sql = "select * from feateng where symbol='" + symbols[0] + "' and interval=" + str(_conf['interval'])
 df = pd.read_sql_query(sql, engine)
