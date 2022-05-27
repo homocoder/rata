@@ -15,9 +15,9 @@ from rata.ratalib import custom_resample_close, custom_resample_open, custom_res
 
 #%%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acab.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
-symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF']
+symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
 
 sql = "select * from feateng where symbol='" + symbols[0] + "' and interval=" + str(_conf['interval'])
 df = pd.read_sql_query(sql, engine)
@@ -44,9 +44,10 @@ df['tstamp'] = df[first_symbol.lower() + '_tstamp']
 df = df[[i for i in df.columns if '_tstamp' not in i]]
 df = df[[i for i in df.columns if '_symbol' not in i]]
 df = df[[i for i in df.columns if '_interval' not in i]]
+df = df.sort_values('tstamp')
 check_time_gaps(df, _conf)
 df.set_index('tstamp', drop=True, inplace=True)
-df.to_csv('audusd_gbpaud_audchf.csv')
+df.to_csv('../' + str(df.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df)) + '.csv')
 #%%
 ## !!!!!!!!!!!!!!!!!!!!
 
@@ -57,7 +58,7 @@ symbol    = df[['symbol'  ]].iloc[0]['symbol']
 interval  = int(df[['interval']].iloc[0]['interval']) # always 1
 
 # %%
-
+/home/selknam/dev/rata/2022-05-27T00-45-00.AUDUSD_GBPAUD_AUDCHF_GBPNZD_AUDNZD_EURGBP_NZDUSD.1968.csv
 if interval != _conf['interval']:
     print('\n##### Resampling: ', _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
     interval = _conf['interval']
@@ -93,5 +94,3 @@ df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="clos
 sql =  "delete from feateng where symbol='" + _conf['symbol'] + "' and interval=" + str(_conf['interval'])
 engine.execute(sql)
 df.to_sql('feateng', engine, if_exists='append', index=False)
-
-
