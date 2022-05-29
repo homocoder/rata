@@ -34,7 +34,9 @@ def check_time_gaps(df, _conf):
         print('First: ', df.iloc[0]['tstamp'])
         print('Last: ',  df.iloc[-1]['tstamp'])
     print('Gaps are in minutes. Showing gaps interval*3')
-    print(df_delta_minutes)
+    for c in range(0, len(df_delta_minutes)):
+        print(pd.DataFrame(df_delta_minutes).reset_index().iloc[c, 0], pd.DataFrame(df_delta_minutes).reset_index().iloc[c, 1])
+    return(df_delta_minutes)
 
 def read_tv_strategy(file_name):
     from unicodedata import normalize

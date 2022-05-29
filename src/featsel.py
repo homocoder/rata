@@ -1,6 +1,7 @@
 # %% 🐭
+from msilib.schema import ODBCAttribute
 from sys import argv
-from rata.utils import parse_argv
+from rata.utils import lstm_prep, parse_argv
 
 fake_argv = 'featsel.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3'
 fake_argv = fake_argv.split()
@@ -18,7 +19,7 @@ from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
 #symbols = ['AUDUSD', 'AUDCHF', 'AUDNZD']#, 'EURGBP', 'GBPNZD', 'GBPAUD', 'NZDUSD']
-symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP']#, 'NZDUSD']
+symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
 
 sql = "select * from feateng where symbol='" + symbols[0] + "' and interval=" + str(_conf['interval'])
 df = pd.read_sql_query(sql, engine)
@@ -50,6 +51,12 @@ check_time_gaps(df, _conf)
 df.set_index('tstamp', drop=True, inplace=True)
 df.to_csv('../' + str(df.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df)) + '.csv')
 #%%
+DARTS
+FLAML
+GluonTS
+uber Orbit
+Driverless
+lstm
 ## !!!!!!!!!!!!!!!!!!!!
 
 
@@ -59,7 +66,7 @@ symbol    = df[['symbol'  ]].iloc[0]['symbol']
 interval  = int(df[['interval']].iloc[0]['interval']) # always 1
 
 # %%
-/home/selknam/dev/rata/2022-05-27T00-45-00.AUDUSD_GBPAUD_AUDCHF_GBPNZD_AUDNZD_EURGBP_NZDUSD.1968.csv
+
 if interval != _conf['interval']:
     print('\n##### Resampling: ', _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
     interval = _conf['interval']

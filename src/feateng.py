@@ -2,9 +2,9 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3'
+fake_argv = 'feateng.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=3'
 fake_argv = fake_argv.split()
-argv = fake_argv #### *!
+#argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
 _conf
 
@@ -20,7 +20,7 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 3300) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 9000) + "),"
 sql += "b as (select min(tstamp) from a)"
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
@@ -58,7 +58,7 @@ if interval != _conf['interval']:
 else:
     print('\n##### Not resampling: ',  _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
 
-check_time_gaps(df, _conf)
+tmp = check_time_gaps(df, _conf)
 # %% 🐭
 # Technical Indicators
 import ta
