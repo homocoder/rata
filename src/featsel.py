@@ -1,5 +1,4 @@
 # %% 🐭
-from msilib.schema import ODBCAttribute
 from sys import argv
 from rata.utils import lstm_prep, parse_argv
 
@@ -58,6 +57,49 @@ uber Orbit
 Driverless
 lstm
 ## !!!!!!!!!!!!!!!!!!!!
+
+#%%
+
+import pandas as pd
+from sklearn.model_selection import train_test_split
+
+# Read a pandas DataFrame
+df = pd.read_csv('https://www.dropbox.com/s/rf8mllry8ohm7hh/2022-05-27T20-57-00.AUDUSD_GBPAUD_AUDCHF_GBPNZD_AUDNZD_EURGBP_NZDUSD.8985.csv?dl=1')
+df['tstamp'] = pd.to_datetime(df['tstamp'])
+
+time_horizon = 10
+
+target = 'audusd_close'
+X = df
+y = df[[target]]
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42334) # y_train not used in TS
+
+# initialize AutoML instance
+from flaml import AutoML
+
+automl = AutoML()
+
+# configure AutoML settings
+settings = {
+    "time_budget": 15,  # total running time in seconds
+    'estimator_list':  ['rf'],
+    "metric": "rmse",  # primary metric
+    "task": "ts_forecast",  # task type
+    "log_file_name": "rata_audusd_flaml.log",  # flaml log file
+    "eval_method": "holdout",
+    "log_type": "all",
+    "label": target,
+}
+
+# train the model
+automl.fit(dataframe=X_train, **settings, period=time_horizon)
+
+# predictions
+y_pred = automl.predict(X_test)
+from sklearn.metrics import mean_absolute_error
+mae = mean_absolute_error(y_test, y_pred)
+mae
+#%%
 
 
 #%%
