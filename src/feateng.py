@@ -20,8 +20,8 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 9000) + "),"
-sql += "b as (select min(tstamp) from a)"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 300) + "),"
+sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
 
@@ -63,9 +63,15 @@ tmp = check_time_gaps(df, _conf)
 # Technical Indicators
 import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
-# TODO: SROC3 SROC6 SROC9 SROC12
-# TODO: SROC3 SROC6 SROC9 SROC12
+
+for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
+    for i in [3, 6, 9, 12, 15]:
+        df[str(c) + '_SROC_' + str(i)] = df[c].ewm(span=4, adjust=False).mean().pct_change(i) * 100
+df = df[100:]
 #%%
-sql =  "delete from feateng where symbol='" + _conf['symbol'] + "' and interval=" + str(_conf['interval'])
+sql  = "delete from feateng where symbol='" + _conf['symbol']
+sql += "' and interval=" + str(_conf['interval'])
+sql += " and tstamp > '" + min(df['tstamp']).isoformat() + "'::timestamp "
+
 engine.execute(sql)
 df.to_sql('feateng', engine, if_exists='append', index=False)

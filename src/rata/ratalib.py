@@ -28,7 +28,7 @@ def check_time_gaps(df, _conf):
     df_diff_intervals.set_index(df_diff_intervals['tstamp'], inplace=True, drop=True)
     df_diff_intervals['delta_minutes'] = df_diff_intervals['delta'].dt.total_seconds() / -60
 
-    df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > float(_conf['interval']) * 1]
+    df_delta_minutes = df_diff_intervals['delta_minutes'][df_diff_intervals['delta_minutes'] > float(_conf['interval']) * 2]
     print('Len: ', len(df_delta_minutes))
     if len(df_delta_minutes > 0):
         print('First: ', df.iloc[0]['tstamp'])

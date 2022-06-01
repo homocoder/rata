@@ -20,19 +20,19 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata
 #symbols = ['AUDUSD', 'AUDCHF', 'AUDNZD']#, 'EURGBP', 'GBPNZD', 'GBPAUD', 'NZDUSD']
 symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
 
-sql = "select * from feateng where symbol='" + symbols[0] + "' and interval=" + str(_conf['interval'])
+sql = "select * from feateng where symbol='" + symbols[0] + "' and interval=" + str(_conf['interval']) + " limit 1"
 df = pd.read_sql_query(sql, engine)
-
+#%%
 sql = 'with '
 for s in symbols:
     sql += s + ' as (select '
     for i in df.columns:
-        sql += i + ' as ' + s + '_' + i + ' ,\n'
+        sql += i.lower() + ' as ' + s + '_' + i + ' ,\n'
     sql = sql[:-2]
     sql += " from feateng where symbol='" + s + "' and interval=" + str(_conf['interval'])
     sql += "), \n"
 sql = sql[:-3]
-sql += '\nselect * from ' + ', '.join(symbols) 
+sql += '\nselect * from ' + ', '.join(symbols)
 
 first_symbol = symbols[0]
 sql += ' where ' + first_symbol
@@ -40,6 +40,7 @@ for s in symbols:
     sql += '_tstamp=' + s + '_tstamp and ' + s
 sql += '_tstamp=' + first_symbol + '_tstamp'
 df = pd.read_sql_query(sql, engine)
+#%%
 df['tstamp'] = df[first_symbol.lower() + '_tstamp']
 
 df = df[[i for i in df.columns if '_tstamp' not in i]]
