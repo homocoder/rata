@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import lstm_prep, parse_argv
 
-fake_argv = 'featsel.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3'
+fake_argv = 'featsel.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=300'
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -17,17 +17,42 @@ from rata.ratalib import custom_resample_close, custom_resample_open, custom_res
 from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
-#symbols = ['AUDUSD', 'AUDCHF', 'AUDNZD']#, 'EURGBP', 'GBPNZD', 'GBPAUD', 'NZDUSD']
 symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
+symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'NZDUSD']
 
-sql = "select * from feateng where symbol='" + symbols[0] + "' and interval=" + str(_conf['interval']) + " limit 1"
-df = pd.read_sql_query(sql, engine)
+df_join = pd.DataFrame()
+for s in symbols:
+    sql =  "select * from feateng "
+    sql += "where symbol='" + s + "' and interval=" + str(_conf['interval'])
+    sql += " order by tstamp desc limit " + str(_conf['nrows'])
+    df = pd.read_sql_query(sql, engine).sort_values('tstamp')
+    #df.set_index('tstamp', drop=True, inplace=True)
+    X_prefix = s + '_' + str(_conf['interval']) + '_'
+    for c in df.columns:
+        df.rename({c: X_prefix + c}, axis=1, inplace=True)
+    
+    
+    if len(df_join) == 0:
+        df_join = df
+    else:
+        df_join = pd.merge(df_join, df, on='tstamp', how='inner')
+df_join.sort_index
+
+
+#%%
+featsel = ['_roc', '_close', '_SROC_']
+features_selected = set()
+for i in featsel:
+    for j in df.columns:
+        if (i in j):
+            features_selected.add(j)
+features_selected = list(features_selected) + ['tstamp']
 #%%
 sql = 'with '
 for s in symbols:
     sql += s + ' as (select '
-    for i in df.columns:
-        sql += i.lower() + ' as ' + s + '_' + i + ' ,\n'
+    for i in df_columns:
+        sql += '"' + i + '" as ' + s + '_' + i + ' ,\n'
     sql = sql[:-2]
     sql += " from feateng where symbol='" + s + "' and interval=" + str(_conf['interval'])
     sql += "), \n"
@@ -51,13 +76,7 @@ check_time_gaps(df, _conf)
 df.set_index('tstamp', drop=True, inplace=True)
 df.to_csv('../' + str(df.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df)) + '.csv')
 #%%
-DARTS
-FLAML
-GluonTS
-uber Orbit
-Driverless
-lstm
-## !!!!!!!!!!!!!!!!!!!!
+
 
 #%%
 

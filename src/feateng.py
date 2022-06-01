@@ -20,13 +20,12 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 300) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 250) + "),"
 sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
 
 df = pd.read_sql_query(sql, engine)
-#%%
 df.sort_values(by='tstamp', ascending=True, inplace=True)
 symbol    = df[['symbol']].iloc[0]['symbol']
 interval  = int(df[['interval']].iloc[0]['interval']) # always 1
@@ -71,7 +70,7 @@ df = df[100:]
 #%%
 sql  = "delete from feateng where symbol='" + _conf['symbol']
 sql += "' and interval=" + str(_conf['interval'])
-sql += " and tstamp > '" + min(df['tstamp']).isoformat() + "'::timestamp "
+sql += " and tstamp >= '" + min(df['tstamp']).isoformat() + "'::timestamp "
 
 engine.execute(sql)
 df.to_sql('feateng', engine, if_exists='append', index=False)
