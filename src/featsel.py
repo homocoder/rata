@@ -49,6 +49,10 @@ df.reset_index(drop=False, inplace=True)
 
 len(df.iloc[:,0].drop_duplicates()) == len(df.iloc[:,0])
 #%%
+df['Y_AUDUSD_3_close_SROC_12']  = df['AUDUSD_3_close_SROC_12'].shift(-12)
+df = df[:-12]
+
+#%%
 import driverlessai
 
 address = 'http://192.168.3.114:12345'
@@ -59,23 +63,24 @@ dai = driverlessai.Client(address = address, username = username, password = pas
 dataset_train = dai.datasets.create(df, name=dataset_name)
 
 # %%
+ROCs = [12]
 experiments = list()
-for target_column in ['AUDUSD_3_close_SROC_' + i for i in ['3']]:
-    for num_prediction_periods in [3]:
-        name = target_column.replace('AUDUSD_3_close_', '') + '_FH_' + str(num_prediction_periods) + '_T_' + str(num_prediction_periods*3)
-        xp = dai.experiments.create_async(train_dataset=dataset_train,
-                                            task='regression',
-                                            scorer='RMSE',
-                                            name=name,
-                                            models=['LightGBM'],
-                                            target_column=target_column,
-                                            time_column='tstamp',
-                                            num_prediction_periods=num_prediction_periods,
-                                            accuracy=10,
-                                            time=10,
-                                            interpretability=5,
-                                            config_overrides=None)
-        experiments.append(xp)
+for roc in ROCs:
+    target_column = 'Y_AUDUSD_3_close_SROC_' + str(roc)
+    name = target_column.replace('AUDUSD_3_close_', '') + '_FH_' + str(roc) + '_T_' + str(roc*3)
+    xp = dai.experiments.create_async(train_dataset=dataset_train,
+                                        task='regression',
+                                        scorer='RMSE',
+                                        name=name,
+                                        models=['LightGBM'],
+                                        target_column=target_column,
+                                        time_column='tstamp',
+                                        num_prediction_periods=roc,
+                                        accuracy=6,
+                                        time=3,
+                                        interpretability=3,
+                                        config_overrides=None)
+    experiments.append(xp)
 
 # %%
 xp_keys = list()

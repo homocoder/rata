@@ -21,7 +21,7 @@ for s in symbols:
     sql =  "select * from rates "
     sql += "where symbol='" + s + "' and interval=1"
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
-    check_time_gaps(df, {'symbol': s, 'interval': 5})
+    check_time_gaps(df, {'symbol': s, 'interval': 4})
 
 #%%
 ## FEATENG GAPS
