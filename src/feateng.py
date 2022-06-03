@@ -64,7 +64,7 @@ import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 
 for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
-    for i in [3, 6, 9, 12, 15]:
+    for i in [3, 6, 9, 12, 15, 18, 21]:
         df[str(c) + '_SROC_' + str(i)] = df[c].ewm(span=4, adjust=False).mean().pct_change(i) * 100
 df = df[100:]
 #%%

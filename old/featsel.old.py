@@ -19,7 +19,7 @@ from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
 symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD'] # GBPNZD  2022-05-30 00:00:00 5085.0 # AUDNZD 2022-05-30 00:00:00 4926.0
-#symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
+symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'EURGBP', 'NZDUSD']
 
 df_join = pd.DataFrame()
 for s in symbols:
@@ -35,19 +35,15 @@ for s in symbols:
         df_join = df
     else:
         df_join = pd.merge(df_join, df, how='inner', left_on=df_join.columns[0], right_on=df.columns[0])
-df = df_join.copy()
-df.sort_values(df.columns[0])
-df['tstamp'] = df.iloc[:,0]
-df.sort_values('tstamp', ascending=True)
-check_time_gaps(df, {'symbol': s, 'interval': 3})
-df.set_index('tstamp', drop=True, inplace=True)
+df_join.sort_values(df_join.columns[0])
+df_join['tstamp'] = df_join.iloc[:,0]
+df_join.set_index('tstamp', drop=True, inplace=True)
 
+check_time_gaps(df_join, {'symbol': s, 'interval': 3})
 # dataframe with all data
-dataset_name = str(df.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df))
-df.to_csv('/home/selknam/var/' +  dataset_name + '.csv')
-df.reset_index(drop=False, inplace=True)
-
-len(df.iloc[:,0].drop_duplicates()) == len(df.iloc[:,0])
+#df_join.to_csv('../' + str(df_join.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df_join)) + '.csv')
+df = df_join.copy()
+len(df_join.iloc[:,0].drop_duplicates()) == len(df_join.iloc[:,0])
 #%%
 import driverlessai
 
@@ -56,23 +52,25 @@ username = 'admin'
 password = 'admin'
 dai = driverlessai.Client(address = address, username = username, password = password)
 
-dataset_train = dai.datasets.create(df, name=dataset_name)
+dataset_name = str(df['tstamp'].iloc[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df))
+dataset = dai.datasets.create(df, name=dataset_name)
 
-# %%
+ds = dai.datasets.get('f8f86436-e29d-11ec-8c63-000c291e95a2')
+
 experiments = list()
-for target_column in ['AUDUSD_3_close_SROC_' + i for i in ['3']]:
-    for num_prediction_periods in [3]:
+for target_column in ['AUDUSD_3_close_SROC_' + i for i in ['12']]:
+    for num_prediction_periods in [4]:
         name = target_column.replace('AUDUSD_3_close_', '') + '_FH_' + str(num_prediction_periods) + '_T_' + str(num_prediction_periods*3)
-        xp = dai.experiments.create_async(train_dataset=dataset_train,
+        xp = dai.experiments.create_async(train_dataset=ds,
                                             task='regression',
                                             scorer='RMSE',
                                             name=name,
-                                            models=['LightGBM'],
+                                            model='LightGBM'
                                             target_column=target_column,
                                             time_column='tstamp',
                                             num_prediction_periods=num_prediction_periods,
-                                            accuracy=10,
-                                            time=10,
+                                            accuracy=5,
+                                            time=5,
                                             interpretability=5,
                                             config_overrides=None)
         experiments.append(xp)
