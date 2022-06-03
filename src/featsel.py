@@ -26,6 +26,7 @@ for s in symbols:
     sql =  "select * from feateng "
     sql += "where symbol='" + s + "' and interval=" + str(_conf['interval'])
     sql += " order by tstamp desc limit " + str(_conf['nrows'])
+    print(sql)
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
     X_prefix = s + '_' + str(_conf['interval']) + '_'
     for c in df.columns:
@@ -44,13 +45,18 @@ df.set_index('tstamp', drop=True, inplace=True)
 
 # dataframe with all data
 dataset_name = str(df.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df))
-df.to_csv('/home/selknam/var/' +  dataset_name + '.csv')
+#df.to_csv('/home/selknam/var/' +  dataset_name + '.csv')
 df.reset_index(drop=False, inplace=True)
 
 len(df.iloc[:,0].drop_duplicates()) == len(df.iloc[:,0])
 #%%
-df['Y_AUDUSD_3_close_SROC_12']  = df['AUDUSD_3_close_SROC_12'].shift(-12)
-df = df[:-12]
+y_shifted  = df['AUDUSD_3_close_SROC_15'].shift(-15)
+#%%
+# Y for classification
+df['Y_AUDUSD_3_close_SROC_15'] = 0
+df['Y_AUDUSD_3_close_SROC_15'] = df['Y_AUDUSD_3_close_SROC_15'].mask(y_shifted > 0.2, 1)
+
+df = df[:-15]
 
 #%%
 import driverlessai
@@ -63,16 +69,16 @@ dai = driverlessai.Client(address = address, username = username, password = pas
 dataset_train = dai.datasets.create(df, name=dataset_name)
 
 # %%
-ROCs = [12]
+ROCs = [15]
 experiments = list()
 for roc in ROCs:
     target_column = 'Y_AUDUSD_3_close_SROC_' + str(roc)
-    name = target_column.replace('AUDUSD_3_close_', '') + '_FH_' + str(roc) + '_T_' + str(roc*3)
+    name = target_column.replace('AUDUSD_3_close_', '') + '_FH_' + str(roc) + '_T_' + str(roc*3) + '.v2'
     xp = dai.experiments.create_async(train_dataset=dataset_train,
                                         task='regression',
                                         scorer='RMSE',
                                         name=name,
-                                        models=['LightGBM'],
+                                        #models=['LightGBM'],
                                         target_column=target_column,
                                         time_column='tstamp',
                                         num_prediction_periods=roc,
