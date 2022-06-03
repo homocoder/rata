@@ -1,8 +1,9 @@
 # %% 🐭
 from sys import argv
+from xml.etree.ElementInclude import include
 from rata.utils import lstm_prep, parse_argv
 
-fake_argv = 'featsel.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=300'
+fake_argv = 'featsel.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=6000'
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -18,7 +19,6 @@ from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
 symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
-symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'NZDUSD']
 
 df_join = pd.DataFrame()
 for s in symbols:
@@ -26,141 +26,113 @@ for s in symbols:
     sql += "where symbol='" + s + "' and interval=" + str(_conf['interval'])
     sql += " order by tstamp desc limit " + str(_conf['nrows'])
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
-    #df.set_index('tstamp', drop=True, inplace=True)
     X_prefix = s + '_' + str(_conf['interval']) + '_'
     for c in df.columns:
         df.rename({c: X_prefix + c}, axis=1, inplace=True)
     
-    
     if len(df_join) == 0:
         df_join = df
     else:
-        df_join = pd.merge(df_join, df, on='tstamp', how='inner')
-df_join.sort_index
-
-
+        df_join = pd.merge(df_join, df, how='inner', left_on=df_join.columns[0], right_on=df.columns[0])
+df_join.sort_values(df_join.columns[0])
+df_join['tstamp'] = df_join.iloc[:,0]
+df_join.set_index('tstamp', drop=True, inplace=True)
+df_join.to_csv('../' + str(df_join.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df_join)) + '.csv')
+len(df_join.iloc[:,0].drop_duplicates()) == len(df_join.iloc[:,0])
 #%%
-featsel = ['_roc', '_close', '_SROC_']
-features_selected = set()
-for i in featsel:
-    for j in df.columns:
-        if (i in j):
-            features_selected.add(j)
-features_selected = list(features_selected) + ['tstamp']
-#%%
-sql = 'with '
-for s in symbols:
-    sql += s + ' as (select '
-    for i in df_columns:
-        sql += '"' + i + '" as ' + s + '_' + i + ' ,\n'
-    sql = sql[:-2]
-    sql += " from feateng where symbol='" + s + "' and interval=" + str(_conf['interval'])
-    sql += "), \n"
-sql = sql[:-3]
-sql += '\nselect * from ' + ', '.join(symbols)
-
-first_symbol = symbols[0]
-sql += ' where ' + first_symbol
-for s in symbols:
-    sql += '_tstamp=' + s + '_tstamp and ' + s
-sql += '_tstamp=' + first_symbol + '_tstamp'
-df = pd.read_sql_query(sql, engine)
-#%%
-df['tstamp'] = df[first_symbol.lower() + '_tstamp']
-
-df = df[[i for i in df.columns if '_tstamp' not in i]]
-df = df[[i for i in df.columns if '_symbol' not in i]]
-df = df[[i for i in df.columns if '_interval' not in i]]
-df = df.sort_values('tstamp')
-check_time_gaps(df, _conf)
-df.set_index('tstamp', drop=True, inplace=True)
-df.to_csv('../' + str(df.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df)) + '.csv')
-#%%
-
-
-#%%
-
+import driverlessai
+import matplotlib.pyplot as plt
 import pandas as pd
-from sklearn.model_selection import train_test_split
 
-# Read a pandas DataFrame
-df = pd.read_csv('https://www.dropbox.com/s/rf8mllry8ohm7hh/2022-05-27T20-57-00.AUDUSD_GBPAUD_AUDCHF_GBPNZD_AUDNZD_EURGBP_NZDUSD.8985.csv?dl=1')
-df['tstamp'] = pd.to_datetime(df['tstamp'])
+address = 'http://192.168.3.114:12345'
+username = 'admin'
+password = 'admin'
+dai = driverlessai.Client(address = address, username = username, password = password)
 
-time_horizon = 10
+ds = dai.datasets.get('f8f86436-e29d-11ec-8c63-000c291e95a2')
 
-target = 'audusd_close'
-X = df
-y = df[[target]]
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.15, random_state=42334) # y_train not used in TS
-
-# initialize AutoML instance
-from flaml import AutoML
-
-automl = AutoML()
-
-# configure AutoML settings
-settings = {
-    "time_budget": 15,  # total running time in seconds
-    'estimator_list':  ['rf'],
-    "metric": "rmse",  # primary metric
-    "task": "ts_forecast",  # task type
-    "log_file_name": "rata_audusd_flaml.log",  # flaml log file
-    "eval_method": "holdout",
-    "log_type": "all",
-    "label": target,
-}
-
-# train the model
-automl.fit(dataframe=X_train, **settings, period=time_horizon)
-
-# predictions
-y_pred = automl.predict(X_test)
-from sklearn.metrics import mean_absolute_error
-mae = mean_absolute_error(y_test, y_pred)
-mae
-#%%
-
-
-#%%
-df.sort_values(by='tstamp', ascending=True, inplace=True)
-symbol    = df[['symbol'  ]].iloc[0]['symbol']
-interval  = int(df[['interval']].iloc[0]['interval']) # always 1
+experiments = list()
+for target_column in ['AUDUSD_3_close_SROC_' + i for i in ['3', '6', '9', '12', '15']]:
+    for num_prediction_periods in [3, 4]:
+        name = target_column.replace('AUDUSD_3_close_', '') + '_FH_' + str(num_prediction_periods) + '_T_' + str(num_prediction_periods*3)
+        xp = dai.experiments.create_async(train_dataset=ds,
+                                            task='regression',
+                                            scorer='RMSE',
+                                            name=name,
+                                            target_column=target_column,
+                                            time_column='tstamp',
+                                            num_prediction_periods=num_prediction_periods,
+                                            accuracy=3,
+                                            time=3,
+                                            interpretability=3,
+                                            config_overrides=None)
+        experiments.append(xp)
 
 # %%
+xp_keys = list()
+for r in dai.experiments.list().__str__().split('\n'):
+    cells = r.split('|')
+    if ' Experiment ' in cells:
+        xp_keys.append(cells[2].strip())
 
-if interval != _conf['interval']:
-    print('\n##### Resampling: ', _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
-    interval = _conf['interval']
-    print('To interval:', interval)
-    resample_rule = str(_conf['interval']) + 'min'
-    ts_open   = df[['tstamp', 'open'  ]].resample(resample_rule, on='tstamp').apply(custom_resample_open)
-    ts_high   = df[['tstamp', 'high'  ]].resample(resample_rule, on='tstamp').max()['high']
-    ts_low    = df[['tstamp', 'low'   ]].resample(resample_rule, on='tstamp').min()['low']
-    ts_close  = df[['tstamp', 'close' ]].resample(resample_rule, on='tstamp').apply(custom_resample_close)
-    ts_volume = df[['tstamp', 'volume']].resample(resample_rule, on='tstamp').apply(custom_resample_volume)
-    
-    ts_open.name   = 'open'
-    ts_close.name  = 'close'
-    ts_volume.name = 'volume'
+df_feat_importance = pd.DataFrame()
+for k in xp_keys:
+    xp = dai.experiments.get(k)
+    vi = xp.variable_importance()
+    if vi !=  None:
+        df_feat_importance = pd.concat([df_feat_importance, pd.DataFrame(vi.data, columns=vi.headers)])
 
-    df_resample = pd.concat([ts_open, ts_high, ts_low, ts_close, ts_volume], axis=1).sort_index()
-    df_resample['symbol']   = symbol
-    df_resample['interval'] = interval
-    del df
-    df = df_resample.copy()
-    df.reset_index(drop=False, inplace=True)
-    df.dropna(inplace=True)
-else:
-    print('\n##### Not resampling: ',  _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
+featsel = df_feat_importance.groupby('description').sum().reset_index()
+featsel = featsel[featsel['gain'] > 0.01].sort_values('gain', ascending=False)
 
-check_time_gaps(df, _conf)
-# %% 🐭
-# Technical Indicators
-import ta
-df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
+# %%
+symbols    = featsel['description'].str.split('_', expand=True)[[0]]
+indicators = featsel['description'].str.split('_', expand=True)[[2, 3]]
+SROCs      = featsel['description'].str.split('_', expand=True)[[5]]
+# %%
+#SROC_3 = chao
+top_indicators = momentum_kama
+momentum_pvo
+momentum_roc
+momentum_rsi
+momentum_stoch
+momentum_tsi
+momentum_wr
+others_cr
+trend_adx
+trend_ema
+trend_ichimoku
+trend_kst
+trend_mass
+trend_psar
+trend_sma
+trend_visual
+trend_vortex
+volatility_bbh
+volatility_bbl
+volatility_bbm
+volatility_bbp
+volatility_bbw
+volatility_dch
+volatility_dcl
+volatility_dcp
+volatility_kcc
+volatility_kch
+volatility_kcp
+volume_adi
+volume_fi
+volume_mfi
+volume_nvi
+volume_obv
+volume_sma
+volume_vwap
 
-#%%
-sql =  "delete from feateng where symbol='" + _conf['symbol'] + "' and interval=" + str(_conf['interval'])
-engine.execute(sql)
-df.to_sql('feateng', engine, if_exists='append', index=False)
+top_symbols
+AUDUSD
+AUDCHF
+NZDUSD
+AUDNZD
+GBPAUD
+
+
+
