@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import lstm_prep, parse_argv
 
-fake_argv = 'featsel.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=50'
+fake_argv = 'forecast.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=1200'
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -17,8 +17,8 @@ from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
-symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD'] # GBPNZD  2022-05-30 00:00:00 5085.0 # AUDNZD 2022-05-30 00:00:00 4926.0
-#symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
+#symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD'] 
+symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
 
 df_join = pd.DataFrame()
 for s in symbols:
@@ -35,6 +35,7 @@ for s in symbols:
         df_join = df
     else:
         df_join = pd.merge(df_join, df, how='inner', left_on=df_join.columns[0], right_on=df.columns[0])
+
 df = df_join.copy()
 df.sort_values(df.columns[0])
 df['tstamp'] = df.iloc[:,0]
@@ -56,11 +57,19 @@ username = 'admin'
 password = 'admin'
 dai = driverlessai.Client(address = address, username = username, password = password)
 # %%
-dataset_test = dai.datasets.create(df[-10:], name=dataset_name + '.v3')
-model1 = dai.experiments.get('4557ffe4-e2fd-11ec-b46e-000c291e95a2')
-model2 = dai.experiments.get('4ee08d24-e2fd-11ec-b46e-000c291e95a2')
+df_test  = df[df['tstamp'] > pd.to_datetime('2022-06-02T00:00:00')]
+dataset_test = dai.datasets.create(df_test, name=dataset_name + '.v4')
+model_sell = dai.experiments.get('ac287760-e4e4-11ec-9041-000c291e95a2')
+model_buy  = dai.experiments.get('a92d1246-e4e4-11ec-9041-000c291e95a2')
 
 # %%
-forecast = model1.predict(dataset_test)
+forecast_buy  = model_buy.predict(dataset_test)
+forecast_sell = model_sell.predict(dataset_test)
 
+# %%
+df_test[forecast_buy.to_pandas().columns[0]] = forecast_buy.to_pandas()[forecast_buy.to_pandas().columns[0]]
+df_test[forecast_buy.to_pandas().columns[1]] = forecast_buy.to_pandas()[forecast_buy.to_pandas().columns[1]]
+#%%
+df_test[forecast_sell.to_pandas().columns[0]] = forecast_sell.to_pandas()[forecast_sell.to_pandas().columns[0]]
+df_test[forecast_sell.to_pandas().columns[1]] = forecast_sell.to_pandas()[forecast_sell.to_pandas().columns[1]]
 # %%

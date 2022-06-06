@@ -1,6 +1,5 @@
 # %% 🐭
 from sys import argv
-from xml.etree.ElementInclude import include
 from rata.utils import lstm_prep, parse_argv
 
 fake_argv = 'featsel.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=6000'
@@ -18,8 +17,8 @@ from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
 
-symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD'] # GBPNZD  2022-05-30 00:00:00 5085.0 # AUDNZD 2022-05-30 00:00:00 4926.0
-#symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
+#symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD'] 
+symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
 
 df_join = pd.DataFrame()
 for s in symbols:
@@ -50,14 +49,21 @@ df.reset_index(drop=False, inplace=True)
 
 len(df.iloc[:,0].drop_duplicates()) == len(df.iloc[:,0])
 #%%
+#TRAIN
+
+# Y for regression
 y_shifted  = df['AUDUSD_3_close_SROC_15'].shift(-15)
-#%%
+
 # Y for classification
-df['Y_AUDUSD_3_close_SROC_15'] = 0
-df['Y_AUDUSD_3_close_SROC_15'] = df['Y_AUDUSD_3_close_SROC_15'].mask(y_shifted > 0.2, 1)
+df['YB_AUDUSD_3_close_SROC_15'] = 0
+df['YB_AUDUSD_3_close_SROC_15'] = df['YB_AUDUSD_3_close_SROC_15'].mask(y_shifted >  0.2, 1)
+
+df['YS_AUDUSD_3_close_SROC_15'] = 0
+df['YS_AUDUSD_3_close_SROC_15'] = df['YS_AUDUSD_3_close_SROC_15'].mask(y_shifted < -0.2, 1)
 
 df = df[:-15]
-
+df_train = df[df['tstamp'] < pd.to_datetime('2022-06-02T00:00:00')]
+df_test  = df[df['tstamp'] > pd.to_datetime('2022-06-02T00:00:00')]
 #%%
 import driverlessai
 
@@ -66,173 +72,52 @@ username = 'admin'
 password = 'admin'
 dai = driverlessai.Client(address = address, username = username, password = password)
 
-dataset_train = dai.datasets.create(df, name=dataset_name)
+dataset_test       = dai.datasets.create(df_test, name='v2.test.'  + dataset_name)
+
+dataset_train_buy  = dai.datasets.create(df_train.drop('YS_AUDUSD_3_close_SROC_15', axis=1), name='v2.buy.'  + dataset_name)
+dataset_train_sell = dai.datasets.create(df_train.drop('YB_AUDUSD_3_close_SROC_15', axis=1), name='v2.sell.' + dataset_name)
 
 # %%
 ROCs = [15]
+fh = 1
+expert_settings = {
+    'imbalance_sampling_method': 'auto',
+    'included_models': ['ImbalancedLightGBM', 'LightGBM'],
+    'imbalance_sampling_threshold_min_rows_original': 1000
+}
 experiments = list()
+#BUY
 for roc in ROCs:
-    target_column = 'Y_AUDUSD_3_close_SROC_' + str(roc)
-    name = target_column.replace('AUDUSD_3_close_', '') + '_FH_' + str(roc) + '_T_' + str(roc*3) + '.v2'
-    xp = dai.experiments.create_async(train_dataset=dataset_train,
-                                        task='regression',
-                                        scorer='RMSE',
+    target_column = 'YB_AUDUSD_3_close_SROC_' + str(roc)
+    name = target_column.replace('AUDUSD_3_close_', 'v3.buy.') + '_FH' + str(fh) + '_T' + str(roc*3)
+    xp = dai.experiments.create_async(train_dataset=dataset_train_buy,
+                                        task='classification',
                                         name=name,
-                                        #models=['LightGBM'],
                                         target_column=target_column,
                                         time_column='tstamp',
-                                        num_prediction_periods=roc,
-                                        accuracy=6,
-                                        time=3,
-                                        interpretability=3,
-                                        config_overrides=None)
+                                        num_prediction_periods=fh,
+                                        accuracy=10,
+                                        time=7,
+                                        interpretability=4,
+                                        config_overrides=None,
+                                        **expert_settings)
     experiments.append(xp)
 
+#SELL
+for roc in ROCs:
+    target_column = 'YS_AUDUSD_3_close_SROC_' + str(roc)
+    name = target_column.replace('AUDUSD_3_close_', 'v3.sell.') + '_FH' + str(fh) + '_T' + str(roc*3)
+    xp = dai.experiments.create_async(train_dataset=dataset_train_sell,
+                                        task='classification',
+                                        name=name,
+                                        target_column=target_column,
+                                        time_column='tstamp',
+                                        num_prediction_periods=fh,
+                                        accuracy=10,
+                                        time=7,
+                                        interpretability=4,
+                                        config_overrides=None,
+                                        **expert_settings)
+    experiments.append(xp)
 # %%
-xp_keys = list()
-for r in dai.experiments.list().__str__().split('\n'):
-    cells = r.split('|')
-    if ' Experiment ' in cells:
-        xp_keys.append(cells[2].strip())
-
-df_feat_importance = pd.DataFrame()
-for k in xp_keys:
-    xp = dai.experiments.get(k)
-    vi = xp.variable_importance()
-    if vi !=  None:
-        df_feat_importance = pd.concat([df_feat_importance, pd.DataFrame(vi.data, columns=vi.headers)])
-
-featsel = df_feat_importance.groupby('description').sum().reset_index()
-featsel = featsel[featsel['gain'] > 0.01].sort_values('gain', ascending=False)
-
-# %%
-symbols    = featsel['description'].str.split('_', expand=True)[[0]]
-indicators = featsel['description'].str.split('_', expand=True)[[2, 3]]
-SROCs      = featsel['description'].str.split('_', expand=True)[[5]]
-# %%
-## FEAT SELECTED 2: TOP indicators
-df = df_join.copy()
-
-top_indicators = [
-    'momentum_kama',
-    'momentum_pvo',
-    'momentum_roc',
-    'momentum_rsi',
-    'momentum_stoch',
-    'momentum_tsi',
-    'momentum_wr',',',
-    'others_cr',
-    'trend_adx',
-    'trend_ema',
-    'trend_ichimoku',
-    'trend_kst',
-    'trend_mass',
-    'trend_psar',
-    'trend_sma',
-    'trend_visual',
-    'trend_vortex',
-    'volatility_bbh',
-    'volatility_bbl',
-    'volatility_bbm',
-    'volatility_bbp',
-    'volatility_bbw',
-    'volatility_dch',
-    'volatility_dcl',
-    'volatility_dcp',
-    'volatility_kcc',
-    'volatility_kch',
-    'volatility_kcp',
-    'volume_adi',
-    'volume_fi',
-    'volume_mfi',
-    'volume_nvi',
-    'volume_obv',
-    'volume_sma',
-    'volume_vwap'
-]
-## %%
-
-top_symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
-
-features_selected = set()
-for i in top_symbols:
-    for j in df.columns:
-        if (i in j):
-            features_selected.add(j)
-features_selected = list(features_selected)
-df = df[features_selected]
-df.reset_index(inplace=True)
-#%%
-import driverlessai
-
-address = 'http://192.168.3.114:12345'
-username = 'admin'
-password = 'admin'
-dai = driverlessai.Client(address = address, username = username, password = password)
-
-dataset_name = str(df['tstamp'].iloc[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(top_symbols) + '.' + str(len(df))
-dataset = dai.datasets.create(df, name=dataset_name)
-
-#%%
-experiments = list()
-for target_column in ['AUDUSD_3_close_SROC_' + i for i in ['6', '9', '12', '15']]:
-    for num_prediction_periods in [2, 3, 4, 5]:
-        name = target_column.replace('AUDUSD_3_close_', '') + '_H' + str(num_prediction_periods) + '_T' + str(num_prediction_periods*3)
-        name = 'symsel_' + name
-        xp = dai.experiments.create_async(train_dataset=dataset,
-                                            task='regression',
-                                            scorer='RMSE',
-                                            name=name,
-                                            target_column=target_column,
-                                            time_column='tstamp',
-                                            num_prediction_periods=num_prediction_periods,
-                                            accuracy=3,
-                                            time=3,
-                                            interpretability=3,
-                                            config_overrides=None)
-        experiments.append(xp)
-
-#%%
-## FEAT SELECTED
-df = df_join.copy()
-
-top_symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
-
-features_selected = set()
-for i in top_symbols:
-    for j in df.columns:
-        if (i in j):
-            features_selected.add(j)
-features_selected = list(features_selected)
-df = df[features_selected]
-df.reset_index(inplace=True)
-#%%
-import driverlessai
-
-address = 'http://192.168.3.114:12345'
-username = 'admin'
-password = 'admin'
-dai = driverlessai.Client(address = address, username = username, password = password)
-
-dataset_name = str(df['tstamp'].iloc[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(top_symbols) + '.' + str(len(df))
-dataset = dai.datasets.create(df, name=dataset_name)
-
-#%%
-experiments = list()
-for target_column in ['AUDUSD_3_close_SROC_' + i for i in ['6', '9', '12', '15']]:
-    for num_prediction_periods in [2, 3, 4, 5]:
-        name = target_column.replace('AUDUSD_3_close_', '') + '_H' + str(num_prediction_periods) + '_T' + str(num_prediction_periods*3)
-        name = 'symsel_' + name
-        xp = dai.experiments.create_async(train_dataset=dataset,
-                                            task='regression',
-                                            scorer='RMSE',
-                                            name=name,
-                                            target_column=target_column,
-                                            time_column='tstamp',
-                                            num_prediction_periods=num_prediction_periods,
-                                            accuracy=3,
-                                            time=3,
-                                            interpretability=3,
-                                            config_overrides=None)
-        experiments.append(xp)
-
+#FORECAST

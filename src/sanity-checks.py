@@ -22,6 +22,7 @@ for s in symbols:
     sql += "where symbol='" + s + "' and interval=1"
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
     check_time_gaps(df, {'symbol': s, 'interval': 4})
+    print('Count duplicates ', s, len(df['tstamp']) - len(df['tstamp'].drop_duplicates()))
 
 #%%
 ## FEATENG GAPS
@@ -30,5 +31,3 @@ for s in symbols:
     sql += "where symbol='" + s + "' and interval=3"
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
     check_time_gaps(df, {'symbol': s, 'interval': 3})
-
-# %%
