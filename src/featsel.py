@@ -52,16 +52,16 @@ len(df.iloc[:,0].drop_duplicates()) == len(df.iloc[:,0])
 #TRAIN
 
 # Y for regression
-y_shifted  = df['AUDUSD_3_close_SROC_15'].shift(-15)
+y = df['AUDUSD_3_close_SROC_15'].shift(-15)
 
 # Y for classification
 df['YB_AUDUSD_3_close_SROC_15'] = 0
-df['YB_AUDUSD_3_close_SROC_15'] = df['YB_AUDUSD_3_close_SROC_15'].mask(y_shifted >  0.2, 1)
+df['YB_AUDUSD_3_close_SROC_15'] = df['YB_AUDUSD_3_close_SROC_15'].mask(y >  0.2, 1)
 
 df['YS_AUDUSD_3_close_SROC_15'] = 0
-df['YS_AUDUSD_3_close_SROC_15'] = df['YS_AUDUSD_3_close_SROC_15'].mask(y_shifted < -0.2, 1)
+df['YS_AUDUSD_3_close_SROC_15'] = df['YS_AUDUSD_3_close_SROC_15'].mask(y < -0.2, 1)
 
-df = df[:-15]
+
 df_train = df[df['tstamp'] < pd.to_datetime('2022-06-02T00:00:00')]
 df_test  = df[df['tstamp'] > pd.to_datetime('2022-06-02T00:00:00')]
 #%%
@@ -72,14 +72,14 @@ username = 'admin'
 password = 'admin'
 dai = driverlessai.Client(address = address, username = username, password = password)
 
-dataset_test       = dai.datasets.create(df_test, name='v2.test.'  + dataset_name)
+dataset_test   = dai.datasets.create(df_test,  name='test.'  + dataset_name)
 
-dataset_train_buy  = dai.datasets.create(df_train.drop('YS_AUDUSD_3_close_SROC_15', axis=1), name='v2.buy.'  + dataset_name)
-dataset_train_sell = dai.datasets.create(df_train.drop('YB_AUDUSD_3_close_SROC_15', axis=1), name='v2.sell.' + dataset_name)
+dataset_train  = dai.datasets.create(df_train, name='train.' + dataset_name)
+
 
 # %%
 ROCs = [15]
-fh = 1
+fh = 15
 expert_settings = {
     'imbalance_sampling_method': 'auto',
     'included_models': ['ImbalancedLightGBM', 'LightGBM'],
@@ -89,16 +89,16 @@ experiments = list()
 #BUY
 for roc in ROCs:
     target_column = 'YB_AUDUSD_3_close_SROC_' + str(roc)
-    name = target_column.replace('AUDUSD_3_close_', 'v3.buy.') + '_FH' + str(fh) + '_T' + str(roc*3)
-    xp = dai.experiments.create_async(train_dataset=dataset_train_buy,
+    name = target_column.replace('AUDUSD_3_close_', 'v1.buy.') + '_FH' + str(fh) + '_T' + str(roc*3)
+    xp = dai.experiments.create_async(train_dataset=dataset_train,
                                         task='classification',
                                         name=name,
                                         target_column=target_column,
                                         time_column='tstamp',
                                         num_prediction_periods=fh,
-                                        accuracy=10,
-                                        time=7,
-                                        interpretability=4,
+                                        accuracy=7,
+                                        time=5,
+                                        interpretability=5,
                                         config_overrides=None,
                                         **expert_settings)
     experiments.append(xp)
@@ -106,16 +106,16 @@ for roc in ROCs:
 #SELL
 for roc in ROCs:
     target_column = 'YS_AUDUSD_3_close_SROC_' + str(roc)
-    name = target_column.replace('AUDUSD_3_close_', 'v3.sell.') + '_FH' + str(fh) + '_T' + str(roc*3)
-    xp = dai.experiments.create_async(train_dataset=dataset_train_sell,
+    name = target_column.replace('AUDUSD_3_close_', 'v1.sell.') + '_FH' + str(fh) + '_T' + str(roc*3)
+    xp = dai.experiments.create_async(train_dataset=dataset_train,
                                         task='classification',
                                         name=name,
                                         target_column=target_column,
                                         time_column='tstamp',
                                         num_prediction_periods=fh,
-                                        accuracy=10,
-                                        time=7,
-                                        interpretability=4,
+                                        accuracy=7,
+                                        time=5,
+                                        interpretability=5,
                                         config_overrides=None,
                                         **expert_settings)
     experiments.append(xp)
