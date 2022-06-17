@@ -20,7 +20,7 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 250) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 9250) + "),"
 sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
@@ -64,8 +64,9 @@ import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 
 for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
-    for i in [3, 6, 9, 12, 15, 18, 21]:
-        df[str(c) + '_SROC_' + str(i)] = df[c].ewm(span=4, adjust=False).mean().pct_change(i) * 100
+    for i in [12, 15, 21, 30, 45, 60]:
+        df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
+        df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
 df = df[100:]
 #%%
 sql  = "delete from feateng where symbol='" + _conf['symbol']
