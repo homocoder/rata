@@ -56,3 +56,67 @@ python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --inte
 python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-05-25
 python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-05-26
 python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-05-27
+
+
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-10
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-11
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-12
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-13
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-14
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-15
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-16
+python3 rates-get-old.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=1 --tstamp=2022-06-17
+
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-10
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-11
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-12
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-13
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-14
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-15
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-16
+python3 rates-get-old.py --db_host=localhost --symbol=EURGBP --kind=forex --interval=1 --tstamp=2022-06-17
+
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-10
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-11
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-12
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-13
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-14
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-15
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-16
+python3 rates-get-old.py --db_host=localhost --symbol=GBPNZD --kind=forex --interval=1 --tstamp=2022-06-17
+
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-10
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-11
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-12
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-13
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-14
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-15
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-16
+python3 rates-get-old.py --db_host=localhost --symbol=AUDNZD --kind=forex --interval=1 --tstamp=2022-06-17
+
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-10
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-11
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-12
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-13
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-14
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-15
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-16
+python3 rates-get-old.py --db_host=localhost --symbol=AUDCHF --kind=forex --interval=1 --tstamp=2022-06-17
+
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-10
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-11
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-12
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-13
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-14
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-15
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-16
+python3 rates-get-old.py --db_host=localhost --symbol=GBPAUD --kind=forex --interval=1 --tstamp=2022-06-17
+
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-10
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-11
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-12
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-13
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-14
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-15
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-16
+python3 rates-get-old.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=1 --tstamp=2022-06-17

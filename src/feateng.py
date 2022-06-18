@@ -64,8 +64,9 @@ import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 
 for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
-    for i in [3, 6, 9, 12, 15, 18, 21]:
-        df[str(c) + '_SROC_' + str(i)] = df[c].ewm(span=4, adjust=False).mean().pct_change(i) * 100
+    for i in [12, 15, 21, 30, 45, 60]:
+        df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
+        df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
 df = df[100:]
 #%%
 sql  = "delete from feateng where symbol='" + _conf['symbol']
