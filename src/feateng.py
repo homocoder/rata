@@ -20,7 +20,7 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 9250) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 250) + "),"
 sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
