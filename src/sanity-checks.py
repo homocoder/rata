@@ -13,7 +13,7 @@ _conf
 import pandas as pd
 from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.3.113:5432/rata')
 symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
 #%%
 ## RATES GAPS
@@ -31,5 +31,3 @@ for s in symbols:
     sql += "where symbol='" + s + "' and interval=3"
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
     check_time_gaps(df, {'symbol': s, 'interval': 3})
-
-# %%

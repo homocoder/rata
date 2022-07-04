@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import lstm_prep, parse_argv
 
-fake_argv = 'forecast.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=1200'
+fake_argv = 'forecast.py --db_host=localhost --symbol=AUDUSD --kind=forex --interval=3 --nrows=9200'
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -15,7 +15,7 @@ from rata.ratalib import check_time_gaps
 
 #%%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.3.113:5432/rata')
 
 #symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD'] 
 symbols = ['AUDUSD', 'AUDCHF', 'NZDUSD']
@@ -45,7 +45,7 @@ df.set_index('tstamp', drop=True, inplace=True)
 
 # dataframe with all data
 dataset_name = str(df.index[-1]).replace(' ', 'T').replace(':', '-') + '.' + '_'.join(symbols) + '.' + str(len(df))
-#df.to_csv('/home/selknam/var/' +  dataset_name + '.csv')
+df.to_csv('/home/selknam/var/' +  dataset_name + '.csv')
 df.reset_index(drop=False, inplace=True)
 
 len(df.iloc[:,0].drop_duplicates()) == len(df.iloc[:,0])
