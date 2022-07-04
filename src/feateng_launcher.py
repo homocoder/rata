@@ -18,7 +18,7 @@ for i in symbol_conf:
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
     symbol_params += ' --interval=' + str(_conf['interval'])
-    cmd += 'python -u /home/selknam/dev/rata/src/feateng.py ' + symbol_params + '  \n'
+    cmd += 'python -u /home/selknam/dev/rata/src/feateng.py ' + symbol_params + ' & \n'
 print(cmd)
 
 # %%
