@@ -29,6 +29,26 @@
             {
                 "symbol"   : "NZDUSD",
                 "kind"     : "forex"
+            },            
+            {
+                "symbol"   : "EURUSD",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "USDCAD",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "USDJPY",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "GBPUSD",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "EURAUD",
+                "kind"     : "forex"
             }
     ]
 }
