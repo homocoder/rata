@@ -1,29 +1,12 @@
 {
     "db_host": "localhost",
-
     "symbols":  [
             {
                 "symbol"   : "AUDUSD",
                 "kind"     : "forex"
             },
             {
-                "symbol"   : "GBPAUD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "GBPNZD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "AUDCHF",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "AUDNZD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "EURGBP",
+                "symbol"   : "GBPUSD",
                 "kind"     : "forex"
             },
             {
@@ -43,11 +26,7 @@
                 "kind"     : "forex"
             },
             {
-                "symbol"   : "GBPUSD",
-                "kind"     : "forex"
-            },
-            {
-                "symbol"   : "EURAUD",
+                "symbol"   : "USDCHF",
                 "kind"     : "forex"
             }
     ]

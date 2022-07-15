@@ -61,8 +61,12 @@ df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], ex
 df = df.sort_values(by='tstamp')
 df.reset_index(inplace=True)
 
-copy_from_stringio(conn, df, 'rates')
+#copy_from_stringio(conn, df, 'rates')
 # %%
 conn.commit()
 cur.close()
 conn.close()
+#%%
+from sqlalchemy import create_engine
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
+df.to_sql('rates', engine, if_exists='append', index=False)

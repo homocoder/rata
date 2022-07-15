@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'dbmaintain --db_host=localhost --db_port=5432 '
+fake_argv = 'dbmaintain --db_host=192.168.3.113 --db_port=5432 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -14,7 +14,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # %%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.3.113:5432/rata')
 sql =  "select distinct symbol from rates"
 df = pd.read_sql_query(sql, engine)
 #%%

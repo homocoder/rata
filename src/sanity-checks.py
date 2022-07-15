@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import lstm_prep, parse_argv
 
-fake_argv = 'sanity-checks.py --db_host=localhost '
+fake_argv = 'sanity-checks.py --db_host=192.168.3.114 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -14,7 +14,10 @@ import pandas as pd
 from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.3.113:5432/rata')
-symbols = ['AUDUSD', 'GBPAUD', 'AUDCHF', 'GBPNZD', 'AUDNZD', 'EURGBP', 'NZDUSD']
+sql =  "select distinct symbol from rates"
+df = pd.read_sql_query(sql, engine)
+symbols = df['symbol']
+
 #%%
 ## RATES GAPS
 for s in symbols:

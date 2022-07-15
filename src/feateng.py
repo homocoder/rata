@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=localhost --symbol=NZDUSD --kind=forex --interval=3'
+fake_argv = 'feateng.py --db_host=192.168.3.113 --symbol=EURUSD --kind=forex --interval=1'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -15,7 +15,7 @@ from rata.ratalib import custom_resample_close, custom_resample_open, custom_res
 
 #%%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.3.113:5432/rata')
 
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
@@ -56,6 +56,8 @@ if interval != _conf['interval']:
     df.dropna(inplace=True)
 else:
     print('\n##### Not resampling: ',  _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
+    df.reset_index(drop=True, inplace=True)
+    df = df[['tstamp', 'open', 'high', 'low', 'close', 'volume', 'symbol', 'interval']]
 
 tmp = check_time_gaps(df, _conf)
 # %% 🐭
@@ -64,14 +66,30 @@ import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 
 for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
-    for i in [12, 15, 21, 30, 45, 60]:
+    for i in [1, 3, 6, 9]:
         df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
         df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
 df = df[100:]
+
+#%%
+for shift in ['1', '3', '6', '9']:
+    # Ys for regression
+    df['y_close_SROC_' + shift + '_shift-' + shift] = df['close_SROC_' + shift].shift(-(int(shift)))
+    # Ys for classification
+    # SROC_1 BUY
+    df['y_B_close_SROC_' + shift + '_shift-' + shift] = 0
+    df['y_B_close_SROC_' + shift + '_shift-' + shift] = df['y_B_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] >  0.05, 1)
+    # SROC_1 SELL
+    df['y_S_close_SROC_' + shift + '_shift-' + shift] = 0
+    df['y_S_close_SROC_' + shift + '_shift-' + shift] = df['y_S_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] < -0.05, 1)
+
 #%%
 sql  = "delete from feateng where symbol='" + _conf['symbol']
 sql += "' and interval=" + str(_conf['interval'])
 sql += " and tstamp >= '" + min(df['tstamp']).isoformat() + "'::timestamp "
 
 engine.execute(sql)
+
+# %%
 df.to_sql('feateng', engine, if_exists='append', index=False)
+# %%
