@@ -5,9 +5,8 @@ from rata.utils import parse_argv, split_sequences
 fake_argv  = 'forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=3000 '
 fake_argv += '--symbols=AUDUSD,AUDCHF,NZDUSD '
 fake_argv += '--X_columns=tstamp,AUDCHF_3_close_SROC_15,NZDUSD_3_close_SROC_15,AUDUSD_3_close_SROC_15,AUDUSD_3_trend_macd_diff '
-fake_argv += '--X_columns=tstamp,AUDUSD_3_trend_macd,AUDUSD_3_trend_macd_signal,AUDUSD_3_trend_macd_diff,AUDUSD_3_trend_macd_SROC_15,AUDUSD_3_trend_macd_signal_SROC_15,AUDUSD_3_trend_macd_diff_SROC_15,AUDUSD_3_close_SROC_15 ' 
 fake_argv += '--y_column=y_AUDUSD_3_close_SROC_15_shift-15 '
-fake_argv += '--n_steps_in=60 --n_steps_out=3 --epochs=100 --test_lenght=1000 '
+fake_argv += '--n_steps_in=60 --n_steps_out=3 --epochs=10 --test_lenght=1000 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -107,7 +106,7 @@ model.compile(optimizer='adam', loss='mse')
 #tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 t1 = datetime.datetime.now()
 #model.fit(X_train, y_train, epochs=epochs, verbose=1, callbacks=[tensorboard_callback], use_multiprocessing=True)
-#model.fit(X_train, y_train, epochs=epochs, verbose=1, use_multiprocessing=True)
+model.fit(X_train, y_train, epochs=epochs, verbose=1, use_multiprocessing=True)
 t = int((datetime.datetime.now() - t1).total_seconds() / 60)
 
 #%%
@@ -128,18 +127,23 @@ df_val = pd.DataFrame(df_val, columns=['tstamp', 'step', 'y_test', 'y_forecast']
 mse = mean_squared_error(df_val['y_test'], df_val['y_forecast'])
 print('Global MSE: ', mse)
 
-df_val['symbol']      = _conf['symbol']
-df_val['interval']    = _conf['interval']
-df_val['X_columns']   = ','.join(X_columns)
-df_val['symbols']     = ','.join(_conf['symbols'])
-df_val['y_column']    = y_column
-df_val['n_steps_in']  = n_steps_in
-df_val['n_steps_out'] = n_steps_out
-df_val['epochs']      = epochs
-df_val['test_lenght'] = test_lenght
-df_val['model_id']    = tstamp_forecast
-df_val['fit_time']    = t
-df_val['mse']         = mse
+df_val['symbol']       = _conf['symbol']
+df_val['interval']     = _conf['interval']
+df_val['nrows']        = _conf['nrows']
+df_val['X_columns']    = ','.join(X_columns)
+df_val['symbols']      = ','.join(_conf['symbols'])
+df_val['y_column']     = y_column
+df_val['n_steps_in']   = n_steps_in
+df_val['n_steps_out']  = n_steps_out
+df_val['epochs']       = epochs
+df_val['test_lenght']  = test_lenght
+df_val['model_tstamp'] = tstamp_forecast
+df_val['model_id']     = str(tstamp_forecast).replace(' ', 'T')
+df_val['fit_time']     = t
+df_val['mse']          = mse
+
+df_val.reset_index(drop=True)
+df_val['forecast_index'] = (df_val.index +  3) // 3
 df_val
 
 # MSE per step

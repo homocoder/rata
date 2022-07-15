@@ -4,7 +4,7 @@ cd /home/selknam/dev/rata/src && \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD \
-    --X_columns=tstamp,AUDUSD_3_close_SROC_15
+    --X_columns=tstamp,AUDUSD_3_close_SROC_15 &
 
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
@@ -28,7 +28,7 @@ cd /home/selknam/dev/rata/src && \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD,GBPAUD \
-    --X_columns=tstamp,AUDUSD_3_close_SROC_15,GBPAUD_3_close_SROC_15 &
+    --X_columns=tstamp,AUDUSD_3_close_SROC_15,GBPAUD_3_close_SROC_15 
 
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
