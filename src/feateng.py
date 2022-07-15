@@ -20,7 +20,7 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 200) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 100) + "),"
 sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
@@ -70,7 +70,7 @@ for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
     for i in [1, 3, 6, 9]:
         df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
         df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
-df = df[100:]
+df = df[50:]
 print(len(df))
 #%%
 for shift in ['1', '3', '6', '9']:
