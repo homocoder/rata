@@ -1,0 +1,3 @@
+*/1   * * * *  nice -n 1 bash /home/selknam/dev/rata/src/rates_launcher.bash   1 >> /home/selknam/var/log/rates_launcher.1.log        2>&1
+#*/1   * * * *  nice -n 2 bash /home/selknam/dev/rata/src/feateng_launcher.bash 1 >> /home/selknam/var/log/feateng_launcher.1.bash.log 2>&1
+#*/3   * * * *  nice -n 3 bash /home/selknam/dev/rata/src/feateng_launcher.bash 3 >> /home/selknam/var/log/feateng_launcher.3.bash.log 2>&1
