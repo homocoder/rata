@@ -15,12 +15,12 @@ from rata.ratalib import custom_resample_close, custom_resample_open, custom_res
 
 #%%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.3.113:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
 
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 250) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 200) + "),"
 sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
@@ -32,7 +32,8 @@ interval  = int(df[['interval']].iloc[0]['interval']) # always 1
 
 # %%
 
-if interval != _conf['interval']:
+#if interval != _conf['interval']:
+if True:
     print('\n##### Resampling: ', _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
     interval = _conf['interval']
     print('To interval:', interval)
@@ -54,10 +55,10 @@ if interval != _conf['interval']:
     df = df_resample.copy()
     df.reset_index(drop=False, inplace=True)
     df.dropna(inplace=True)
-else:
-    print('\n##### Not resampling: ',  _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
-    df.reset_index(drop=True, inplace=True)
-    df = df[['tstamp', 'open', 'high', 'low', 'close', 'volume', 'symbol', 'interval']]
+#else:
+#    print('\n##### Not resampling: ',  _conf['symbol'] + "' and r.interval=" + str(_conf['interval']), ' #####')
+#    df.reset_index(drop=True, inplace=True)
+#    df = df[['tstamp', 'open', 'high', 'low', 'close', 'volume', 'symbol', 'interval']]
 
 tmp = check_time_gaps(df, _conf)
 # %% 🐭
@@ -70,7 +71,7 @@ for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
         df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
         df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
 df = df[100:]
-
+print(len(df))
 #%%
 for shift in ['1', '3', '6', '9']:
     # Ys for regression
