@@ -33,7 +33,7 @@ conn = psycopg2.connect(
     dbname='rata',
     user='rata',
     password='acaB.1312',
-    host='127.0.0.1',
+    host='192.168.3.113',
     port=5432,
 )
 
