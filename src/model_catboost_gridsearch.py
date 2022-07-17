@@ -3,17 +3,17 @@ from random import shuffle
 model_params = {
     'symbol'        : ['EURUSD'],
     'interval'      : [1, 3],
-    'shift'         : [1, 3, 6, 9],
-    'X_symbols'     : ['EURUSD,AUDUSD', 'EURUSD,GBPUSD', 'EURUSD,USDCAD'],
+    'shift'         : [3, 6, 9], # 1, 3, 6, 9
+    'X_symbols'     : ['EURUSD', 'EURUSD,GBPUSD', 'EURUSD,USDCAD'],
     'X_include'     : ['rsi,*'],
     'X_exclude'     : ['volatility_kcli'],
     'nrows'         : [3000],
     'test_lenght'   : [800],
-    'iterations'    : [10, 30, 60, 90],
-    'learning_rate' : [0.1, 0.3, 0.6, 0.9],
-    'depth'         : [1, 3, 6, 9],
-    'l2_leaf_reg'   : [1, 3, 6, 9],
-    'loss_function' : ['RMSE', 'MultiRMSE', 'SurvivalAft', 'MAE', 'Quantile', 'LogLinQuantile', 'Poisson', 'MAPE']
+    'iterations'    : [60, 90, 160],
+    'learning_rate' : [0.03, 0.06, 0.09, 0.3],
+    'depth'         : [1, 3, 12],
+    'l2_leaf_reg'   : [1, 9, 30, 60],
+    'loss_function' : ['RMSE', 'MultiRMSE', 'MAE', 'Quantile', 'MAPE']
 }
 
 for i in model_params:
@@ -35,7 +35,7 @@ for symbol in model_params['symbol']:
                                         for depth in model_params['depth']:
                                             for l2_leaf_reg in model_params['l2_leaf_reg']:
                                                 for loss_function in model_params['loss_function']:
-                                                    cmd  = 'python3 model_catboost.py --db_host=192.168.3.113'
+                                                    cmd  = 'python3 -u model_catboost.py --db_host=192.168.3.113'
                                                     cmd += ' --symbol='        + symbol
                                                     cmd += ' --interval='      + str(interval)
                                                     cmd += ' --shift='         + str(shift)

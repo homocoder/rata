@@ -116,7 +116,9 @@ from catboost import CatBoostRegressor
 model = CatBoostRegressor(iterations=_conf['iterations'], 
                           depth=_conf['depth'], 
                           learning_rate=_conf['learning_rate'], 
-                          loss_function=_conf['loss_function'])
+                          loss_function=_conf['loss_function'],
+                          train_dir='/home/selknam/var/',
+                          thread_count=16)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
