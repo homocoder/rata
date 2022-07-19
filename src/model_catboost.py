@@ -58,7 +58,6 @@ for s in _conf['X_symbols']:
     if len(df_join) == 0:
         df_join = df
     else:
-        print('Merge')
         df_join = pd.merge(df_join, df, how='inner', left_on=df_join.columns[0], right_on=df.columns[0])
 
 df = df_join.copy()
@@ -81,7 +80,6 @@ for c in df.columns:
         ys_todelete.append(c)
     for exc in _conf['X_exclude']:
         if exc in c:
-            print(c)
             ys_todelete.append(c)
 
 df = df[:-9]
@@ -113,12 +111,14 @@ y_test = y[-_conf['test_lenght']:]
 #%%
 from catboost import CatBoostRegressor
 
-model = CatBoostRegressor(iterations=_conf['iterations'], 
-                          depth=_conf['depth'], 
-                          learning_rate=_conf['learning_rate'], 
+model = CatBoostRegressor(#iterations=_conf['iterations'], 
+                          #depth=_conf['depth'], 
+                          #learning_rate=_conf['learning_rate'], 
+                          #l2_leaf_reg=_conf['l2_leaf_reg'],
                           loss_function=_conf['loss_function'],
                           train_dir='/home/selknam/var/',
-                          thread_count=16)
+                          thread_count=18)
+
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)

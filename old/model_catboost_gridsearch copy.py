@@ -3,17 +3,17 @@ from random import shuffle
 model_params = {
     'symbol'        : ['EURUSD'],
     'interval'      : [1, 3],
-    'shift'         : [1, 3, 6, 9], # 1, 3, 6, 9
-    'X_symbols'     : ['EURUSD', 'EURUSD,GBPUSD', 'EURUSD,USDCHF'],
+    'shift'         : [3, 6, 9], # 1, 3, 6, 9
+    'X_symbols'     : ['EURUSD', 'EURUSD,GBPUSD', 'EURUSD,USDCAD'],
     'X_include'     : ['rsi,*'],
     'X_exclude'     : ['volatility_kcli'],
     'nrows'         : [3000],
     'test_lenght'   : [800],
-    'iterations'    : ['nn'],
-    'learning_rate' : ['nn'],
-    'depth'         : ['nn'],
-    'l2_leaf_reg'   : ['nn'],
-    'loss_function' : ['RMSE', 'MAPE'] # MAPE RMSE #['RMSE', 'MultiRMSE', 'MAE', 'Quantile', 'MAPE']
+    'iterations'    : [60, 90],
+    'learning_rate' : [0.003, 0.06, 0.09, 0.3],
+    'depth'         : [1, 3, 12],
+    'l2_leaf_reg'   : [9, 30],
+    'loss_function' : ['RMSE', 'MultiRMSE', 'MAE', 'Quantile', 'MAPE'] # MAPE RMSE
 }
 
 for i in model_params:

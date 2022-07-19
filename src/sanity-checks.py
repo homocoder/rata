@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import lstm_prep, parse_argv
 
-fake_argv = 'sanity-checks.py --db_host=192.168.3.114 '
+fake_argv = 'sanity-checks.py --db_host=192.168.3.113 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -28,7 +28,14 @@ for s in symbols:
     print('Count duplicates ', s, len(df['tstamp']) - len(df['tstamp'].drop_duplicates()))
 
 #%%
-## FEATENG GAPS
+## FEATENG GAPS 1
+for s in symbols:
+    sql =  "select tstamp from feateng "
+    sql += "where symbol='" + s + "' and interval=1"
+    df = pd.read_sql_query(sql, engine).sort_values('tstamp')
+    check_time_gaps(df, {'symbol': s, 'interval': 3})
+# %%
+## FEATENG GAPS 3
 for s in symbols:
     sql =  "select tstamp from feateng "
     sql += "where symbol='" + s + "' and interval=3"

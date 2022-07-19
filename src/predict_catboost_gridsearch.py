@@ -4,11 +4,11 @@ model_params = {
     'symbol'        : ['EURUSD'],
     'interval'      : [1, 3],
     'shift'         : [1, 3, 6, 9], # 1, 3, 6, 9
-    'X_symbols'     : ['EURUSD', 'EURUSD,GBPUSD', 'EURUSD,USDCHF'],
+    'X_symbols'     : ['EURUSD'],
     'X_include'     : ['rsi,*'],
     'X_exclude'     : ['volatility_kcli'],
     'nrows'         : [3000],
-    'test_lenght'   : [800],
+    'test_lenght'   : ['nn'],
     'iterations'    : ['nn'],
     'learning_rate' : ['nn'],
     'depth'         : ['nn'],
@@ -35,7 +35,7 @@ for symbol in model_params['symbol']:
                                         for depth in model_params['depth']:
                                             for l2_leaf_reg in model_params['l2_leaf_reg']:
                                                 for loss_function in model_params['loss_function']:
-                                                    cmd  = 'python3 -u model_catboost.py --db_host=192.168.3.113'
+                                                    cmd  = 'sleep 50 ; python3 -u predict_catboost.py --db_host=192.168.3.113'
                                                     cmd += ' --symbol='        + symbol
                                                     cmd += ' --interval='      + str(interval)
                                                     cmd += ' --shift='         + str(shift)
@@ -49,11 +49,14 @@ for symbol in model_params['symbol']:
                                                     cmd += ' --depth='         + str(depth)
                                                     cmd += ' --l2_leaf_reg='   + str(l2_leaf_reg)
                                                     cmd += ' --loss_function=' + loss_function
-                                                    cmd += '\n'
+                                                    cmd += ' & \n'
                                                     launcher_cmds.append(cmd)
 
 shuffle(launcher_cmds)
-fd = open('model_catboost_gridsearch.bash', 'wt')
+launcher_cmds.insert(0, 'source /home/selknam/opt/miniconda3/bin/activate rata.py39 \n')
+launcher_cmds.insert(0, 'cd /home/selknam/dev/rata/src \n')
+
+fd = open('predict_catboost_gridsearch.bash', 'wt')
 fd.writelines(launcher_cmds)
 fd.close()
 # %%
