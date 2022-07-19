@@ -20,7 +20,7 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 150) + "),"
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 150) + ")," # TODO: _conf['nrows']
 sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
@@ -89,7 +89,7 @@ sql  = "delete from feateng where symbol='" + _conf['symbol']
 sql += "' and interval=" + str(_conf['interval'])
 sql += " and tstamp >= '" + min(df['tstamp']).isoformat() + "'::timestamp "
 # TODO: Make deletion and append in only ONE ATOMIC transaction
-#engine.execute(sql)
+engine.execute(sql)
 # %%
 df.to_sql('feateng', engine, if_exists='append', index=False)
 # %%

@@ -3,7 +3,7 @@ from sys import argv
 from rata.utils import parse_argv
 
 fake_argv  = 'predict_catboost.py --db_host=192.168.3.113 '
-fake_argv += '--symbol=EURUSD --interval=1 --shift=1 '
+fake_argv += '--symbol=EURUSD --interval=3 --shift=1 '
 fake_argv += '--X_symbols=EURUSD '#,GBPUSD '
 fake_argv += '--X_include=SROC '
 fake_argv += '--X_exclude=volatility_kcli '
@@ -108,6 +108,7 @@ from catboost import CatBoostRegressor
 
 model = CatBoostRegressor(train_dir='/home/selknam/var/catboost_dir',
                           random_seed=int(datetime.datetime.now().strftime('%S%f')),
+                          loss_function=_conf['loss_function'],
                           thread_count=16)
 
 t0 = datetime.datetime.now()
@@ -115,7 +116,7 @@ model.fit(X, y)
 fit_time = int((datetime.datetime.now() - t0).total_seconds())
 #%% ###    SECTION ITERATE PREDICTIONS ###
 
-for c in range(0, 150 // _conf['interval']): # 5 hours per model (100 datapoints)
+for c in range(0, 150 // _conf['interval']): # 5 hours per model 
     del df_join
     del df
     del X
@@ -124,7 +125,7 @@ for c in range(0, 150 // _conf['interval']): # 5 hours per model (100 datapoints
     while True:
         sleep(0.5)
         tnow = datetime.datetime.now()
-        if (tnow.minute in [i for i in range(0, 60, _conf['interval'])]) and tnow.second == 40 + _conf['interval'] * 2: #TODO:41 hardcoded
+        if (tnow.minute in [i for i in range(0, 60, _conf['interval'])]) and tnow.second == 40 + _conf['interval'] * 2: #TODO:40 hardcoded
 
             _conf['nrows'] = 12
             df_join = pd.DataFrame()
@@ -216,4 +217,5 @@ for c in range(0, 150 // _conf['interval']): # 5 hours per model (100 datapoints
             dfv['loss_function'] = _conf['loss_function']
 
             dfv.reset_index().to_sql('predict_catboost', engine, if_exists='append', index=False)
+            break
 # %%
