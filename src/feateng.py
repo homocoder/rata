@@ -89,7 +89,7 @@ sql  = "delete from feateng where symbol='" + _conf['symbol']
 sql += "' and interval=" + str(_conf['interval'])
 sql += " and tstamp >= '" + min(df['tstamp']).isoformat() + "'::timestamp "
 # TODO: Make deletion and append in only ONE ATOMIC transaction
-#engine.execute(sql)
+engine.execute(sql)
 # %%
 df.to_sql('feateng', engine, if_exists='append', index=False)
 # %%
