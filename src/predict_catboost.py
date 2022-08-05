@@ -109,14 +109,14 @@ from catboost import CatBoostRegressor
 model = CatBoostRegressor(train_dir='/home/selknam/var/catboost_dir',
                           random_seed=int(datetime.datetime.now().strftime('%S%f')),
                           loss_function=_conf['loss_function'],
-                          thread_count=16)
+                          thread_count=12)
 
 t0 = datetime.datetime.now()
 model.fit(X, y)
 fit_time = int((datetime.datetime.now() - t0).total_seconds())
 #%% ###    SECTION ITERATE PREDICTIONS ###
 
-for c in range(0, 150 // _conf['interval']): # 5 hours per model 
+for c in range(0, 90 // _conf['interval']): # 5 hours per model 
     del df_join
     del df
     del X
