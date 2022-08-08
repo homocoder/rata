@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv, split_sequences
 
-fake_argv  = 'forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=3000 '
+fake_argv  = 'forecast.py --db_host=192.168.1.83 --symbol=AUDUSD --interval=3 --nrows=3000 '
 fake_argv += '--symbols=AUDUSD,AUDCHF,NZDUSD '
 fake_argv += '--X_columns=tstamp,AUDCHF_3_close_SROC_15,NZDUSD_3_close_SROC_15,AUDUSD_3_close_SROC_15,AUDUSD_3_trend_macd_diff '
 fake_argv += '--y_column=y_AUDUSD_3_close_SROC_15_shift-15 '

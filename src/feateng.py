@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=192.168.3.113 --symbol=EURUSD --kind=forex --interval=1'
+fake_argv = 'feateng.py --db_host=192.168.1.83 --symbol=EURUSD --kind=forex --interval=1'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -20,7 +20,7 @@ engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
 sql += "  where r1.symbol='" + _conf['symbol'] + "' and r1.interval=1 "
-sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 150) + ")," # TODO: _conf['nrows']
+sql += "  order by r1.tstamp desc limit " + str(_conf['interval'] * 1500) + ")," # TODO: _conf['nrows']
 sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "

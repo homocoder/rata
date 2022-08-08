@@ -1,5 +1,5 @@
 {
-    "db_host": "192.168.3.113",
+    "db_host": "192.168.1.83",
     "symbols":  [
             {
                 "symbol"   : "AUDUSD",
