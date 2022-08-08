@@ -35,7 +35,7 @@ for symbol in model_params['symbol']:
                                         for depth in model_params['depth']:
                                             for l2_leaf_reg in model_params['l2_leaf_reg']:
                                                 for loss_function in model_params['loss_function']:
-                                                    cmd  = 'python3 -u model_catboost.py --db_host=192.168.3.113'
+                                                    cmd  = 'python3 -u model_catboost.py --db_host=192.168.1.83'
                                                     cmd += ' --symbol='        + symbol
                                                     cmd += ' --interval='      + str(interval)
                                                     cmd += ' --shift='         + str(shift)

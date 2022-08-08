@@ -1,25 +1,25 @@
 # %% 🐭
 from sys import argv
-from rata.utils import parse_argv, split_sequences
+from rata.utils import parse_argv
 
 fake_argv  = 'model_catboost.py --db_host=192.168.1.83 '
 fake_argv += '--symbol=EURUSD --interval=3 --shift=3 '
-fake_argv += '--X_symbols=EURUSD,AUDUSD,GBPUSD '
+fake_argv += '--X_symbols=EURUSD '
 fake_argv += '--X_include=vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch '
 fake_argv += '--X_exclude=volatility_kcli '
 
 fake_argv += '--nrows=5000 ' 
-fake_argv += '--tstamp=2022-07-29 ' 
+fake_argv += '--tstamp=2022-07-28 ' 
 fake_argv += '--test_lenght=800 '
 
-fake_argv += '--iterations=10000 '
+fake_argv += '--iterations=1000 '
 fake_argv += '--learning_rate=0.9 '
 fake_argv += '--depth=6 '
 fake_argv += '--l2_leaf_reg=3 '
 fake_argv += '--loss_function=MAE '
 
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
+argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
 
 _conf['X_symbols']   = _conf['X_symbols'].split(',')
@@ -110,6 +110,21 @@ y_train = y[:-_conf['test_lenght']]
 X_test = X[-_conf['test_lenght']:]
 y_test = y[-_conf['test_lenght']:]
 
+# %%
+bins = np.linspace(0, 1, 11)
+labels = ['p' + str(i) for i in range(1, len(bins))]
+XX = pd.DataFrame()
+for c in X.columns:
+    print(c)
+    XX[c] = pd.qcut(X[c], bins, labels=labels)
+    XX[c] = XX[c].astype(str).str.replace('(', 'cat_(')
+
+bins = np.linspace(0, 1, 11)
+yy = pd.qcut(y, bins) #labels=['p' + str(i) for i in range(1, len(bins))])
+yy = yy.astype(str).str.replace('(', 'cat_(')
+yy.drop_duplicates()
+##pd.qcut(X['EURUSD_3_momentum_rsi_SROC_3'], bins, labels=['p' + str(i) for i in range(1, len(bins))])
+
 #%%
 from catboost import CatBoostRegressor
 
@@ -118,7 +133,6 @@ model = CatBoostRegressor(iterations=_conf['iterations'],
                           loss_function=_conf['loss_function'],
                           train_dir='/home/selknam/var/catboost_dir',
                           thread_count=12)
-
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)

@@ -1,6 +1,6 @@
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
-  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=4000 \
+  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.1.83 --symbol=AUDUSD --interval=3 --nrows=4000 \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD \
@@ -8,7 +8,7 @@ cd /home/selknam/dev/rata/src && \
 
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
-  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=4000 \
+  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.1.83 --symbol=AUDUSD --interval=3 --nrows=4000 \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD,AUDCHF \
@@ -16,7 +16,7 @@ cd /home/selknam/dev/rata/src && \
 
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
-  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=4000 \
+  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.1.83 --symbol=AUDUSD --interval=3 --nrows=4000 \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD,NZDUSD \
@@ -24,7 +24,7 @@ cd /home/selknam/dev/rata/src && \
 
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
-  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=4000 \
+  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.1.83 --symbol=AUDUSD --interval=3 --nrows=4000 \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD,GBPAUD \
@@ -32,7 +32,7 @@ cd /home/selknam/dev/rata/src && \
 
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
-  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=4000 \
+  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.1.83 --symbol=AUDUSD --interval=3 --nrows=4000 \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD,GBPNZD \
@@ -40,7 +40,7 @@ cd /home/selknam/dev/rata/src && \
 
 cd /home/selknam/dev/rata/src && \
   source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
-  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.3.113 --symbol=AUDUSD --interval=3 --nrows=4000 \
+  python -u /home/selknam/dev/rata/src/forecast.py --db_host=192.168.1.83 --symbol=AUDUSD --interval=3 --nrows=4000 \
     --n_steps_in=60 --n_steps_out=3 --epochs=150 --test_lenght=1000 \
     --y_column=y_AUDUSD_3_close_SROC_15_shift-15 \
     --symbols=AUDUSD,EURGBP \

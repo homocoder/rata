@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'predict_catboost.py --db_host=192.168.3.113 '
+fake_argv  = 'predict_catboost.py --db_host=192.168.1.83 '
 fake_argv += '--symbol=EURUSD --interval=3 --shift=1 '
 fake_argv += '--X_symbols=EURUSD '#,GBPUSD '
 fake_argv += '--X_include=SROC '

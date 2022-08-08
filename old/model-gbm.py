@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv, split_sequences
 
-fake_argv  = 'model-gbm.py --db_host=192.168.3.113 '
+fake_argv  = 'model-gbm.py --db_host=192.168.1.83 '
 fake_argv += '--symbol=EURUSD --interval=1 --shift=3 '
 fake_argv += '--X_symbols=EURUSD,AUDUSD,GBPUSD '
 fake_argv += '--X_include=vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,* '
