@@ -8,11 +8,11 @@ fake_argv += '--X_symbols=EURUSD '
 fake_argv += '--X_include=vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch '
 fake_argv += '--X_exclude=volatility_kcli '
 
-fake_argv += '--nrows=5000 ' 
+fake_argv += '--nrows=9000 ' 
 fake_argv += '--tstamp=2022-07-28 ' 
-fake_argv += '--test_lenght=800 '
+fake_argv += '--test_lenght=1800 '
 
-fake_argv += '--iterations=1000 '
+fake_argv += '--iterations=3000 '
 fake_argv += '--learning_rate=0.9 '
 fake_argv += '--depth=6 '
 fake_argv += '--l2_leaf_reg=3 '
@@ -28,6 +28,7 @@ _conf['X_exclude']   = _conf['X_exclude'].split(',')
 
 y_target  = _conf['symbol'] + '_' + str(_conf['interval'])
 y_target += '_y_close_SROC_' + str(_conf['shift'])
+#y_target += '_y_B_close_SROC_' + str(_conf['shift'])
 y_target += '_shift-' + str(_conf['shift'])
 _conf['y_target'] = y_target
 
@@ -91,7 +92,7 @@ nancols = list(dfnans[dfnans[0] > 0].index)
 ys_todelete = ys_todelete + nancols
 
 X = df.drop(ys_todelete, axis=1)
-#%%
+
 if '*' in _conf['X_include']:
     ys_include = X.columns
 else:
@@ -104,35 +105,42 @@ else:
     
 X = X[ys_include]
 y = df[_conf['y_target']]
+
+if True:
+    #bins = 11
+    #Xc = pd.DataFrame()
+    #for c in X.columns:
+    #    print(c)
+    #    Xc[c] = pd.qcut(X[c], bins, duplicates='drop')
+    #    Xc[c] = Xc[c].astype(str).str.replace('(', 'cat_(')
+
+    bins = np.linspace(0, 1, 17)
+    yc = pd.qcut(y, bins) #labels=['p' + str(i) for i in range(1, len(bins))])
+    cat_list = yc.cat.categories.astype(str).str.replace('(', 'cat_(').to_list()
+    yc = yc.astype(str).str.replace('(', 'cat_(')
+
+    #del X
+    del y
+    #X = Xc.copy()
+    y = yc.copy()
+else:
+    cat_list = (0, 1)
+    
 X_train = X[:-_conf['test_lenght']]
 y_train = y[:-_conf['test_lenght']]
 
 X_test = X[-_conf['test_lenght']:]
 y_test = y[-_conf['test_lenght']:]
 
-# %%
-bins = np.linspace(0, 1, 11)
-labels = ['p' + str(i) for i in range(1, len(bins))]
-XX = pd.DataFrame()
-for c in X.columns:
-    print(c)
-    XX[c] = pd.qcut(X[c], bins, labels=labels)
-    XX[c] = XX[c].astype(str).str.replace('(', 'cat_(')
-
-bins = np.linspace(0, 1, 11)
-yy = pd.qcut(y, bins) #labels=['p' + str(i) for i in range(1, len(bins))])
-yy = yy.astype(str).str.replace('(', 'cat_(')
-yy.drop_duplicates()
-##pd.qcut(X['EURUSD_3_momentum_rsi_SROC_3'], bins, labels=['p' + str(i) for i in range(1, len(bins))])
-
 #%%
-from catboost import CatBoostRegressor
+from catboost import CatBoostClassifier
 
-model = CatBoostRegressor(iterations=_conf['iterations'],
+model = CatBoostClassifier(iterations=_conf['iterations'],
                           random_seed=int(datetime.datetime.now().strftime('%S%f')),
-                          loss_function=_conf['loss_function'],
+                          #cat_features=range(0, len(X.columns)),
+                          #loss_function=_conf['loss_function'],
                           train_dir='/home/selknam/var/catboost_dir',
-                          thread_count=12)
+                          thread_count=20)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -159,14 +167,24 @@ dfv['iterations']    = _conf['iterations']
 dfv['learning_rate'] = _conf['learning_rate']
 dfv['depth']         = _conf['depth']
 dfv['l2_leaf_reg']   = _conf['l2_leaf_reg']
-dfv['loss_function'] = _conf['loss_function']
+#dfv['loss_function'] = _conf['loss_function']
 
-dfv['mse']  = mean_squared_error(dfv['y_test'], dfv['y_pred'])
-dfv['mae']  = mean_absolute_error(dfv['y_test'], dfv['y_pred'])
-dfv['mape'] = mean_absolute_percentage_error(dfv['y_test'], dfv['y_pred'])
-dfv['msle'] = mean_squared_log_error(minmax_scale(dfv['y_test'], feature_range=(0,1)), minmax_scale(dfv['y_pred'], feature_range=(0,1)))
-dfv['r2']   = r2_score(dfv['y_test'], dfv['y_pred'])
-
+#dfv['mse']  = mean_squared_error(dfv['y_test'], dfv['y_pred'])
+#dfv['mae']  = mean_absolute_error(dfv['y_test'], dfv['y_pred'])
+#dfv['mape'] = mean_absolute_percentage_error(dfv['y_test'], dfv['y_pred'])
+#dfv['msle'] = mean_squared_log_error(minmax_scale(dfv['y_test'], feature_range=(0,1)), minmax_scale(dfv['y_pred'], feature_range=(0,1)))
+#dfv['r2']   = r2_score(dfv['y_test'], dfv['y_pred'])
+#%%
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.metrics import accuracy_score, precision_score, recall_score
+import matplotlib.pyplot as plt
+print(cat_list)
+print(y_train.value_counts())
+print(y_test.value_counts())
+print(accuracy_score(dfv['y_test'], dfv['y_pred']))
+print(precision_score(dfv['y_test'], dfv['y_pred'], average='macro'))
+print(recall_score(dfv['y_test'], dfv['y_pred'], average='macro'))
+confusion_matrix(dfv['y_test'], dfv['y_pred'], labels=cat_list)
 # %% Feature importance
 dffi = pd.DataFrame(model.feature_names_)
 dffi.rename({0: 'feature_name'}, axis=1, inplace=True)
@@ -178,3 +196,4 @@ dffi.head(45)
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
 dfv.reset_index().to_sql('model_catboost', engine, if_exists='append', index=False)
 # %%
+
