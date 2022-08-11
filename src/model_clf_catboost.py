@@ -1,5 +1,6 @@
 # %% 🐭
 from sys import argv
+from tkinter import _XYScrollCommand
 from rata.utils import parse_argv
 
 fake_argv  = 'model_catboost.py --db_host=192.168.1.83 '
@@ -150,6 +151,12 @@ dfv  = pd.DataFrame(y_test)
 dfv.rename({y_target: 'y_test'}, axis=1, inplace=True)
 # common to all models
 dfv['y_pred']    = model.predict(X_test)
+predict_probas = pd.DataFrame(model.predict_proba(X_test), columns=model.classes_)
+for x in range(0, len(cat_list)):
+    dfv['yp_cat_' + str(x)] = predict_probas[cat_list[x]].values
+
+dfv['yp_cat_S']  = dfv['yp_cat_0']  + dfv['yp_cat_1']  + dfv['yp_cat_2']
+dfv['yp_cat_B']  = dfv['yp_cat_13'] + dfv['yp_cat_14'] + dfv['yp_cat_15']
 dfv['symbol']    = _conf['symbol']
 dfv['interval']  = _conf['interval']
 dfv['shift']     = _conf['shift']
@@ -159,7 +166,7 @@ dfv['test_lenght']   = _conf['test_lenght']
 dfv['nrows']         = _conf['nrows']
 
 dfv['model_tstamp']  = df.index.max()
-dfv['model_id']      = str(df.index.max()).replace(' ', 'T')
+dfv['model_id']      = str(datetime.datetime.now()).replace(' ', 'T')
 dfv['fit_time']      = fit_time
 
 # uncommon to models
@@ -167,7 +174,7 @@ dfv['iterations']    = _conf['iterations']
 dfv['learning_rate'] = _conf['learning_rate']
 dfv['depth']         = _conf['depth']
 dfv['l2_leaf_reg']   = _conf['l2_leaf_reg']
-#dfv['loss_function'] = _conf['loss_function']
+dfv['loss_function'] = _conf['loss_function']
 
 #dfv['mse']  = mean_squared_error(dfv['y_test'], dfv['y_pred'])
 #dfv['mae']  = mean_absolute_error(dfv['y_test'], dfv['y_pred'])
@@ -193,7 +200,14 @@ dffi.sort_values('feature_importance', ascending=False, inplace=True)
 dffi.head(45)
 
 # %%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
-dfv.reset_index().to_sql('model_catboost', engine, if_exists='append', index=False)
+
+cl = cat_list[15]
+
+pd.DataFrame(model.predict_proba(X_test.loc[dfv[dfv['y_pred'] == cl]['y_pred'].index]))
+dfv.loc[dfv[dfv['y_pred'] == cl]['y_pred'].index]
+
+#%%
+#engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
+#dfv.reset_index().to_sql('model_catboost', engine, if_exists='append', index=False)
 # %%
 
