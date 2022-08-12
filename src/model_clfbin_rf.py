@@ -2,18 +2,18 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'model_catboost.py --db_host=192.168.1.83 '
-fake_argv += '--symbol=EURUSD --interval=3 --shift=3 '
-fake_argv += '--X_symbols=EURUSD,GBPUSD '
+fake_argv  = 'model_clf_rf.py --db_host=192.168.1.83 '
+fake_argv += '--symbol=EURUSD --interval=3 --shift=1 '
+fake_argv += '--X_symbols=EURUSD '
 fake_argv += '--X_include=vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv '
 fake_argv += '--X_exclude=volatility_kcli '
 
 fake_argv += '--nrows=9000 ' 
 fake_argv += '--tstamp=2022-07-28 ' 
 fake_argv += '--test_lenght=1800 '
-fake_argv += '--nbins=20 '
+fake_argv += '--nbins=14 '
 
-fake_argv += '--iterations=30 '
+fake_argv += '--iterations=3000 '
 fake_argv += '--learning_rate=0.9 '
 fake_argv += '--depth=6 '
 fake_argv += '--l2_leaf_reg=3 '
@@ -116,8 +116,26 @@ for n in range(0, len(cat_list)):
 yc = yc.map(cat_dict)
 cl_list = yc.drop_duplicates().sort_values().to_list()
 
+map_BS = {
+    'cl_00': '0',
+    'cl_01': '0',
+    'cl_02': '0',
+    'cl_03': '0',
+    'cl_04': '0',
+    'cl_05': '0',
+    'cl_06': '0',
+    'cl_07': '0',
+    'cl_08': '0',
+    'cl_09': '0',
+    'cl_10': '0',
+    'cl_11': '1',
+    'cl_12': '1',
+    'cl_13': '1'
+}
+cl_list = ['0', '1']
+
 del y
-y = yc.copy()
+y = yc.copy().map(map_BS)
     
 X_train = X[:-_conf['test_lenght']]
 y_train = y[:-_conf['test_lenght']]
@@ -126,16 +144,10 @@ X_test = X[-_conf['test_lenght']:]
 y_test = y[-_conf['test_lenght']:]
 
 #%%
-from catboost import CatBoostClassifier
 from sklearn.ensemble import RandomForestClassifier
 
-model = CatBoostClassifier(iterations=_conf['iterations'],
-                          random_seed=int(datetime.datetime.now().strftime('%S%f')),
-                          train_dir='/home/selknam/var/catboost_dir',
-                          thread_count=20)
-
-model = RandomForestClassifier(n_estimators=120, random_state=int(datetime.datetime.now().strftime('%S%f')),
-                                n_jobs=-1, class_weight=None)#class_weight)
+model = RandomForestClassifier(n_estimators=300, random_state=int(datetime.datetime.now().strftime('%S%f')),
+                                n_jobs=-1, class_weight='balanced')
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -148,9 +160,6 @@ dfv['y_pred']    = model.predict(X_test)
 predict_probas = pd.DataFrame(model.predict_proba(X_test), columns=model.classes_)
 for x in predict_probas.columns:
     dfv['yp_' + x] = predict_probas[x].values
-
-dfv['yp_cl_B']  = dfv.iloc[:, -3] + dfv.iloc[:, -2] + dfv.iloc[:, -1]
-dfv['yp_cl_S']  = dfv['yp_cl_00'] + dfv['yp_cl_01'] + dfv['yp_cl_02']
 
 dfv['symbol']    = _conf['symbol']
 dfv['interval']  = _conf['interval']
@@ -179,58 +188,14 @@ print(cl_list)
 print(y_train.value_counts())
 print(y_test.value_counts())
 print(accuracy_score(dfv['y_test'], dfv['y_pred']))
-print(precision_score(dfv['y_test'], dfv['y_pred'], average='macro'))
-print(recall_score(dfv['y_test'], dfv['y_pred'], average='macro'))
-cm = pd.DataFrame(confusion_matrix(dfv['y_test'], dfv['y_pred'], labels=cl_list))
-i = _conf['nbins'] // 3
-j = _conf['nbins'] // 5
-posB = cm.iloc[-i:, -j:].sum().sum()
-negB = cm.iloc[:-i, -j:].sum().sum()
-my_presicionB = posB / (posB + negB)
+print(precision_score(dfv['y_test'], dfv['y_pred'], average='binary', pos_label='1'))
+print(recall_score(dfv['y_test'], dfv['y_pred'], average='binary', pos_label='1'))
 
-posS = cm.iloc[:i, :j].sum().sum()
-negS = cm.iloc[i:, :j].sum().sum()
-my_presicionS = posS / (posS + negS)
-
-print(my_presicionB, my_presicionS)
-cm
 #%%
-# second RFC
-X2 = dfv.iloc[:, 2: _conf['nbins'] + 4]
-y2 = dfv['y_test']
-X_train = X2[:-_conf['test_lenght'] // 2]
-y_train = y2[:-_conf['test_lenght'] // 2]
+df10 = dfv[(dfv['yp_1'] > 0.45) & (dfv['yp_1'] < 0.7)]
+df10['y_test'].value_counts()
+#%%
 
-X_test = X2[-_conf['test_lenght'] // 2:]
-y_test = y2[-_conf['test_lenght'] // 2:]
-
-model = CatBoostClassifier(iterations=100,
-                          random_seed=int(datetime.datetime.now().strftime('%S%f')),
-                          train_dir='/home/selknam/var/catboost_dir',
-                          thread_count=20)
-
-model = RandomForestClassifier(n_estimators=1000, random_state=int(datetime.datetime.now().strftime('%S%f')),
-                                n_jobs=-1)#, class_weight=class_weight)
-model.fit(X_train, y_train)
-y_pred = model.predict(X_test)
-cm = pd.DataFrame(confusion_matrix(y_test, y_pred, labels=cl_list))
-
-i = _conf['nbins'] // 3
-j = _conf['nbins'] // 5
-j = 2
-print(i, j)
-posB = cm.iloc[-i:, -j:].sum().sum()
-negB = cm.iloc[:-i, -j:].sum().sum()
-my_presicionB = posB / (posB + negB)
-
-posS = cm.iloc[:i, :j].sum().sum()
-negS = cm.iloc[i:, :j].sum().sum()
-my_presicionS = posS / (posS + negS)
-
-print(my_presicionB, my_presicionS)
-cm
-
-# %% Feature importance
 dffi = pd.DataFrame(model.feature_names_)
 dffi.rename({0: 'feature_name'}, axis=1, inplace=True)
 dffi['feature_importance'] = model.feature_importances_
