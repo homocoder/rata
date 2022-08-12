@@ -67,22 +67,22 @@ import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 
 for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
-    for i in [1, 3, 6, 9]:
+    for i in [1, 3, 6, 9, 15, 30, 60]:
         df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
         df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
 df = df[75:]
 print(len(df))
 #%%
-for shift in ['1', '3', '6', '9']:
+for shift in ['1', '3', '6', '9', '15', '30', '60']:
     # Ys for regression
     df['y_close_SROC_' + shift + '_shift-' + shift] = df['close_SROC_' + shift].shift(-(int(shift)))
     # Ys for classification
     # SROC_1 BUY
     df['y_B_close_SROC_' + shift + '_shift-' + shift] = 0
-    df['y_B_close_SROC_' + shift + '_shift-' + shift] = df['y_B_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] >  0.05, 1)
+    df['y_B_close_SROC_' + shift + '_shift-' + shift] = df['y_B_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] >  0.025, 1)
     # SROC_1 SELL
     df['y_S_close_SROC_' + shift + '_shift-' + shift] = 0
-    df['y_S_close_SROC_' + shift + '_shift-' + shift] = df['y_S_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] < -0.05, 1)
+    df['y_S_close_SROC_' + shift + '_shift-' + shift] = df['y_S_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] < -0.025, 1)
 
 #%%
 sql  = "delete from feateng where symbol='" + _conf['symbol']
