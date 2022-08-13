@@ -8,8 +8,8 @@ fake_argv += '--X_symbols=EURUSD,AUDUSD,GBPUSD '
 fake_argv += '--X_include=vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch '
 fake_argv += '--X_exclude=volatility_kcli '
 
-fake_argv += '--nrows=5000 ' 
-fake_argv += '--tstamp=2022-07-29 ' 
+fake_argv += '--nrows=5000 '
+fake_argv += '--tstamp=2022-07-29 '
 fake_argv += '--test_lenght=800 '
 
 fake_argv += '--iterations=10000 '

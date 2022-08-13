@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv, load_conf
 
-fake_argv = 'feateng_launcher.py --conf=conf/rata.json --interval=3'
+fake_argv = 'feateng_launcher.py --conf=conf/rata.json --interval=3 --nrows=500'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -18,6 +18,7 @@ for i in symbol_conf:
     for j in i:
         symbol_params += ' --' + j + '=' + i[j].__str__()
     symbol_params += ' --interval=' + str(_conf['interval'])
+    symbol_params += ' --nrows='    + str(_conf['nrows'])
     cmd += 'python -u /home/selknam/dev/rata/src/feateng.py ' + symbol_params + ' & \n'
 print(cmd)
 

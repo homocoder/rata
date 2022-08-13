@@ -3,15 +3,15 @@ from sys import argv
 from rata.utils import parse_argv
 
 fake_argv  = 'model_clf_rf.py --db_host=192.168.1.83 '
-fake_argv += '--symbol=EURUSD --interval=3 --shift=3 '
+fake_argv += '--symbol=EURUSD --interval=1 --shift=60 '
 fake_argv += '--X_symbols=EURUSD '
-fake_argv += '--X_include=vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv '
-fake_argv += '--X_exclude=volatility_kcli '
+fake_argv += '--X_include=rsi,* '
+fake_argv += '--X_exclude=volatility_kcli,tstamp '
 
 fake_argv += '--nrows=9000 ' 
-fake_argv += '--tstamp=2022-07-28 ' 
+fake_argv += '--tstamp=2022-08-11 ' 
 fake_argv += '--test_lenght=1800 '
-fake_argv += '--nbins=14 '
+fake_argv += '--nbins=16 '
 
 fake_argv += '--iterations=30 '
 fake_argv += '--learning_rate=0.9 '
@@ -83,7 +83,7 @@ for c in df.columns:
         if exc in c:
             ys_todelete.append(c)
 
-df = df[:-9]
+df = df[:-60]
 #columns containing NaNs
 dfnans = pd.DataFrame(df.isnull().sum())
 nancols = list(dfnans[dfnans[0] > 0].index)
