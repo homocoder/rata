@@ -14,7 +14,7 @@ import pandas as pd
 from sqlalchemy import create_engine
 
 # %%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.1.83:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
 
 #%%
 if _conf['symbol'] == '*':

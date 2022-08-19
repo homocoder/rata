@@ -30,7 +30,7 @@ conn = psycopg2.connect(
     dbname='rata',
     user='rata',
     password='acaB.1312',
-    host='127.0.0.1',
+    host=_conf['db_host'],
     port=5432,
 )
 
@@ -47,15 +47,16 @@ conn.commit()
 conn.close()
 # %%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
 df.to_sql('rates', engine, if_exists='append', index=False)
 
 #%%
 """
 import pandas as pd
 for s in ["GBPUSD", "USDJPY", "USDCAD", "AUDUSD", "NZDUSD", "USDCHF", "EURUSD"]:
-    for d in pd.date_range(start='2022-07-01', periods=15):
-        cmd = 'python3 rates-get-old.py --db_host=192.168.1.83 --symbol=' + s + ' --kind=forex --interval=1 --tstamp=' + str(d)[:10]
-        cmd += '\n sleep 1'
+    for d in pd.date_range(start='2022-08-17', periods=3):
+        cmd = 'python3 rates-get-old.py --db_host=192.168.1.84 --symbol=' + s + ' --kind=forex --interval=1 --tstamp=' + str(d)[:10]
+        cmd += '\n #sleep 1'
         print(cmd)
 """
+# %%

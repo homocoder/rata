@@ -60,13 +60,13 @@ import ta
 df = ta.add_all_ta_features(df, open="open", high="high", low="low", close="close", volume="volume", fillna=True)
 
 for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
-    for i in [1, 3, 6, 9, 15, 30, 60]:
+    for i in [6, 9, 15, 30, 60, 90]:
         df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
         df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
 df = df[150:]
 print(len(df))
 #%%
-for shift in ['1', '3', '6', '9', '15', '30', '60']:
+for shift in ['6', '9', '15', '30', '60', '90']:
     # Ys for regression
     df['y_close_SROC_' + shift + '_shift-' + shift] = df['close_SROC_' + shift].shift(-(int(shift)))
     # Ys for classification
@@ -78,10 +78,11 @@ for shift in ['1', '3', '6', '9', '15', '30', '60']:
     df['y_S_close_SROC_' + shift + '_shift-' + shift] = df['y_S_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] < -0.025, 1)
 
 #%%
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata') # tmp engine
 sql  = "delete from feateng where symbol='" + _conf['symbol']
 sql += "' and interval=" + str(_conf['interval'])
 sql += " and tstamp >= '" + min(df['tstamp']).isoformat() + "'::timestamp "
 # TODO: Make deletion and append in only ONE ATOMIC transaction
-engine.execute(sql)
+#engine.execute(sql)
 # %%
 df.to_sql('feateng', engine, if_exists='append', index=False)

@@ -5,19 +5,16 @@ from rata.utils import parse_argv
 fake_argv  = 'model_clf_rf.py --db_host=192.168.1.83 '
 fake_argv += '--symbol=EURUSD --interval=3 --shift=1 '
 fake_argv += '--X_symbols=EURUSD '
-fake_argv += '--X_include=vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv '
+fake_argv += '--X_include=rsi,stoch,macd,kst,adx,cci,dch,open,high,low,close,volume,obv '
 fake_argv += '--X_exclude=volatility_kcli '
 
-fake_argv += '--nrows=9000 ' 
+fake_argv += '--nrows=3000 ' 
 fake_argv += '--tstamp=2022-07-28 ' 
-fake_argv += '--test_lenght=1800 '
+fake_argv += '--test_lenght=800 '
 fake_argv += '--nbins=14 '
 
-fake_argv += '--iterations=3000 '
-fake_argv += '--learning_rate=0.9 '
-fake_argv += '--depth=6 '
-fake_argv += '--l2_leaf_reg=3 '
-fake_argv += '--loss_function=MAE '
+fake_argv += '--n_estimators=30 '
+
 
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!

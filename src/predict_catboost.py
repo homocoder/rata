@@ -3,12 +3,12 @@ from sys import argv
 from rata.utils import parse_argv
 
 fake_argv  = 'predict_catboost.py --db_host=192.168.1.83 '
-fake_argv += '--symbol=EURUSD --interval=3 --shift=1 '
-fake_argv += '--X_symbols=EURUSD '#,GBPUSD '
-fake_argv += '--X_include=SROC '
+fake_argv += '--symbol=EURUSD --interval=1 --shift=30 '
+fake_argv += '--X_symbols=EURUSD,GBPUSD '
+fake_argv += '--X_include=close,macd '
 fake_argv += '--X_exclude=volatility_kcli '
 
-fake_argv += '--nrows=3000 ' 
+fake_argv += '--nrows=9000 ' 
 
 fake_argv += '--loss_function=MAE '
 

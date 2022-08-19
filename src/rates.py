@@ -33,7 +33,7 @@ conn = psycopg2.connect(
     dbname='rata',
     user='rata',
     password='acaB.1312',
-    host='192.168.1.83',
+    host=_conf['db_host'],
     port=5432,
 )
 
@@ -61,12 +61,11 @@ df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], ex
 df = df.sort_values(by='tstamp')
 df.reset_index(inplace=True)
 
-#copy_from_stringio(conn, df, 'rates')
 # %%
 conn.commit()
 cur.close()
 conn.close()
 #%%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@localhost:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
 df.to_sql('rates', engine, if_exists='append', index=False)
