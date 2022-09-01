@@ -4,4 +4,4 @@ python3 rates_clean.py --db_host=192.168.1.84 --db_port=5432 --symbol=USDCAD --d
 python3 rates_clean.py --db_host=192.168.1.84 --db_port=5432 --symbol=AUDUSD --days=1 &
 python3 rates_clean.py --db_host=192.168.1.84 --db_port=5432 --symbol=EURUSD --days=1 &
 python3 rates_clean.py --db_host=192.168.1.84 --db_port=5432 --symbol=USDCHF --days=1 &
-python3 rates_clean.py --db_host=192.168.1.84 --db_port=5432 --symbol=NZDUSD --days=1
+python3 rates_clean.py --db_host=192.168.1.84 --db_port=5432 --symbol=NZDUSD --days=1 

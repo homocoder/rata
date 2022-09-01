@@ -9,17 +9,21 @@ fake_argv += '--X_include=close,obv '
 fake_argv += '--X_exclude=volatility_kcli '
 
 fake_argv += '--nrows=7000 ' 
-fake_argv += '--tstamp=2022-08-09T21:51:00 ' 
+fake_argv += '--tstamp=2022-08-18T21:51:00 ' 
 fake_argv += '--test_lenght=800 '
 fake_argv += '--nbins=24 '
 
 fake_argv += '--n_estimators=100 '
 fake_argv += '--bootstrap=False '
 fake_argv += '--class_weight=balanced_subsample '
+fake_argv += '--my_test_precisionB=0.0 '
+fake_argv += '--my_test_precisionS=0.0 '
+fake_argv += '--my_moving_precisionB=0.0 '
+fake_argv += '--my_moving_precisionS=0.0 '
 
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
-#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=1 --X_symbols=EURUSD,AUDUSD --X_include=rsi,* --X_exclude=volatility_kcli --tstamp=2022-08-10T00:00:00 --nrows=5000 --test_lenght=800 --nbins=24 --n_estimators=300 --bootstrap=True --class_weight=None".split()
+#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=15 --X_symbols=EURUSD,AUDUSD --X_include=rsi,* --X_exclude=volatility_kcli --tstamp=2022-08-10T00:00:00 --nrows=5000 --test_lenght=800 --nbins=24 --n_estimators=300 --bootstrap=True --class_weight=None".split()
 _conf = parse_argv(argv=argv)
 
 _conf['X_symbols']   = _conf['X_symbols'].split(',')
@@ -88,11 +92,8 @@ for c in df.columns:
         if exc in c:
             ys_todelete.append(c)
 
-df = df[:-120]
-#columns containing NaNs
-dfnans = pd.DataFrame(df.isnull().sum())
-nancols = list(dfnans[dfnans[0] > 0].index)
-ys_todelete = ys_todelete + nancols
+X_predict = df[-1:]
+df = df[:-_conf['shift']]
 
 X = df.drop(ys_todelete, axis=1)
 
@@ -108,6 +109,8 @@ else:
 
 X = X[ys_include]
 X['hour'] = X.index.hour.values
+X_predict = X_predict[ys_include]
+X_predict['hour'] = X_predict.index.hour.values
 y = df[_conf['y_target']]
 
 bins = np.linspace(0, 1, _conf['nbins'] + 1)
@@ -124,12 +127,6 @@ cl_list = yc.drop_duplicates().sort_values().to_list()
 del y
 y = yc.copy()
     
-X_train = X[:-_conf['test_lenght']]
-y_train = y[:-_conf['test_lenght']]
-
-X_test = X[-_conf['test_lenght']:]
-y_test = y[-_conf['test_lenght']:]
-
 #%%
 from sklearn.ensemble import RandomForestClassifier
 random_state = int(datetime.datetime.now().strftime('%S%f'))
@@ -140,8 +137,44 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 n_jobs=-1)
 
 t0 = datetime.datetime.now()
-model.fit(X_train, y_train)
-fit_time = int((datetime.datetime.now() - t0).total_seconds() / 60)
+model.fit(X, y)
+fit_time = (datetime.datetime.now() - t0).total_seconds()
+#%%
+
+
+y_current = y_target.replace('_shift-' + str(_conf['shift']), '').replace('_y_', '_')
+dfr  = pd.DataFrame(X_predict[y_current])
+dfr.rename({y_current: 'y_current'}, axis=1, inplace=True)
+#dfr['tstamp_test'] = pd.DataFrame(y[-1:]).reset_index()['tstamp'].values[0]
+#dfr['y_test'] = pd.DataFrame(y[-1:]).reset_index()[y_target].values[0]
+
+dfr['symbol']    = _conf['symbol']
+dfr['interval']  = _conf['interval']
+dfr['shift']     = _conf['shift']
+dfr['minutes']   = _conf['interval'] * _conf['shift']
+dfr['my_test_precisionB']   = 0.0
+dfr['my_test_precisionS']   = 0.0
+dfr['my_moving_precisionB'] = 0.0
+dfr['my_moving_precisionS'] = 0.0
+dfr['y_pred']   = model.predict(X_predict)[0]
+dfr['cat_pred'] = cat_list[cl_list.index(dfr['y_pred'].values[0])]
+dfr['n_pred'] = np.mean(np.array(eval(dfr['cat_pred'].values[0].replace('cat_(', '['))))
+probas = model.predict_proba(X_predict)
+dfr['pS1'] = probas[0][0]
+dfr['pS2'] = probas[0][1]
+dfr['pS3'] = probas[0][2]
+dfr['cS1'] = np.mean(np.array(eval(cat_list[0].replace('cat_(', '['))))
+dfr['cS2'] = np.mean(np.array(eval(cat_list[1].replace('cat_(', '['))))
+dfr['cS3'] = np.mean(np.array(eval(cat_list[2].replace('cat_(', '['))))
+dfr['pB1'] = probas[0][-1]
+dfr['pB2'] = probas[0][-2]
+dfr['pB3'] = probas[0][-3]
+dfr['cB1'] = np.mean(np.array(eval(cat_list[-1].replace('cat_(', '['))))
+dfr['cB2'] = np.mean(np.array(eval(cat_list[-2].replace('cat_(', '['))))
+dfr['cB3'] = np.mean(np.array(eval(cat_list[-3].replace('cat_(', '['))))
+dfr
+
+
 #%%
 dfv  = pd.DataFrame(y_test)
 dfv.rename({y_target: 'y_test'}, axis=1, inplace=True)
@@ -212,179 +245,3 @@ dfr = pd.DataFrame([dfr,])
 engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
 dfr.reset_index().to_sql('model_clf_rf', engine, if_exists='append', index=False)
 
-#%% COPY 
-from sklearn.ensemble import RandomForestClassifier
-random_state = int(datetime.datetime.now().strftime('%S%f'))
-model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
-                                random_state=random_state,
-                                class_weight=_conf['class_weight'],
-                                bootstrap=_conf['bootstrap'],
-                                n_jobs=-1)
-
-t0 = datetime.datetime.now()
-model.fit(X_train, y_train)
-fit_time = int((datetime.datetime.now() - t0).total_seconds() / 60)
-#%%
-dfv  = pd.DataFrame(y_test)
-dfv.rename({y_target: 'y_test'}, axis=1, inplace=True)
-# common to all models
-dfv['y_pred']    = model.predict(X_test)
-predict_probas = pd.DataFrame(model.predict_proba(X_test), columns=model.classes_)
-for x in predict_probas.columns:
-    dfv['yp_' + x] = predict_probas[x].values
-
-dfv['yp_cl_S']  = dfv['yp_cl_00'] + dfv['yp_cl_01'] + dfv['yp_cl_02']
-dfv['yp_cl_B']  = dfv.iloc[:, -3] + dfv.iloc[:, -2] + dfv.iloc[:, -1]
-
-dfr = dict()
-
-dfr['symbol']    = _conf['symbol']
-dfr['interval']  = _conf['interval']
-dfr['shift']     = _conf['shift']
-dfr['X_symbols'] = ','.join(_conf['X_symbols'])
-dfr['X_include'] = ','.join(_conf['X_include'])
-
-dfr['test_lenght']   = _conf['test_lenght']
-dfr['nrows']         = _conf['nrows']
-
-dfr['model_tstamp']  = df.index.max()
-dfr['model_id']      = str(datetime.datetime.now()).replace(' ', 'T')
-dfr['fit_time']      = fit_time
-
-# uncommon to models
-dfr['n_estimators']  = _conf['n_estimators']
-dfr['nbins']         = _conf['nbins']
-dfr['bootstrap']     = _conf['bootstrap']
-dfr['class_weight']  = _conf['class_weight']
-#dfr['random_state']  = random_state
-
-#%%
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
-
-print(cat_list)
-print(cl_list)
-print(y_train.value_counts())
-print(y_test.value_counts())
-
-cm = pd.DataFrame(confusion_matrix(dfv['y_test'], dfv['y_pred'], labels=cl_list))
-i = _conf['nbins'] // 3
-j = _conf['nbins'] // 5
-
-posS = cm.iloc[:i, :j].sum().sum()
-negS = cm.iloc[i:, :j].sum().sum()
-my_precisionS = posS / (posS + negS)
-
-posB = cm.iloc[-i:, -j:].sum().sum()
-negB = cm.iloc[:-i, -j:].sum().sum()
-my_precisionB = posB / (posB + negB)
-
-print(i, j, my_precisionB, my_precisionS)
-cm
-# %%
-dfr['accuracy']      = accuracy_score(dfv['y_test'],  dfv['y_pred'])
-dfr['precision']     = precision_score(dfv['y_test'], dfv['y_pred'], average='micro')
-dfr['recall']        = recall_score(dfv['y_test'], dfv['y_pred'],    average='micro')
-dfr['i']             = i
-dfr['j']             = j
-dfr['my_precisionB'] = my_precisionB
-dfr['my_precisionS'] = my_precisionS
-#dfr['cmd']           = ' '.join(argv) + ' --random_state=' + str(random_state)
-dfr = pd.DataFrame([dfr,])
-#%%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
-dfr.reset_index().to_sql('model_clf_rf', engine, if_exists='append', index=False)
-
-#%% COPY 
-from sklearn.ensemble import RandomForestClassifier
-random_state = int(datetime.datetime.now().strftime('%S%f'))
-model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
-                                random_state=random_state,
-                                class_weight=_conf['class_weight'],
-                                bootstrap=_conf['bootstrap'],
-                                n_jobs=-1)
-
-t0 = datetime.datetime.now()
-model.fit(X_train, y_train)
-fit_time = int((datetime.datetime.now() - t0).total_seconds() / 60)
-#%%
-dfv  = pd.DataFrame(y_test)
-dfv.rename({y_target: 'y_test'}, axis=1, inplace=True)
-# common to all models
-dfv['y_pred']    = model.predict(X_test)
-predict_probas = pd.DataFrame(model.predict_proba(X_test), columns=model.classes_)
-for x in predict_probas.columns:
-    dfv['yp_' + x] = predict_probas[x].values
-
-dfv['yp_cl_S']  = dfv['yp_cl_00'] + dfv['yp_cl_01'] + dfv['yp_cl_02']
-dfv['yp_cl_B']  = dfv.iloc[:, -3] + dfv.iloc[:, -2] + dfv.iloc[:, -1]
-
-dfr = dict()
-
-dfr['symbol']    = _conf['symbol']
-dfr['interval']  = _conf['interval']
-dfr['shift']     = _conf['shift']
-dfr['X_symbols'] = ','.join(_conf['X_symbols'])
-dfr['X_include'] = ','.join(_conf['X_include'])
-
-dfr['test_lenght']   = _conf['test_lenght']
-dfr['nrows']         = _conf['nrows']
-
-dfr['model_tstamp']  = df.index.max()
-dfr['model_id']      = str(datetime.datetime.now()).replace(' ', 'T')
-dfr['fit_time']      = fit_time
-
-# uncommon to models
-dfr['n_estimators']  = _conf['n_estimators']
-dfr['nbins']         = _conf['nbins']
-dfr['bootstrap']     = _conf['bootstrap']
-dfr['class_weight']  = _conf['class_weight']
-dfr['random_state']  = random_state
-
-#%%
-from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
-
-print(cat_list)
-print(cl_list)
-print(y_train.value_counts())
-print(y_test.value_counts())
-
-cm = pd.DataFrame(confusion_matrix(dfv['y_test'], dfv['y_pred'], labels=cl_list))
-i = _conf['nbins'] // 3
-j = _conf['nbins'] // 5
-
-posS = cm.iloc[:i, :j].sum().sum()
-negS = cm.iloc[i:, :j].sum().sum()
-my_precisionS = posS / (posS + negS)
-
-posB = cm.iloc[-i:, -j:].sum().sum()
-negB = cm.iloc[:-i, -j:].sum().sum()
-my_precisionB = posB / (posB + negB)
-
-print(i, j, my_precisionB, my_precisionS)
-cm
-# %%
-dfr['accuracy']      = accuracy_score(dfv['y_test'],  dfv['y_pred'])
-dfr['precision']     = precision_score(dfv['y_test'], dfv['y_pred'], average='micro')
-dfr['recall']        = recall_score(dfv['y_test'], dfv['y_pred'],    average='micro')
-dfr['i']             = i
-dfr['j']             = j
-dfr['my_precisionB'] = my_precisionB
-dfr['my_precisionS'] = my_precisionS
-dfr['cmd']           = ' '.join(argv) + ' --random_state=' + str(random_state)
-dfr = pd.DataFrame([dfr,])
-#%%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
-dfr.reset_index().to_sql('model_clf_rf', engine, if_exists='append', index=False)
-
-
-#iv sh  min   mypS mypB  cS1  cS2  cS3  pS1  pS2  pS3  cB1  cB2  cB3  pB1  pB2  pB3
-#1  9   9     75%  71%   0.2  0.18 0.15 
-#1  15  15    91%  89%
-#3  9   27
-#1  30  30
-#3  15  45
-#1  60  60
-#1  90  90
-#3  30  90
-#3  60  180
-#3  90  270
