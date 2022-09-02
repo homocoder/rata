@@ -2,10 +2,11 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=192.168.1.83 --symbol=EURUSD --kind=forex --interval=1 --nrows=500 '
+fake_argv = 'feateng.py --db_host=192.168.1.83 --symbol=USDJPY --kind=forex --interval=3 --nrows=300 '
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
+argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
+_conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
 _conf
 
 # %%
@@ -15,7 +16,7 @@ from rata.ratalib import custom_resample_close, custom_resample_open, custom_res
 
 #%%
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
+engine = create_engine(_conf['url'])
 
 sql =  "with a as ("
 sql += "  select distinct tstamp from rates r1 "
@@ -25,7 +26,9 @@ sql += "b as (select min(tstamp) from a) "
 sql += "select * from rates r2 where tstamp > (select * from b)"
 sql += "and r2.symbol='" + _conf['symbol'] + "' and r2.interval=1 "
 
-df = pd.read_sql_query(sql, engine)
+with engine.connect() as conn:
+    df = pd.read_sql_query(sql, conn)
+
 df.sort_values(by='tstamp', ascending=True, inplace=True)
 symbol    = df[['symbol']].iloc[0]['symbol']
 interval  = int(df[['interval']].iloc[0]['interval']) # always 1
@@ -77,12 +80,23 @@ for shift in ['6', '9', '15', '30', '60', '90']:
     df['y_S_close_SROC_' + shift + '_shift-' + shift] = 0
     df['y_S_close_SROC_' + shift + '_shift-' + shift] = df['y_S_close_SROC_' + shift + '_shift-' + shift].mask(df['y_close_SROC_' + shift + '_shift-' + shift] < -0.025, 1)
 
-#%%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata') # tmp engine
+#%% Check if table exists
+sql  = "SELECT COUNT(table_name) FROM information_schema.tables "
+sql += " WHERE table_schema LIKE 'public' AND table_type LIKE 'BASE TABLE' AND "
+sql += "table_name = 'feateng' "
+
+with engine.connect() as conn:
+    table_exists = pd.read_sql_query(sql, conn).iloc[0, 0]
+    
 sql  = "delete from feateng where symbol='" + _conf['symbol']
 sql += "' and interval=" + str(_conf['interval'])
 sql += " and tstamp >= '" + min(df['tstamp']).isoformat() + "'::timestamp "
-# TODO: Make deletion and append in only ONE ATOMIC transaction
-#engine.execute(sql)
+
+with engine.connect().execution_options(autocommit=False) as conn:
+    tx = conn.begin()
+    if table_exists:
+        conn.execute(sql)
+    df.to_sql('feateng', engine, if_exists='append', index=False)
+    tx.commit()
+    tx.close()
 # %%
-df.to_sql('feateng', engine, if_exists='append', index=False)

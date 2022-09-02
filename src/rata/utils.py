@@ -102,27 +102,3 @@ def sort_human(l):
     alphanum = lambda key: [convert(c) for c in re.split('([-+]?[0-9]*\.?[0-9]*)', key)]
     l.sort(key=alphanum)
     return l
-
-def copy_from_stringio(conn, df, table):
-    """
-    Here we are going save the dataframe in memory 
-    and use copy_from() to copy it to the table
-    """
-    from io import StringIO
-    import psycopg2
-    # save dataframe to an in memory buffer
-    buffer = StringIO()
-    df.to_csv(buffer, index=False, header=False)
-    buffer.seek(0)
-    
-    cursor = conn.cursor()
-    try:
-        cursor.copy_from(buffer, table, sep=",")
-        conn.commit()
-    except (Exception, psycopg2.DatabaseError) as error:
-        print("Error: %s" % error)
-        conn.rollback()
-        cursor.close()
-        return 1
-    print("copy_from_stringio() done")
-    cursor.close()

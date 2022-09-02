@@ -6,7 +6,7 @@ def generate_launchers():
 
     txt = """interval=5
     cd /home/selknam/dev/rata/src && \
-    source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
+    source /home/selknam/opt/miniconda3/bin/activate rata310 && \
     python -u /home/selknam/dev/rata/src/models_binclf_launcher.py \
         --db_conf=conf/db.json \
         --symbol_conf=conf/rates_launcher.$interval.json \
@@ -16,7 +16,7 @@ def generate_launchers():
 
     txt = """interval=5
     cd /home/selknam/dev/rata/src && \
-    source /home/selknam/opt/miniconda3/bin/activate rata.py39 && \
+    source /home/selknam/opt/miniconda3/bin/activate rata310 && \
     python -u /home/selknam/dev/rata/src/forecasts_binclf_launcher.py \
         --db_conf=conf/db.json \
         --symbol_conf=conf/rates_launcher.$interval.json \
