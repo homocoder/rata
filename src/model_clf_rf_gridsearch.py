@@ -37,7 +37,7 @@ for symbol in model_params['symbol']:
                                         for n_estimators in model_params['n_estimators']:
                                             for bootstrap in model_params['bootstrap']:
                                                 for class_weight in model_params['class_weight']:
-                                                    cmd  = 'python3 -u model_clf_rf.py --db_host=192.168.1.84'
+                                                    cmd  = 'python3 -u model_clf_rf.py --db_host=192.168.1.83'
                                                     cmd += ' --symbol='        + symbol
                                                     cmd += ' --interval='      + str(interval)
                                                     cmd += ' --shift='         + str(shift)
@@ -55,7 +55,7 @@ for symbol in model_params['symbol']:
                                                     launcher_cmds.append(cmd)
 
 shuffle(launcher_cmds)
-fd = open('model_clf_rf_gridsearch.bash', 'wt')
+fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch2.bash', 'wt')
 fd.writelines(launcher_cmds)
 fd.close()
 # %%

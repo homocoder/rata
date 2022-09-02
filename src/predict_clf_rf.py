@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'model_clf_rf.py --db_host=192.168.1.84 '
+fake_argv  = 'model_clf_rf.py --db_host=192.168.1.83 '
 fake_argv += '--symbol=EURUSD --interval=1 --shift=9 '
 fake_argv += '--X_symbols=EURUSD,NZDUSD '
 fake_argv += '--X_include=close,obv '

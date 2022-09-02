@@ -2,14 +2,14 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'model_clf_rf.py --db_host=192.168.1.84 '
-fake_argv += '--symbol=EURUSD --interval=1 --shift=30 '
+fake_argv  = 'model_clf_rf.py --db_host=192.168.1.83 '
+fake_argv += '--symbol=EURUSD --interval=3 --shift=30 '
 fake_argv += '--X_symbols=EURUSD,GBPUSD '
 fake_argv += '--X_include=close,macd '
 fake_argv += '--X_exclude=volatility_kcli '
 
 fake_argv += '--nrows=9000 ' 
-fake_argv += '--tstamp=2022-08-16 ' 
+fake_argv += '--tstamp=2022-09-30 ' 
 fake_argv += '--test_lenght=800 '
 fake_argv += '--nbins=9 '
 
@@ -18,8 +18,8 @@ fake_argv += '--bootstrap=False '
 fake_argv += '--class_weight=None '
 
 fake_argv = fake_argv.split()
-#argv = fake_argv #### *!
-#argv="python3 -u model_clf_rf.py --db_host=192.168.1.84 --symbol=EURUSD --interval=3 --shift=60 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2023-08-09T00:00:00 --nrows=7000 --test_lenght=800 --nbins=14 --n_estimators=300 --bootstrap=True --class_weight=balanced".split()
+argv = fake_argv #### *!
+#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=3 --shift=60 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2023-08-09T00:00:00 --nrows=7000 --test_lenght=800 --nbins=14 --n_estimators=300 --bootstrap=True --class_weight=balanced".split()
 
 _conf = parse_argv(argv=argv)
 
@@ -137,7 +137,7 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
                                 bootstrap=_conf['bootstrap'],
-                                n_jobs=4)
+                                n_jobs=8)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -222,7 +222,7 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
                                 bootstrap=_conf['bootstrap'],
-                                n_jobs=4)
+                                n_jobs=8)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -304,7 +304,7 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
                                 bootstrap=_conf['bootstrap'],
-                                n_jobs=4)
+                                n_jobs=8)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -386,7 +386,7 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
                                 bootstrap=_conf['bootstrap'],
-                                n_jobs=4)
+                                n_jobs=8)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -468,7 +468,7 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
                                 bootstrap=_conf['bootstrap'],
-                                n_jobs=4)
+                                n_jobs=8)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -550,7 +550,7 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
                                 bootstrap=_conf['bootstrap'],
-                                n_jobs=4)
+                                n_jobs=8)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
@@ -632,7 +632,7 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
                                 bootstrap=_conf['bootstrap'],
-                                n_jobs=4)
+                                n_jobs=8)
 
 t0 = datetime.datetime.now()
 model.fit(X_train, y_train)
