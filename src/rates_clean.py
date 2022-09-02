@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates_clean.py --db_host=192.168.1.83 --db_port=5432 --symbol=AUDUSD --days=1 '
+fake_argv = 'rates_clean.py --db_host=192.168.1.83 --symbol=AUDUSD --days=1 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -23,7 +23,6 @@ if _conf['symbol'] == '*':
         sql =  "select distinct symbol from rates"
         df = pd.read_sql_query(sql, conn)
         symbols = df['symbol']
-
 else:
     symbols = [_conf['symbol']]
 
@@ -47,5 +46,3 @@ for symbol in symbols:
             df.to_sql('rates', conn, if_exists='append', index=False)
             tx.commit()
             tx.close()
-
-# %%

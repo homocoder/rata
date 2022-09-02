@@ -19,6 +19,7 @@ for i in symbol_conf:
         symbol_params += ' --' + j + '=' + i[j].__str__()
     symbol_params += ' --interval=' + str(_conf['interval'])
     symbol_params += ' --nrows='    + str(_conf['nrows'])
+    cmd += 'python -u /home/selknam/dev/rata/src/rates_clean.py --db_host=192.168.1.83 --symbol=' + i['symbol']+ ' --days=1 \n' #TODO:
     cmd += 'python -u /home/selknam/dev/rata/src/feateng.py ' + symbol_params + ' & \n'
 print(cmd)
 

@@ -1,8 +1,8 @@
 # %% 🐭
 from sys import argv
-from rata.utils import lstm_prep, parse_argv
+from rata.utils import parse_argv
 
-fake_argv = 'sanity-checks.py --db_host=192.168.1.83 '
+fake_argv = 'sanity_checks.py --db_host=192.168.1.83 '
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -19,14 +19,14 @@ df = pd.read_sql_query(sql, engine)
 symbols = df['symbol']
 
 #%%
-## RATES GAPS
+## RATES GAPS 1
 for s in symbols:
     sql =  "select * from rates "
     sql += "where symbol='" + s + "' and interval=1"
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
     check_time_gaps(df, {'symbol': s, 'interval': 4})
     print('Count duplicates ', s, len(df['tstamp']) - len(df['tstamp'].drop_duplicates()))
-
+    
 #%%
 ## FEATENG GAPS 1
 for s in symbols:
@@ -34,6 +34,8 @@ for s in symbols:
     sql += "where symbol='" + s + "' and interval=1"
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
     check_time_gaps(df, {'symbol': s, 'interval': 3})
+    print('Count duplicates ', s, len(df['tstamp']) - len(df['tstamp'].drop_duplicates()))
+    
 # %%
 ## FEATENG GAPS 3
 for s in symbols:
@@ -41,4 +43,5 @@ for s in symbols:
     sql += "where symbol='" + s + "' and interval=3"
     df = pd.read_sql_query(sql, engine).sort_values('tstamp')
     check_time_gaps(df, {'symbol': s, 'interval': 3})
+    print('Count duplicates ', s, len(df['tstamp']) - len(df['tstamp'].drop_duplicates()))
 # %%
