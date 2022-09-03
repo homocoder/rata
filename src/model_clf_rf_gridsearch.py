@@ -58,4 +58,3 @@ shuffle(launcher_cmds)
 fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch2.bash', 'wt')
 fd.writelines(launcher_cmds)
 fd.close()
-# %%

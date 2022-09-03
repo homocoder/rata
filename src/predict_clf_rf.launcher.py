@@ -52,6 +52,50 @@ import datetime
 
 engine = create_engine(_conf['url'])
 
+sql  = "select * from model_clf_rf "
+sql += "where symbol='EURUSD' and interval=1 and shift=6 and "
+sql += '"my_precisionS" > 0.0'
+sql += 'order by model_id'
+
+with engine.connect() as conn:
+    df = pd.read_sql_query(sql, conn)
+df
+
+#%%
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 df_join = pd.DataFrame()
 for s in _conf['X_symbols']:
     sql =  "select * from feateng "

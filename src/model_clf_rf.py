@@ -16,6 +16,7 @@ fake_argv += '--nbins=9 '
 fake_argv += '--n_estimators=300 '
 fake_argv += '--bootstrap=False '
 fake_argv += '--class_weight=None '
+#fake_argv += '--n_jobs=8 ' # TODO: add n_jobs param
 
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
@@ -164,6 +165,8 @@ dfr['X_include'] = ','.join(_conf['X_include'])
 
 dfr['test_lenght']   = _conf['test_lenght']
 dfr['nrows']         = _conf['nrows']
+dfr['random_state']  = random_state
+#dfr['n_jobs']         = _conf['n_jobs'] # TODO: add n_jobs
 
 dfr['model_tstamp']  = df.index.max()
 dfr['model_id']      = str(datetime.datetime.now()).replace(' ', 'T')
@@ -174,7 +177,7 @@ dfr['n_estimators']  = _conf['n_estimators']
 dfr['nbins']         = _conf['nbins']
 dfr['bootstrap']     = _conf['bootstrap']
 dfr['class_weight']  = _conf['class_weight']
-dfr['random_state']  = random_state
+# TODO: add supportS, supportB
 
 #%%
 from sklearn.metrics import confusion_matrix, accuracy_score, precision_score, recall_score
@@ -209,10 +212,19 @@ dfr['my_precisionS'] = my_precisionS
 dfr['cmd']           = ' '.join(argv) + ' --random_state=' + str(random_state)
 dfr = pd.DataFrame([dfr,])
 #%%
-#quit()
 dfr.reset_index().to_sql('model_clf_rf', engine, if_exists='append', index=False)
 
-#%% COPY 
+#%% COPY
+#
+# 
+#
+#
+#
+#
+#
+#
+# 
+# ######################################################## COPY SECTION  ############################################# 
 if not((my_precisionB > 0.7) or (my_precisionS > 0.7)):
     quit()
 
