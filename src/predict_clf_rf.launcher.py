@@ -52,9 +52,11 @@ import datetime
 
 engine = create_engine(_conf['url'])
 
-sql  = "select * from model_clf_rf "
-sql += "where symbol='EURUSD' and interval=1 and shift=6 and "
-sql += '"my_precisionS" > 0.0'
+sql  = "select * "
+sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "my_supportB", "my_supportS" '
+sql += " from model_clf_rf "
+sql += "where symbol='EURUSD' and interval=1 and shift=60 and "
+sql += '"my_precisionS" > 0.85'
 sql += 'order by model_id'
 
 with engine.connect() as conn:

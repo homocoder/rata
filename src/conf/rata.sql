@@ -89,7 +89,27 @@ select
     "trend_cci_SROC_15",
     "trend_cci_SROC_30",
     "trend_cci_SROC_60",
-    "trend_cci_SROC_90"
+    "trend_cci_SROC_90",
+
+    "y_close_SROC_6_shift-6",
+    "y_B_close_SROC_6_shift-6",
+    "y_S_close_SROC_6_shift-6",
+    "y_close_SROC_9_shift-9",
+    "y_B_close_SROC_9_shift-9",
+    "y_S_close_SROC_9_shift-9",
+    "y_close_SROC_15_shift-15",
+    "y_B_close_SROC_15_shift-15",
+    "y_S_close_SROC_15_shift-15",
+    "y_close_SROC_30_shift-30",
+    "y_B_close_SROC_30_shift-30",
+    "y_S_close_SROC_30_shift-30",
+    "y_close_SROC_60_shift-60",
+    "y_B_close_SROC_60_shift-60",
+    "y_S_close_SROC_60_shift-60",
+    "y_close_SROC_90_shift-90",
+    "y_B_close_SROC_90_shift-90",
+    "y_S_close_SROC_90_shift-90"
+
 from feateng
 where interval=3
 order by tstamp desc
