@@ -1,4 +1,5 @@
 # %% 🐭 Excellence
+from random import random
 from sys import argv
 from rata.utils import parse_argv
 import logging as l
@@ -23,8 +24,9 @@ fake_argv += '--n_jobs=4 '
 
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
-#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=3 --shift=60 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2023-08-09T00:00:00 --nrows=7000 --test_lenght=800 --nbins=14 --n_estimators=300 --bootstrap=True --class_weight=balanced".split()
-
+argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2022-09-06T12:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=balanced_subsample --n_jobs=6 --random_state=32556328".split()
+                #model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2022-09-06T12:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=balanced_subsample --n_jobs=6 --random_state=32556328
+                #model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2022-09-06T12:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=balanced_subsample --n_jobs=6 --random_state=34955481
 _conf = parse_argv(argv=argv)
 _conf['n_jobs'] = 4
 _conf['X_symbols']   = _conf['X_symbols'].split(',')
@@ -143,7 +145,6 @@ if 'random_state' in _conf:
 else:
     random_state = int(datetime.datetime.now().strftime('%S%f'))
 
-random_state = int(datetime.datetime.now().strftime('%S%f'))
 model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],
@@ -202,13 +203,13 @@ j = _conf['nbins'] // 5
 
 posS = cm.iloc[:i, :j].sum().sum()
 negS = cm.iloc[i:, :j].sum().sum()
-my_supportS   = cm.iloc[:j].sum().sum()
-my_precisionS = posS / (posS + negS)
+my_supportS   = posS + negS
+my_precisionS = posS / (my_supportS)
 
 posB = cm.iloc[-i:, -j:].sum().sum()
 negB = cm.iloc[:-i, -j:].sum().sum()
-my_supportB = cm.iloc[-j:].sum().sum()
-my_precisionB = posB / (posB + negB)
+my_supportB = posB + negB
+my_precisionB = posB / (my_supportB)
 
 print(i, j, my_supportB, my_precisionB, my_supportS, my_precisionS)
 cm
@@ -220,15 +221,13 @@ dfr['i']             = i
 dfr['j']             = j
 dfr['my_precisionB'] = my_precisionB
 dfr['my_precisionS'] = my_precisionS
-dfr['posB']          = posB
-dfr['posS']          = posS
 dfr['my_supportB']   = my_supportB
 dfr['my_supportS']   = my_supportS
 dfr['cmd']           = ' '.join(argv) + ' --random_state=' + str(random_state)
 dfr = pd.DataFrame([dfr,])
 
 #%%
-dfr.reset_index().to_sql('model_clf_rf', engine, if_exists='append', index=False)
+##dfr.reset_index().to_sql('model_clf_rf', engine, if_exists='append', index=False)
 if not((my_precisionB > 0.8) or (my_precisionS > 0.8)):
     quit()
 
@@ -301,13 +300,13 @@ for reps in range(0,5):
 
     posS = cm.iloc[:i, :j].sum().sum()
     negS = cm.iloc[i:, :j].sum().sum()
-    my_supportS   = cm.iloc[:j].sum().sum()
-    my_precisionS = posS / (posS + negS)
+    my_supportS   = posS + negS
+    my_precisionS = posS / (my_supportS)
 
     posB = cm.iloc[-i:, -j:].sum().sum()
     negB = cm.iloc[:-i, -j:].sum().sum()
-    my_supportB = cm.iloc[-j:].sum().sum()
-    my_precisionB = posB / (posB + negB)
+    my_supportB = posB + negB
+    my_precisionB = posB / (my_supportB)
 
     print(i, j, my_supportB, my_precisionB, my_supportS, my_precisionS)
     cm
@@ -319,8 +318,6 @@ for reps in range(0,5):
     dfr['j']             = j
     dfr['my_precisionB'] = my_precisionB
     dfr['my_precisionS'] = my_precisionS
-    dfr['posB']          = posB
-    dfr['posS']          = posS
     dfr['my_supportB']   = my_supportB
     dfr['my_supportS']   = my_supportS
     dfr['cmd']           = ' '.join(argv) + ' --random_state=' + str(random_state)

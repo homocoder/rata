@@ -58,10 +58,11 @@ for symbol in model_params['symbol']:
                                                         launcher_cmds.append(cmd)
 
 shuffle(launcher_cmds)
-fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch.4.bash', 'wt')
+fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch.6.bash', 'wt')
 fd.writelines(launcher_cmds)
 fd.close()
 # %%
 
 # cd /home/selknam/dev/rata/src/
 # nohup bash /home/selknam/var/scripts/model_clf_rf_gridsearch.1.bash &> /home/selknam/var/log/model_clf_rf_gridsearch.1.bash.log &
+
