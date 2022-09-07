@@ -26,7 +26,7 @@ fake_argv = fake_argv.split()
 #argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=3 --shift=60 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2023-08-09T00:00:00 --nrows=7000 --test_lenght=800 --nbins=14 --n_estimators=300 --bootstrap=True --class_weight=balanced".split()
 
 _conf = parse_argv(argv=argv)
-_conf['n_jobs'] = 4
+_conf['n_jobs'] = 6
 _conf['X_symbols']   = _conf['X_symbols'].split(',')
 _conf['X_include']   = _conf['X_include'].split(',')
 _conf['X_exclude']   = _conf['X_exclude'].split(',')
@@ -143,7 +143,6 @@ if 'random_state' in _conf:
 else:
     random_state = int(datetime.datetime.now().strftime('%S%f'))
 
-random_state = int(datetime.datetime.now().strftime('%S%f'))
 model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
                                 random_state=random_state,
                                 class_weight=_conf['class_weight'],

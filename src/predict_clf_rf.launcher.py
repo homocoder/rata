@@ -51,12 +51,12 @@ import datetime
 #%%
 engine = create_engine(_conf['url'])
 
-interval = 1
-shift    = 90
+interval = 3
+shift    = 60
 
 # 1st: highest my_precision
 sql  = "select * "
-sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "my_supportB", "my_supportS", cmd '
+sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
 sql += " from model_clf_rf "
 sql += "where symbol='EURUSD' and interval=" + str(interval) + " and shift=" + str(shift) + " and "
 sql += '"my_precisionS" > 0.95'

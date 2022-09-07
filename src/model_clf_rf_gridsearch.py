@@ -1,11 +1,15 @@
-#%%
+# %%
+import pandas as pd
+pd.date_range(start='2022-09-05', periods=10, freq='6h')
+
+# %%
 from random import shuffle
 import pandas as pd
 
 model_params = {
     'symbol'        : ['EURUSD'],
     'interval'      : [1, 3],
-    'shift'         : [6, 9, 15, 30, 60, 90],
+    'shift'         : [6, 6, 9, 9, 15, 15, 30, 60, 90],
     'X_symbols'     : ['EURUSD', 'EURUSD,GBPUSD', 'EURUSD,AUDUSD', 'EURUSD,NZDUSD', 'EURUSD,USDCAD', 'EURUSD,USDJPY', 'EURUSD,USDCHF'],
     'X_include'     : ['close,atr', 'close,obv', 'close,vpt', 'close,rsi', 'close,stoch', 'close,others_cr', 'close,macd', 'close,kst', 'close,adx', 'close,cci', 'close,dch', 'open,low,high,close,volume,obv,atr,macd,rsi', 'atr,vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv'],
     'X_exclude'     : ['volatility_kcli'],
@@ -58,7 +62,7 @@ for symbol in model_params['symbol']:
                                                         launcher_cmds.append(cmd)
 
 shuffle(launcher_cmds)
-fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch.6.bash', 'wt')
+fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch.1.bash', 'wt')
 fd.writelines(launcher_cmds)
 fd.close()
 # %%
