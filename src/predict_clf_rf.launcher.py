@@ -55,22 +55,263 @@ df = pd.DataFrame()
 interval     = [1, 3]
 shift        = [6, 9, 15, 30, 60, 90]
 my_precision = ['my_precisionS', 'my_precisionB']
-my_thresh    = 0.75
+
 
 for i in interval:
     for s in shift:
         for m in my_precision:
+            ##
+            my_thresh = 1.00
+            hours     = 3
             sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
             sql += " from model_clf_rf "
             sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
-            sql += '"' + m + '" > ' + str(my_thresh) + ' '
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
             sql += 'order by model_tstamp'
 
             with engine.connect() as conn:
                 dfq = pd.read_sql_query(sql, conn)
             print(i, s, m, len(dfq))
-            df = pd.concat([df, dfq])
-            
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 1.00
+            hours     = 6
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+            ##
+            my_thresh = 1.00
+            hours     = 9
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.95
+            hours     = 3
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.95
+            hours     = 6
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.95
+            hours     = 9
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.90
+            hours     = 3
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.90
+            hours     = 6
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.90
+            hours     = 9
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.85
+            hours     = 3
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.85
+            hours     = 6
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.85
+            hours     = 9
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.85
+            hours     = 12
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+            ##
+            my_thresh = 0.85
+            hours     = 24
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" >= ' + str(my_thresh) + ' and '
+            sql += " model_tstamp >= (now() - interval '" + str(hours) + " hours' ) "
+            sql += 'order by model_tstamp'
+
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+
+            if len(dfq) > 3:
+                df = pd.concat([df, dfq.sample(3)]) # take rand 3
+                continue
+
+
 #%%
 
 

@@ -13,7 +13,7 @@ model_params = {
     'X_symbols'     : ['EURUSD', 'EURUSD,GBPUSD', 'EURUSD,AUDUSD', 'EURUSD,NZDUSD', 'EURUSD,USDCAD', 'EURUSD,USDJPY', 'EURUSD,USDCHF'],
     'X_include'     : ['close,atr', 'close,obv', 'close,vpt', 'close,rsi', 'close,stoch', 'close,others_cr', 'close,macd', 'close,kst', 'close,adx', 'close,cci', 'close,dch', 'open,low,high,close,volume,obv,atr,macd,rsi', 'atr,vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv'],
     'X_exclude'     : ['volatility_kcli'],
-    'tstamp'        : pd.date_range(start='2022-09-05', periods=10, freq='6h'),
+    'tstamp'        : pd.date_range(start='2023-01-01', periods=1, freq='6h'),
     'nrows'         : [7000],
     'test_lenght'   : [800],
     'nbins'         : [9, 12, 15],
@@ -69,4 +69,3 @@ fd.close()
 
 # cd /home/selknam/dev/rata/src/
 # nohup bash /home/selknam/var/scripts/model_clf_rf_gridsearch.1.bash &> /home/selknam/var/log/model_clf_rf_gridsearch.1.bash.log &
-
