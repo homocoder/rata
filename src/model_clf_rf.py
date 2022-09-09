@@ -223,6 +223,8 @@ dfr['posB']          = posB
 dfr['posS']          = posS
 dfr['my_supportB']   = my_supportB
 dfr['my_supportS']   = my_supportS
+#dfr['my_catchB'] = (dfr['posB'] * dfr['my_precisionB']) / dfr['my_supportB']
+#dfr['my_catchS'] = (dfr['posS'] * dfr['my_precisionS']) / dfr['my_supportS']
 dfr['cmd']           = ' '.join(argv) + ' --random_state=' + str(random_state)
 dfr = pd.DataFrame([dfr,])
 
@@ -322,6 +324,8 @@ for reps in range(0,5):
     dfr['posS']          = posS
     dfr['my_supportB']   = my_supportB
     dfr['my_supportS']   = my_supportS
+    #dfr['my_catchB'] = (dfr['posB'] * dfr['my_precisionB']) / dfr['my_supportB']
+    #dfr['my_catchS'] = (dfr['posS'] * dfr['my_precisionS']) / dfr['my_supportS']
     dfr['cmd']           = ' '.join(argv) + ' --random_state=' + str(random_state)
     dfr = pd.DataFrame([dfr,])
     #%%
