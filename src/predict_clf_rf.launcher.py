@@ -8,8 +8,8 @@ fake_argv += '--X_symbols=EURUSD,NZDUSD '
 fake_argv += '--X_include=close,obv '
 fake_argv += '--X_exclude=volatility_kcli '
 
-fake_argv += '--nrows=7000 ' 
-fake_argv += '--tstamp=2022-08-18T21:51:00 ' 
+fake_argv += '--nrows=7000 '
+fake_argv += '--tstamp=2022-08-18T21:51:00 '
 fake_argv += '--test_lenght=800 '
 fake_argv += '--nbins=24 '
 
@@ -51,22 +51,29 @@ import datetime
 #%%
 engine = create_engine(_conf['url'])
 
-interval = 3
-shift    = 60
+df = pd.DataFrame()
+interval     = [1, 3]
+shift        = [6, 9, 15, 30, 60, 90]
+my_precision = ['my_precisionS', 'my_precisionB']
+my_thresh    = 0.75
 
-# 1st: highest my_precision
-sql  = "select * "
-sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
-sql += " from model_clf_rf "
-sql += "where symbol='EURUSD' and interval=" + str(interval) + " and shift=" + str(shift) + " and "
-sql += '"my_precisionS" > 0.95'
-sql += 'order by model_id'
+for i in interval:
+    for s in shift:
+        for m in my_precision:
+            sql  = 'select model_tstamp, symbol, interval, shift, nbins, round("my_precisionB"::numeric, 2) as "my_precisionB", round("my_precisionS"::numeric, 2) as "my_precisionS", "posB", "posS", "my_supportB", "my_supportS", cmd '
+            sql += " from model_clf_rf "
+            sql += "where symbol='EURUSD' and interval=" + str(i) + " and shift=" + str(s) + " and "
+            sql += '"' + m + '" > ' + str(my_thresh) + ' '
+            sql += 'order by model_tstamp'
 
-with engine.connect() as conn:
-    df = pd.read_sql_query(sql, conn)
-df
-
+            with engine.connect() as conn:
+                dfq = pd.read_sql_query(sql, conn)
+            print(i, s, m, len(dfq))
+            df = pd.concat([df, dfq])
+            
 #%%
+
+
 
 
 
