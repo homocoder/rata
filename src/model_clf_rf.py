@@ -23,7 +23,7 @@ fake_argv += '--n_jobs=4 '
 
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
-#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=3 --shift=60 --X_symbols=EURUSD,USDCAD --X_include=close,obv --X_exclude=volatility_kcli --tstamp=2023-08-09T00:00:00 --nrows=7000 --test_lenght=800 --nbins=14 --n_estimators=300 --bootstrap=True --class_weight=balanced".split()
+#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=3 --shift=6 --X_symbols=EURUSD --X_include=close,stoch --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=15 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=6 --random_state=36587996".split()
 
 _conf = parse_argv(argv=argv)
 #_conf['n_jobs'] = 6
@@ -93,7 +93,7 @@ for c in df.columns:
         if exc in c:
             ys_todelete.append(c)
 
-df = df[:-120]
+df = df[:-_conf['shift']]
 #columns containing NaNs
 dfnans = pd.DataFrame(df.isnull().sum())
 nancols = list(dfnans[dfnans[0] > 0].index)
