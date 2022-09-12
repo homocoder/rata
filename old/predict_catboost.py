@@ -155,7 +155,7 @@ for c in range(0, 90 // _conf['interval']): # 5 hours per model
             df.sort_values('tstamp', inplace=True)
             df[df.select_dtypes(np.float64).columns] = df.select_dtypes(np.float64).astype(np.float32)
 
-            #%% Features handling
+            #% Features handling
             ys_todelete = list()
             for c in df.columns:
                 if 'shift' in c:
@@ -167,8 +167,7 @@ for c in range(0, 90 // _conf['interval']): # 5 hours per model
                 for exc in _conf['X_exclude']:
                     if exc in c:
                         ys_todelete.append(c)
-
-            #%%
+            # %
             X_predict = df[-1:]
             df = df[:-_conf['shift']]
             #columns containing NaNs
@@ -187,7 +186,6 @@ for c in range(0, 90 // _conf['interval']): # 5 hours per model
                         if inc in c:
                             ys_include.add(c)
                 ys_include = list(ys_include)
-
 
             X         = X[ys_include]
             X_predict = X_predict[ys_include]
