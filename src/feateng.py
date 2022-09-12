@@ -5,6 +5,7 @@ from rata.utils import parse_argv
 fake_argv = 'feateng.py --db_host=192.168.1.83 --symbol=USDJPY --kind=forex --interval=3 --nrows=300 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
+#argv = "feateng.py --db_host=192.168.1.83 --symbol=AUDUSD --kind=forex --interval=1 --nrows=400".split()
 _conf = parse_argv(argv=argv)
 _conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
 _conf

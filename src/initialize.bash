@@ -1,8 +1,8 @@
 # SQL delete from rates where True;
 # SQL drop table feateng;
 
-python -u rates_get_tstamp.py --db_host=192.168.1.83 --symbol=GBPUSD,USDJPY,USDCAD,AUDUSD,NZDUSD,USDCHF,EURUSD --kind=forex --interval=1 --tstamp_end=2022-09-08 --periods=30
-python -u rates_clean.py --db_host=192.168.1.83 --db_port=5432 --symbol=* --days=60
+#python -u rates_get_tstamp.py --db_host=192.168.1.83 --symbol=GBPUSD,USDJPY,USDCAD,AUDUSD,NZDUSD,USDCHF,EURUSD --kind=forex --interval=1 --tstamp_end=2022-09-08 --periods=30
+python -u rates_clean.py --db_host=192.168.1.83 --db_port=5432 --symbol=* --days=600
 python -u /home/selknam/dev/rata/src/feateng.py --db_host=192.168.1.83 --symbol=AUDUSD --kind=forex --interval=1 --nrows=12500  
 python -u /home/selknam/dev/rata/src/feateng.py --db_host=192.168.1.83 --symbol=GBPUSD --kind=forex --interval=1 --nrows=12500 & 
 python -u /home/selknam/dev/rata/src/feateng.py --db_host=192.168.1.83 --symbol=NZDUSD --kind=forex --interval=1 --nrows=12500  
