@@ -2,10 +2,10 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'feateng.py --db_host=192.168.1.83 --symbol=USDJPY --kind=forex --interval=3 --nrows=300 '
+fake_argv = 'feateng.py --db_host=192.168.1.83 --symbol=USDJPY --kind=forex --interval=3 --nrows=350 ' #nrows always >= 300
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
-#argv = "feateng.py --db_host=192.168.1.83 --symbol=AUDUSD --kind=forex --interval=1 --nrows=400".split()
+#argv = "feateng.py --db_host=192.168.1.83 --symbol=AUDUSD --kind=forex --interval=1 --nrows=350".split()
 _conf = parse_argv(argv=argv)
 _conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
 _conf
@@ -67,7 +67,7 @@ for c in df.columns.drop(['tstamp', 'symbol', 'interval']):
     for i in [6, 9, 15, 30, 60, 90]:
         df[str(c) + '_SROC_' + str(i)] = df[c].pct_change(i) * 100
         df[str(c) + '_SROC_' + str(i)] = df[str(c) + '_SROC_' + str(i)].rolling(window=i).mean()
-df = df[150:]
+df = df[200:] # always > 180
 print(len(df))
 #%%
 for shift in ['6', '9', '15', '30', '60', '90']:

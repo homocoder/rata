@@ -16,6 +16,7 @@ fake_argv += '--n_estimators=100 '
 fake_argv += '--bootstrap=False '
 fake_argv += '--class_weight=balanced_subsample '
 fake_argv += '--n_jobs=2 '
+fake_argv += '--my_precision=my_precisionS '
 fake_argv += '--my_test_precisionB=0.0 '
 fake_argv += '--my_test_precisionS=0.0 '
 fake_argv += '--my_moving_precisionB=0.0 '
@@ -23,7 +24,8 @@ fake_argv += '--my_moving_precisionS=0.0 '
 
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
-argv="python3 -u --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,NZDUSD --X_include=atr,vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=2 --random_state=11715967".split()
+#argv="python3 -u --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,NZDUSD --X_include=atr,vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=2 --random_state=11715967".split()
+#argv="python3 -u --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,NZDUSD --X_include=atr,close --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=2 --random_state=11715967".split()
 
 _conf = parse_argv(argv=argv)
 _conf['n_jobs'] = 2
@@ -45,6 +47,7 @@ _conf
 # %% Global imports
 import pandas as pd
 import numpy  as np
+from random import random
 from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
 import datetime
@@ -94,17 +97,16 @@ for c in df.columns:
     for exc in _conf['X_exclude']:
         if exc in c:
             ys_todelete.append(c)
-
+#%%
 X_predict = df[-1:]
 df = df[:-_conf['shift']]
-#columns containing NaNs
+# columns containing NaNs
 dfnans = pd.DataFrame(df.isnull().sum())
 nancols = list(dfnans[dfnans[0] > 0].index)
 ys_todelete = ys_todelete + nancols
 print(nancols) # TODO: check nancols len > 0
 X = df.drop(ys_todelete, axis=1)
-
-
+#%%
 if '*' in _conf['X_include']:
     ys_include = X.columns
 else:
@@ -150,22 +152,23 @@ model = RandomForestClassifier( n_estimators=_conf['n_estimators'],
 
 t0 = datetime.datetime.now()
 model.fit(X, y)
-fit_time = (datetime.datetime.now() - t0).total_seconds() 
+fit_time = (datetime.datetime.now() - t0).total_seconds()
 
 #%% ###    SECTION ITERATE PREDICTIONS ###
+del X
+del y
 
 for c in range(0, 90 // _conf['interval']): # 5 hours per model 
     del df_join
     del df
-    del X
-    del y
+
     from time import sleep
     while True:
         sleep(0.5)
         tnow = datetime.datetime.now()
-        if (tnow.minute in [i for i in range(0, 60, _conf['interval'])]) and tnow.second == 3 + _conf['interval'] * 2: #TODO:30 hardcoded
-
-            _conf['nrows'] = 12
+        if (tnow.minute in [i for i in range(0, 60, _conf['interval'])]) and tnow.second == 25 + _conf['interval'] * 2: #TODO:25 hardcoded
+            sleep(random() * 15)
+            _conf['nrows'] = 6
             df_join = pd.DataFrame()
             for s in _conf['X_symbols']:
                 sql =  "select * from feateng "
@@ -195,9 +198,7 @@ for c in range(0, 90 // _conf['interval']): # 5 hours per model
 
             X_predict = df[-1:]
 
-            #X         = X[ys_include]
             X_predict = X_predict[ys_include]
-            #X['hour'] = X.index.hour.values
             X_predict['hour'] = X_predict.index.hour.values
 
             y_current = y_target.replace('_shift-' + str(_conf['shift']), '').replace('_y_', '_')
@@ -208,13 +209,17 @@ for c in range(0, 90 // _conf['interval']): # 5 hours per model
             dfr['interval']  = _conf['interval']
             dfr['shift']     = _conf['shift']
             dfr['minutes']   = _conf['interval'] * _conf['shift']
-            dfr['my_test_precisionB']   = 0.0
-            dfr['my_test_precisionS']   = 0.0
+
+            dfr['my_precision']         = _conf['my_precision']
+            dfr['my_test_precisionB']   = _conf['my_test_precisionB']
+            dfr['my_test_precisionS']   = _conf['my_test_precisionS']
             dfr['my_moving_precisionB'] = 0.0
             dfr['my_moving_precisionS'] = 0.0
+            
             dfr['y_pred']   = model.predict(X_predict)[0]
             dfr['cat_pred'] = cat_list[cl_list.index(dfr['y_pred'].values[0])]
-            dfr['n_pred'] = np.mean(np.array(eval(dfr['cat_pred'].values[0].replace('cat_(', '['))))
+            dfr['n_pred']   = np.mean(np.array(eval(dfr['cat_pred'].values[0].replace('cat_(', '['))))
+
             probas = model.predict_proba(X_predict)
             dfr['pS1'] = probas[0][0]
             dfr['pS2'] = probas[0][1]
@@ -233,6 +238,5 @@ for c in range(0, 90 // _conf['interval']): # 5 hours per model
             # %
             dfr.reset_index().to_sql('predict_clf_rf', engine, if_exists='append', index=False)
             break
-
 
 # %%

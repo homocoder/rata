@@ -13,14 +13,14 @@ model_params = {
     'X_symbols'     : ['EURUSD', 'EURUSD,GBPUSD', 'EURUSD,AUDUSD', 'EURUSD,NZDUSD', 'EURUSD,USDCAD', 'EURUSD,USDJPY', 'EURUSD,USDCHF'],
     'X_include'     : ['close,atr', 'close,obv', 'close,vpt', 'close,rsi', 'close,stoch', 'close,others_cr', 'close,macd', 'close,kst', 'close,adx', 'close,cci', 'close,dch', 'open,low,high,close,volume,obv,atr,macd,rsi', 'atr,vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv'],
     'X_exclude'     : ['volatility_kcli'],
-    'tstamp'        : pd.date_range(start='2023-01-01T00:00:00', periods=1, freq='3h'),
+    'tstamp'        : pd.date_range(start='2023-01-11T00:00:01', periods=1, freq='3h'),
     'nrows'         : [7000],
     'test_lenght'   : [800],
     'nbins'         : [9, 12, 15],
     'n_estimators'  : [300],
     'bootstrap'     : ['True', 'False'],
     'class_weight'  : ['None', 'balanced', 'balanced_subsample'],
-    'n_jobs'        : [6]
+    'n_jobs'        : [4]
 }
 
 for i in model_params:
@@ -62,7 +62,7 @@ for symbol in model_params['symbol']:
                                                         launcher_cmds.append(cmd)
 
 shuffle(launcher_cmds)
-fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch.2.bash', 'wt')
+fd = open('/home/selknam/var/scripts/model_clf_rf_gridsearch.1.bash', 'wt')
 fd.writelines(launcher_cmds)
 fd.close()
 # %%
@@ -70,3 +70,4 @@ fd.close()
 # cd /home/selknam/dev/rata/src/
 # nohup bash /home/selknam/var/scripts/model_clf_rf_gridsearch.1.bash &> /home/selknam/var/log/model_clf_rf_gridsearch.1.bash.log &
 # tail -f /home/selknam/var/log/model_clf_rf_gridsearch.1.bash.log
+# %%

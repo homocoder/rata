@@ -52,7 +52,7 @@ else:
 print('Hours back: ', hours_back)
 
 #%% Connect to API
-sleep(random() * 1)
+sleep(random() * 2)
 df = get_data.get_finnhub(symbol=_conf['symbol'], interval=_conf['interval'], exchange=exchange, kind=_conf['kind'], tstamp=_conf['tstamp'], hours=hours_back)
 df = df.sort_values(by='tstamp')
 df.reset_index(inplace=True)
