@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'predict_clf_rf.py --db_host=192.168.1.83 '
+fake_argv  = 'predict_clf_rf.py --db_host=192.168.1.84 '
 fake_argv += '--symbol=EURUSD --interval=1 --shift=9 '
 fake_argv += '--X_symbols=EURUSD,NZDUSD '
 fake_argv += '--X_include=close,rsi '
@@ -24,8 +24,8 @@ fake_argv += '--my_moving_precisionS=0.0 '
 
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
-#argv="python3 -u --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,NZDUSD --X_include=atr,vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=2 --random_state=11715967".split()
-#argv="python3 -u --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,NZDUSD --X_include=atr,close --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=2 --random_state=11715967".split()
+#argv="python3 -u --db_host=192.168.1.84 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,NZDUSD --X_include=atr,vpt,rsi,stoch,others_cr,macd,kst,adx,cci,dch,open,high,low,close,volume,obv --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=2 --random_state=11715967".split()
+#argv="python3 -u --db_host=192.168.1.84 --symbol=EURUSD --interval=1 --shift=90 --X_symbols=EURUSD,NZDUSD --X_include=atr,close --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=12 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=2 --random_state=11715967".split()
 
 _conf = parse_argv(argv=argv)
 _conf['n_jobs'] = 2

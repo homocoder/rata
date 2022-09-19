@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates_get_tstamp.py --db_host=192.168.1.83 --symbol=GBPUSD,USDJPY,USDCAD,AUDUSD,NZDUSD,USDCHF,EURUSD --kind=forex --interval=1 --tstamp_end=2022-08-21 --periods=4'
+fake_argv = 'rates_get_tstamp.py --db_host=192.168.1.84 --symbol=GBPUSD,USDJPY,USDCAD,AUDUSD,NZDUSD,USDCHF,EURUSD --kind=forex --interval=1 --tstamp_end=2022-08-21 --periods=4'
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)

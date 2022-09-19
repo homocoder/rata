@@ -5,7 +5,7 @@ import logging as l
 li = l.info
 l.debug('CMD is: ' + ' '.join(argv))
 
-fake_argv  = 'model_clf_rf.py --db_host=192.168.1.83 '
+fake_argv  = 'model_clf_rf.py --db_host=192.168.1.84 '
 fake_argv += '--symbol=EURUSD --interval=1 --shift=9 '
 fake_argv += '--X_symbols=EURUSD,NZDUSD '
 fake_argv += '--X_include=close,rsi '
@@ -23,7 +23,7 @@ fake_argv += '--n_jobs=4 '
 
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
-#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=3 --shift=6 --X_symbols=EURUSD --X_include=close,stoch --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=15 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=6 --random_state=36587996".split()
+#argv="python3 -u model_clf_rf.py --db_host=192.168.1.84 --symbol=EURUSD --interval=3 --shift=6 --X_symbols=EURUSD --X_include=close,stoch --X_exclude=volatility_kcli --tstamp=2023-01-01T00:00:00 --nrows=7000 --test_lenght=800 --nbins=15 --n_estimators=300 --bootstrap=False --class_weight=None --n_jobs=6 --random_state=36587996".split()
 
 _conf = parse_argv(argv=argv)
 #_conf['n_jobs'] = 4

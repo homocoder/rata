@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates.py --db_host=192.168.1.83 --symbol=EURUSD --kind=forex --interval=1 '
+fake_argv = 'rates.py --db_host=192.168.1.84 --symbol=EURUSD --kind=forex --interval=1 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -65,3 +65,4 @@ with engine.connect().execution_options(autocommit=False) as conn:
     df.to_sql('rates', conn, if_exists='append', index=False)
     tx.commit()
     tx.close()
+# %%

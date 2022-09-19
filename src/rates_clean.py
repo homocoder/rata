@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv = 'rates_clean.py --db_host=192.168.1.83 --symbol=AUDUSD --days=1 '
+fake_argv = 'rates_clean.py --db_host=192.168.1.84 --symbol=AUDUSD --days=1 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)

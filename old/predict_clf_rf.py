@@ -2,7 +2,7 @@
 from sys import argv
 from rata.utils import parse_argv
 
-fake_argv  = 'model_clf_rf.py --db_host=192.168.1.83 '
+fake_argv  = 'model_clf_rf.py --db_host=192.168.1.84 '
 fake_argv += '--symbol=EURUSD --interval=1 --shift=9 '
 fake_argv += '--X_symbols=EURUSD,NZDUSD '
 fake_argv += '--X_include=close,obv '
@@ -23,7 +23,7 @@ fake_argv += '--my_moving_precisionS=0.0 '
 
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
-#argv="python3 -u model_clf_rf.py --db_host=192.168.1.83 --symbol=EURUSD --interval=1 --shift=15 --X_symbols=EURUSD,AUDUSD --X_include=rsi,* --X_exclude=volatility_kcli --tstamp=2022-08-10T00:00:00 --nrows=5000 --test_lenght=800 --nbins=24 --n_estimators=300 --bootstrap=True --class_weight=None".split()
+#argv="python3 -u model_clf_rf.py --db_host=192.168.1.84 --symbol=EURUSD --interval=1 --shift=15 --X_symbols=EURUSD,AUDUSD --X_include=rsi,* --X_exclude=volatility_kcli --tstamp=2022-08-10T00:00:00 --nrows=5000 --test_lenght=800 --nbins=24 --n_estimators=300 --bootstrap=True --class_weight=None".split()
 _conf = parse_argv(argv=argv)
 
 _conf['X_symbols']   = _conf['X_symbols'].split(',')

@@ -43,7 +43,7 @@ for symbol in model_params['symbol']:
                                             for bootstrap in model_params['bootstrap']:
                                                 for class_weight in model_params['class_weight']:
                                                     for n_jobs in model_params['n_jobs']:
-                                                        cmd  = 'python3 -u model_clf_rf.py --db_host=192.168.1.83'
+                                                        cmd  = 'python3 -u model_clf_rf.py --db_host=192.168.1.84'
                                                         cmd += ' --symbol='        + symbol
                                                         cmd += ' --interval='      + str(interval)
                                                         cmd += ' --shift='         + str(shift)
