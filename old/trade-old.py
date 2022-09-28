@@ -9,6 +9,10 @@ fake_argv += '--X_symbols=EURUSD '#,GBPUSD '
 fake_argv += '--X_include=SROC '
 fake_argv += '--X_exclude=volatility_kcli '
 
+fake_argv += '--nrows=3000 ' 
+
+fake_argv += '--loss_function=MAE '
+
 fake_argv = fake_argv.split()
 argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
@@ -20,32 +24,52 @@ _conf['X_exclude']   = _conf['X_exclude'].split(',')
 y_target  = _conf['symbol'] + '_' + str(_conf['interval'])
 y_target += '_y_close_SROC_' + str(_conf['shift'])
 y_target += '_shift-' + str(_conf['shift'])
-_conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
+_conf['y_target'] = y_target
 
 _conf
 
 # %% Global imports
 import pandas as pd
+import numpy  as np
+from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
+import datetime
 
+engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
 #%%
-engine = create_engine(_conf['url'])
+sql =  "select * from predict_catboost "
+#sql += "where symbol='" + _conf['symbol']+ "' and interval=" + str(_conf['interval'])
+sql += " where tstamp > (now() - interval '12 hours')"
+sql += " order by tstamp desc "
 
 sql = """
-select
-  tstamp, y_current, interval, shift, minutes, "my_test_precisionS", n_pred, 
-  "pS1"+"pS2"+"pS3" "pS"
-from predict_clf_rf 
-where
-  "my_test_precisionS" > 0.8
+with
+p as
+(select tstamp, symbol, "interval", shift, avg(y_pred) y_pred_avg
+from predict_catboost 
+group by  tstamp, symbol, "interval", shift
+order by tstamp desc),
+t as
+(select tstamp_test, avg(y_current) y_current_avg, y_test, symbol, "interval", shift 
+from predict_catboost
+--where y_current = y_test --NaNs ??? :(
+group by tstamp_test, y_test, symbol, "interval", shift
+order by tstamp_test desc )
+select p.tstamp, t.tstamp_test, y_current_avg, y_test, y_pred_avg, t.symbol, t.interval, t.shift
+from p inner join t
+  on 
+    p.tstamp = t.tstamp_test and
+    p.symbol = t.symbol and
+    p.interval = t.interval and
+    p.shift = t.shift
+where tstamp > (now() - interval '24 hours')
 order by tstamp desc
 """
 
-with engine.connect() as conn:
-    df = pd.read_sql_query(sql, conn)
-
-# %%
-df[df['tstamp'] == '2022-09-27 22:15:00'].sort_values(by='minutes')
+print(sql)
+df = pd.read_sql_query(sql, engine).sort_values('tstamp')
+df.set_index('tstamp', inplace=True)
+df
 # %%
 q = 0.0
 df11 = df[(df['interval'] == 1) & (df['shift'] == 1)]
