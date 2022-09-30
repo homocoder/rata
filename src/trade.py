@@ -31,9 +31,10 @@ from sqlalchemy import create_engine
 #%%
 engine = create_engine(_conf['url'])
 
-sql = """
+sqlS = """
 select
-  tstamp, y_current, interval, shift, minutes, "my_test_precisionS", n_pred, 
+  tstamp, y_current, interval, shift, minutes, "my_precision", "my_test_precisionB", "my_test_precisionS",
+  n_pred, 
   "pS1"+"pS2"+"pS3" "pS"
 from predict_clf_rf 
 where
@@ -41,11 +42,65 @@ where
 order by tstamp desc
 """
 
+sqlB = """
+select
+  tstamp, y_current, interval, shift, minutes,  "my_precision", "my_test_precisionB", "my_test_precisionS",
+  n_pred, 
+  "pB1"+"pB2"+"pB3" "pB"
+from predict_clf_rf 
+where
+  "my_test_precisionB" > 0.8
+order by tstamp desc
+"""
+
+sql3 = """
+select * from predict_clf_rf 
+
+order by tstamp desc
+"""
+
+sql4 = """
+select
+  tstamp, y_current, interval, shift, minutes, "my_precision", "my_test_precisionS",
+  n_pred as "n_S_270", 
+  "pS1"+"pS2"+"pS3" "pS"
+from predict_clf_rf 
+where
+  "my_test_precisionS" > 0.8 and
+  my_precision = 'my_precisionS'
+"""
+
+sql5 = """
+select
+  tstamp, y_current, interval, shift, minutes, "my_precision",
+  avg(n_pred), avg("pS1" + "pS2" + "pS3")
+from predict_clf_rf 
+--where
+--  "my_test_precisionS" > 0.8 and
+--  my_precision = 'my_precisionS'
+group by tstamp, y_current, interval, shift, minutes, "my_precision"
+"""
+
+
 with engine.connect() as conn:
-    df = pd.read_sql_query(sql, conn)
+    df = pd.read_sql_query(sql5, conn)
+df[df['tstamp'] == '2022-09-29 18:00:00'].sort_values(by='minutes')
 
 # %%
-df[df['tstamp'] == '2022-09-27 22:15:00'].sort_values(by='minutes')
+df[df['tstamp'] == '2022-09-30 18:00:00'].sort_values(by='minutes')
+#1 6   6
+#1 9   9
+#1 15  15
+#3 6   18
+#3 9   27
+#1 30  30
+#3 15  45
+#1 60  60  1
+#1 90  90  1.5
+#3 30  90  1.5
+#3 60 180  3
+#3 90 270  4.5
+
 # %%
 q = 0.0
 df11 = df[(df['interval'] == 1) & (df['shift'] == 1)]
