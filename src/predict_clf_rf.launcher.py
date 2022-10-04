@@ -61,7 +61,7 @@ for i in interval:
             hours     = 3
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -71,7 +71,7 @@ for i in interval:
             hours     = 6
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -81,7 +81,7 @@ for i in interval:
             hours     = 9
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -91,7 +91,7 @@ for i in interval:
             hours     = 3
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -101,7 +101,7 @@ for i in interval:
             hours     = 6
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -111,7 +111,7 @@ for i in interval:
             hours     = 9
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -121,7 +121,7 @@ for i in interval:
             hours     = 3
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -131,7 +131,7 @@ for i in interval:
             hours     = 6
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -141,7 +141,7 @@ for i in interval:
             hours     = 9
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -151,7 +151,7 @@ for i in interval:
             hours     = 3
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -161,7 +161,7 @@ for i in interval:
             hours     = 6
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -171,7 +171,7 @@ for i in interval:
             hours     = 9
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -181,7 +181,7 @@ for i in interval:
             hours     = 12
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))
@@ -191,7 +191,7 @@ for i in interval:
             hours     = 24
             dfq = dfa[(dfa['interval'] == i) & (dfa['shift'] == s) & (dfa[m] >= my_thresh) & (dfa['model_tstamp']  >= (datetime.datetime.now()-datetime.timedelta(hours=hours)))]
             
-            if len(dfq) >= 3:
+            if len(dfq) >= 2:
                 dfq['my_precision'] = m
                 df = pd.concat([df, dfq.sample(3)]) # take rand 3
                 print(i, s, m, my_thresh, hours, len(dfq))

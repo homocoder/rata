@@ -67,6 +67,7 @@ fd.writelines(launcher_cmds)
 fd.close()
 # %%
 
+# conda activate rata310
 # cd /home/selknam/dev/rata/src/
 # nohup bash /home/selknam/var/scripts/model_clf_rf_gridsearch.1.bash &> /home/selknam/var/log/model_clf_rf_gridsearch.1.bash.log &
 # tail -f /home/selknam/var/log/model_clf_rf_gridsearch.1.bash.log

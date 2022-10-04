@@ -31,75 +31,43 @@ from sqlalchemy import create_engine
 #%%
 engine = create_engine(_conf['url'])
 
-sqlS = """
-select
-  tstamp, y_current, interval, shift, minutes, "my_precision", "my_test_precisionB", "my_test_precisionS",
-  n_pred, 
-  "pS1"+"pS2"+"pS3" "pS"
-from predict_clf_rf 
-where
-  "my_test_precisionS" > 0.8
-order by tstamp desc
-"""
-
-sqlB = """
-select
-  tstamp, y_current, interval, shift, minutes,  "my_precision", "my_test_precisionB", "my_test_precisionS",
-  n_pred, 
-  "pB1"+"pB2"+"pB3" "pB"
-from predict_clf_rf 
-where
-  "my_test_precisionB" > 0.8
-order by tstamp desc
-"""
-
-sql3 = """
-select * from predict_clf_rf 
-
-order by tstamp desc
-"""
-
-sql4 = """
-select
-  tstamp, y_current, interval, shift, minutes, "my_precision", "my_test_precisionS",
-  n_pred as "n_S_270", 
-  "pS1"+"pS2"+"pS3" "pS"
-from predict_clf_rf 
-where
-  "my_test_precisionS" > 0.8 and
-  my_precision = 'my_precisionS'
-"""
-
-sql5 = """
+sql = """
 select
   tstamp, y_current, interval, shift, minutes, "my_precision",
-  avg(n_pred), avg("pS1" + "pS2" + "pS3")
+  avg(n_pred) avg_n_pred,
+  avg(("pS1" + "pS2" + "pS3")/3) "avg_pS", avg(("pB1" + "pB2" + "pB3")/3) "avg_pB"
+  --greatest("pS1","pS2","pS3") "pS", greatest("pB1","pB2","pB3") "pB"
 from predict_clf_rf 
---where
---  "my_test_precisionS" > 0.8 and
---  my_precision = 'my_precisionS'
 group by tstamp, y_current, interval, shift, minutes, "my_precision"
+order by tstamp desc limit 100000
 """
 
-
 with engine.connect() as conn:
-    df = pd.read_sql_query(sql5, conn)
-df[df['tstamp'] == '2022-09-29 18:00:00'].sort_values(by='minutes')
+    df = pd.read_sql_query(sql, conn)
 
-# %%
-df[df['tstamp'] == '2022-09-30 18:00:00'].sort_values(by='minutes')
-#1 6   6
-#1 9   9
-#1 15  15
-#3 6   18
-#3 9   27
-#1 30  30
-#3 15  45
-#1 60  60  1
-#1 90  90  1.5
-#3 30  90  1.5
-#3 60 180  3
-#3 90 270  4.5
+df['interval']     = '__' + df['interval'].astype(str)
+df['shift']        = '_' + df['shift'].astype(str)
+df['minutes']      = '_' + df['minutes'].astype(str)
+df['my_precision'] = df['my_precision'].str.replace('my_precision', '')
+df['id_type']      = df['my_precision'].str.cat([df['minutes'], df['interval'], df['shift']])
+#df = df[df['tstamp'] == '2022-10-03 14:21:00'].sort_values(by='minutes') 
+
+list_rows = list()
+for t in df['tstamp'].drop_duplicates().values:
+    dft = df[df['tstamp'] == t].copy()
+    dft['n_id_type']  = 'n' + dft['id_type'].copy()
+    dft['pB_id_type'] = 'pB' + dft['id_type'].copy()
+    dft['pS_id_type'] = 'pS' + dft['id_type'].copy()
+    dp = dict()
+    dp.update({'tstamp': t})
+    dp.update(dft.pivot(index='tstamp', columns='n_id_type', values='avg_n_pred').to_dict(orient='records')[0])
+    dp.update(dft.pivot(index='tstamp', columns='pB_id_type', values='avg_pB').to_dict(orient='records')[0])
+    dp.update(dft.pivot(index='tstamp', columns='pS_id_type', values='avg_pS').to_dict(orient='records')[0])
+
+    list_rows.append(dp)
+dfpv = pd.DataFrame(list_rows)
+
+
 
 # %%
 q = 0.0
