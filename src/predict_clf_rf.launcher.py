@@ -24,7 +24,7 @@ else:
 
 _conf['my_precision'] = _conf['my_precision'].split(',')
 
-_conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
+_conf['url'] = 'postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata'
 
 _conf
 # %% Global imports
