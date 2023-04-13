@@ -13,7 +13,7 @@ _conf
 import pandas as pd
 from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@192.168.1.84:5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:<passwd>@192.168.1.84:5432/rata')
 sql =  "select distinct symbol from rates"
 df = pd.read_sql_query(sql, engine)
 symbols = df['symbol']
