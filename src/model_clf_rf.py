@@ -50,7 +50,7 @@ import datetime
 
 #%%
 li('Get symbols feateng tables from DB')
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata')
 
 df_join = pd.DataFrame()
 for s in _conf['X_symbols']:
