@@ -33,7 +33,7 @@ import datetime
 from sklearn.metrics import mean_squared_error
 
 #%%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata')
 
 df_join = pd.DataFrame()
 for s in _conf['symbols']:
@@ -169,7 +169,7 @@ df_val[(df_val['y_forecast'] >  0.15) & (df_val['step'] == 1)].reset_index(drop=
 df_val[(df_val['y_forecast'] < -0.15) & (df_val['step'] == 1)].reset_index(drop=True)
 
 #%%
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata')
 
 df_val.to_sql('forecast', engine, if_exists='append', index=False)
 
