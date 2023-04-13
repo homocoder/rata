@@ -36,7 +36,7 @@ if _conf['class_weight'] == 'None':
 y_target  = _conf['symbol'] + '_' + str(_conf['interval'])
 y_target += '_y_close_SROC_' + str(_conf['shift'])
 y_target += '_shift-' + str(_conf['shift'])
-_conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
+_conf['url'] = 'postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata'
 _conf['y_target'] = y_target
 
 _conf
