@@ -127,3 +127,5 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+old/oldies4.out
+old/oldies4.bash

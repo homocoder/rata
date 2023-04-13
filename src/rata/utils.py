@@ -44,6 +44,13 @@ def parse_argv(argv):
             _conf[i] = datetime.fromisoformat(b)
     return _conf
 
+def load_conf(file_name):
+    from json import load
+    fd = open(file_name, 'rt')
+    conf = load(fd)
+    fd.close()
+    return conf
+
 # split a multivariate sequence into samples
 def split_sequences(sequences, n_steps_in, n_steps_out):
     from numpy import array
@@ -56,7 +63,6 @@ def split_sequences(sequences, n_steps_in, n_steps_out):
         if out_end_ix > len(sequences):
             break
         # gather input and output parts of the pattern
-        
         seq_x, seq_y = sequences[i:end_ix, :-1], sequences[end_ix-1:out_end_ix, -1]
         X.append(seq_x)
         y.append(seq_y)
@@ -89,3 +95,10 @@ def lstm_prep(X, y, n_steps_in=9, n_steps_out=1):
     print(XX.shape, YY.shape)
 
     return XX, YY
+
+def sort_human(l):
+    import re
+    convert = lambda text: float(text) if text.isdigit() else text
+    alphanum = lambda key: [convert(c) for c in re.split('([-+]?[0-9]*\.?[0-9]*)', key)]
+    l.sort(key=alphanum)
+    return l

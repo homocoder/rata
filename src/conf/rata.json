@@ -1,0 +1,33 @@
+{
+    "db_host": "192.168.1.84",
+    "symbols":  [
+            {
+                "symbol"   : "AUDUSD",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "GBPUSD",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "NZDUSD",
+                "kind"     : "forex"
+            },            
+            {
+                "symbol"   : "EURUSD",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "USDCAD",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "USDJPY",
+                "kind"     : "forex"
+            },
+            {
+                "symbol"   : "USDCHF",
+                "kind"     : "forex"
+            }
+    ]
+}

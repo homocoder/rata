@@ -1,4 +1,4 @@
-def get_finnhub(symbol='EURUSD', interval=5, kind='forex', exchange='OANDA', hours=100, token='c6emgsqad3ie37m1crq0'):
+def get_finnhub(symbol='EURUSD', interval=5, kind='forex', exchange='OANDA', hours=100, tstamp=None, token='ca5qhiqad3ib7i7rp180'):
     """
     get ohlcv data from finnhub. returns a pd.DataFrame
     """
@@ -15,8 +15,14 @@ def get_finnhub(symbol='EURUSD', interval=5, kind='forex', exchange='OANDA', hou
     symbolurl = exchange + ':' + symbolurl
     interval = str(interval)
     intervalurl = interval.replace('m', '')
-    t0 = str(int((dt.now() - pd.Timedelta(hours=hours)).timestamp()))
-    t1 = str(int((dt.now()).timestamp()))
+    
+    if tstamp == None:
+        t0 = str(int((dt.now() - pd.Timedelta(hours=hours)).timestamp()))
+        t1 = str(int((dt.now()).timestamp()))
+    else:
+        tnow = tstamp
+        t0 = str(int((tnow - pd.Timedelta(hours=hours)).timestamp()))
+        t1 = str(int((tnow).timestamp()))
     
     if kind == 'forex':
         url = 'https://finnhub.io/api/v1/forex/candle?symbol='

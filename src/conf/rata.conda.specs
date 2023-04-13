@@ -1,16 +1,17 @@
 # This file may be used to create an environment using:
 # $ conda create --name <env> --file <this file>
 # platform: linux-64
-python=3.9
-jupyter_client
-jupyter_core
+python=3.10
 pandas
-scikit-learn
 ipykernel
 requests
+sqlalchemy
+matplotlib
+psycopg2
+jupyter_client
+jupyter_core
 scipy
 statsmodels
-pymongo
-catboost
-xgboost
-#pip install ta
+scikit-learn
+scikit-learn-intelex
+# pip install ta
