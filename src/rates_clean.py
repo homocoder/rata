@@ -6,7 +6,7 @@ fake_argv = 'rates_clean.py --db_host=192.168.1.84 --symbol=AUDUSD --days=1 '
 fake_argv = fake_argv.split()
 #argv = fake_argv #### *!
 _conf = parse_argv(argv=argv)
-_conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
+_conf['url'] = 'postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata'
 _conf
 
 # %%
