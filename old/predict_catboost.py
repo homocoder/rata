@@ -34,7 +34,7 @@ from rata.ratalib import check_time_gaps
 from sqlalchemy import create_engine
 import datetime
 
-engine = create_engine('postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata')
+engine = create_engine('postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata')
 #%% ###                 SECTION CREATE MODEL          ###
 #%%
 
