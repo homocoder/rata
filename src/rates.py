@@ -14,7 +14,7 @@ if _conf['kind'] == 'crypto':
 if ':' in _conf['symbol']:
     exchange        = _conf['symbol'].split(':')[0]
     _conf['symbol'] = _conf['symbol'].split(':')[1]
-_conf['url'] = 'postgresql+psycopg2://rata:acaB.1312@' + _conf['db_host'] + ':5432/rata'
+_conf['url'] = 'postgresql+psycopg2://rata:<passwd>@' + _conf['db_host'] + ':5432/rata'
 if not('tstamp' in _conf.keys()):
     _conf['tstamp'] = None
 _conf
