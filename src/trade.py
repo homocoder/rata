@@ -109,7 +109,7 @@ dfS = pd.concat([df11, df13, df16, df19, df31, df33, df39]).sort_index()
 # %%
 dfB
 # %%
-dfS
+#dfS
 # %%
 df_pred = df[['y_pred', 'symbol', 'interval', 'shift']].reset_index()
 df_test = df[['tstamp_test', 'y_current', 'symbol', 'interval', 'shift']].reset_index(drop=True).rename({'tstamp_test': 'tstamp'}, axis=1)
