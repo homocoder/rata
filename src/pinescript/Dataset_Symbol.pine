@@ -3,19 +3,8 @@ indicator("Dataset_Symbol", overlay=false)
 
 /// INPUTS
 // Define our inputs
-SYMBOL = input.string(defval="AUDUSD", title="Select Main Source Symbol", options=["AUDUSD", "AUDCNH", "AUDJPY", "AUDGBP", "AUDEUR", "AUDCAD", "AUDCHF", "AUDNZD", "USDEUR", "USDCNH", "USDJPY", "USDGBP", "USDAUD", "USDCAD", "USDCHF", "USDNZD", "EURUSD", "EURCNH", "EURJPY", "EURGBP", "EURAUD", "EURCAD", "EURCHF", "EURNZD", "SPX500", "EURO50", "AUS200", "XAUUSD", "WTIOIL", "USDIDX", "EURIDX", "AUDIDX"])
+//SYMBOL = input.string(defval="AUDUSD", title="Select Main Source Symbol", options=["AUDUSD", "AUDCNH", "AUDJPY", "AUDGBP", "AUDEUR", "AUDCAD", "AUDCHF", "AUDNZD", "USDEUR", "USDCNH", "USDJPY", "USDGBP", "USDAUD", "USDCAD", "USDCHF", "USDNZD", "EURUSD", "EURCNH", "EURJPY", "EURGBP", "EURAUD", "EURCAD", "EURCHF", "EURNZD", "SPX500", "EURO50", "AUS200", "XAUUSD", "WTIOIL", "USDIDX", "EURIDX", "AUDIDX"])
 
-SAR_1_start = input.float(defval=0.01, step=0.01, title="SAR_1 Start Value")
-SAR_1_inc   = input.float(defval=0.02, step=0.01, title="SAR_1 Increment Value")
-SAR_1_max   = input.float(defval=0.20, step=0.01, title="SAR_1 Max Value")
-SAR_2_start = input.float(defval=0.01, step=0.01, title="SAR_2 Start Value")
-SAR_2_inc   = input.float(defval=0.03, step=0.01, title="SAR_2 Increment Value")
-SAR_2_max   = input.float(defval=0.20, step=0.01, title="SAR_2 Max Value")
-SAR_3_start = input.float(defval=0.01, step=0.01, title="SAR_3 Start Value")
-SAR_3_inc   = input.float(defval=0.04, step=0.01, title="SAR_3 Increment Value")
-SAR_3_max   = input.float(defval=0.20, step=0.01, title="SAR_3 Max Value")
-
-// Calculate our stop loss and take profit levels
 // The basket of symbols
 USDEUR = "(1 / (FX:EURUSD))" // repeated
 USDCNH = "(1 * (FX:USDCNH))"
@@ -54,99 +43,79 @@ USDIDX = "(" + USDEUR + " + " + USDCNH + " + " + USDJPY + " + " + USDGBP + " + "
 EURIDX = "(" + EURUSD + " + " + EURCNH + " + " + EURJPY + " + " + EURGBP + " + " + EURAUD + " + " + EURCAD + " + " + EURCHF + " + " + EURNZD +  ") / 8"
 AUDIDX = "(" + AUDUSD + " + " + AUDCNH + " + " + AUDJPY + " + " + AUDGBP + " + " + AUDEUR + " + " + AUDCAD + " + " + AUDCHF + " + " + AUDNZD +  ") / 8"
 
-/// GET INDICATORS
-// Calculate the Parabolic SAR
-SAR_1 = ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max)
-SAR_2 = ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max)
-SAR_3 = ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)
-SAR_A = (SAR_1 + SAR_2 + SAR_3) / 3
+// Get the closing prices of all assets
+USDEUR_close = request.security(AUDUSD, timeframe.period, close)
+USDCNH_close = request.security(USDCNH, timeframe.period, close)
+USDJPY_close = request.security(USDJPY, timeframe.period, close)
+USDGBP_close = request.security(USDGBP, timeframe.period, close)
+USDAUD_close = request.security(USDAUD, timeframe.period, close)
+USDCAD_close = request.security(USDCAD, timeframe.period, close)
+USDCHF_close = request.security(USDCHF, timeframe.period, close)
+USDNZD_close = request.security(USDNZD, timeframe.period, close)
 
-ma(source, length, type) =>
-    switch type
-        "SMA" => ta.sma(source, length)
-        "EMA" => ta.ema(source, length)
-        "SMMA (RMA)" => ta.rma(source, length)
-        "WMA" => ta.wma(source, length)
-        "VWMA" => ta.vwma(source, length)
-typeMA = "EMA"
+EURUSD_close = request.security(EURUSD, timeframe.period, close)
+EURCNH_close = request.security(EURCNH, timeframe.period, close)
+EURJPY_close = request.security(EURJPY, timeframe.period, close)
+EURGBP_close = request.security(EURGBP, timeframe.period, close)
+EURAUD_close = request.security(EURAUD, timeframe.period, close)
+EURCAD_close = request.security(EURCAD, timeframe.period, close)
+EURCHF_close = request.security(EURCHF, timeframe.period, close)
+EURNZD_close = request.security(EURNZD, timeframe.period, close)
 
-ROC_open_1  = ta.roc(open, 1)
-ROC_high_1  = ta.roc(high, 1)
-ROC_low_1   = ta.roc(low, 1)
-ROC_close_1 = ta.roc(close, 1)
+AUDUSD_close = request.security(AUDUSD, timeframe.period, close)
+AUDCNH_close = request.security(AUDCNH, timeframe.period, close)
+AUDJPY_close = request.security(AUDJPY, timeframe.period, close)
+AUDGBP_close = request.security(AUDGBP, timeframe.period, close)
+AUDEUR_close = request.security(AUDEUR, timeframe.period, close)
+AUDCAD_close = request.security(AUDCAD, timeframe.period, close)
+AUDCHF_close = request.security(AUDCHF, timeframe.period, close)
+AUDNZD_close = request.security(AUDNZD, timeframe.period, close)
 
-ROC_open_2  = ta.roc(open, 2)
-ROC_high_2  = ta.roc(high, 2)
-ROC_low_2   = ta.roc(low, 2)
-ROC_close_2 = ta.roc(close, 2)
+SPX500_close = request.security(SPX500, timeframe.period, close)
+EURO50_close = request.security(EURO50, timeframe.period, close)
+AUS200_close = request.security(AUS200, timeframe.period, close)
+XAUUSD_close = request.security(XAUUSD, timeframe.period, close)
+WTIOIL_close = request.security(WTIOIL, timeframe.period, close)
 
-ROC_3  = ta.roc(close, 3)
-SROC_3 = ma(ROC_3, 3, "EMA")
+USDIDX_close = request.security(USDIDX, timeframe.period, close)
+EURIDX_close = request.security(EURIDX, timeframe.period, close)
+AUDIDX_close = request.security(AUDIDX, timeframe.period, close)
 
-ROC_6  = ta.roc(close, 6)
-SROC_6 = ma(ROC_6, 6, "EMA")
+// Plot all closing prices
 
-ROC_9  = ta.roc(close, 9)
-SROC_9 = ma(ROC_9, 9, "EMA")
+plot(USDEUR_close, title='USDEUR', color=color.green)
+plot(USDCNH_close, title='USDCNH', color=color.green)
+plot(USDJPY_close, title='USDJPY', color=color.green)
+plot(USDGBP_close, title='USDGBP', color=color.green)
+plot(USDAUD_close, title='USDAUD', color=color.green)
+plot(USDCAD_close, title='USDCAD', color=color.green)
+plot(USDCHF_close, title='USDCHF', color=color.green)
+plot(USDNZD_close, title='USDNZD', color=color.green)
 
-ROC_12  = ta.roc(close, 12)
-SROC_12 = ma(ROC_12, 12, "EMA")
+plot(EURUSD_close, title='EURUSD', color=color.blue)
+plot(EURCNH_close, title='EURCNH', color=color.blue)
+plot(EURJPY_close, title='EURJPY', color=color.blue)
+plot(EURGBP_close, title='EURGBP', color=color.blue)
+plot(EURAUD_close, title='EURAUD', color=color.blue)
+plot(EURCAD_close, title='EURCAD', color=color.blue)
+plot(EURCHF_close, title='EURCHF', color=color.blue)
+plot(EURNZD_close, title='EURNZD', color=color.blue)
 
-ROC_2  = ta.roc(close, 2)
-SROC_2 = ma(ROC_2, 2, "EMA")
+plot(AUDUSD_close, title='AUDUSD', color=color.white)
+plot(AUDCNH_close, title='AUDCNH', color=color.white)
+plot(AUDJPY_close, title='AUDJPY', color=color.white)
+plot(AUDGBP_close, title='AUDGBP', color=color.white)
+plot(AUDEUR_close, title='AUDEUR', color=color.white)
+plot(AUDCAD_close, title='AUDCAD', color=color.white)
+plot(AUDCHF_close, title='AUDCHF', color=color.white)
+plot(AUDNZD_close, title='AUDNZD', color=color.white)
 
-ROC_4  = ta.roc(close, 4)
-SROC_4 = ma(ROC_4, 4, "EMA")
+plot(SPX500_close, title='SPX500', color=color.gray)
+plot(EURO50_close, title='EURO50', color=color.gray)
+plot(AUS200_close, title='AUS200', color=color.gray)
+plot(XAUUSD_close, title='XAUUSD', color=color.gray)
+plot(WTIOIL_close, title='WTIOIL', color=color.gray)
 
-ROC_8  = ta.roc(close, 8)
-SROC_8 = ma(ROC_8, 8, "EMA")
-
-ROC_16  = ta.roc(close, 16)
-SROC_16 = ma(ROC_16, 16, "EMA")
-
-ROC_32  = ta.roc(close, 32)
-SROC_32 = ma(ROC_32, 32, "EMA")
-
-ROC_64  = ta.roc(close, 64)
-SROC_64 = ma(ROC_64, 64, "EMA")
-
-plot(SAR_1,   title='SAR_1',   color=#f37f20)
-plot(SAR_2,   title='SAR_2',   color=#f37f20)
-plot(SAR_3,   title='SAR_3',   color=#f37f20)
-plot(SAR_A,   title='SAR_A',   color=#f37f20)
-
-plot(ROC_open_1,  title='ROC_open_1',  color=#f37f20)
-plot(ROC_high_1,  title='ROC_high_1',  color=#f37f20)
-plot(ROC_low_1,   title='ROC_low_1',   color=#f37f20)
-plot(ROC_close_1, title='ROC_close_1', color=#f37f20)
-plot(ROC_open_2,  title='ROC_open_2',  color=#f37f20)
-plot(ROC_high_2,  title='ROC_high_2',  color=#f37f20)
-plot(ROC_low_2,   title='ROC_low_2',   color=#f37f20)
-plot(ROC_close_2, title='ROC_close_2', color=#f37f20)
-
-plot(SROC_3,  title='SROC_3',  color=#f37f20)
-plot(SROC_6,  title='SROC_6',  color=#f37f20)
-plot(SROC_9,  title='SROC_9',  color=#f37f20)
-plot(SROC_12, title='SROC_12', color=#f37f20)
-plot(SROC_2,  title='SROC_2',  color=#f37f20)
-plot(SROC_4,  title='SROC_4',  color=#f37f20)
-plot(SROC_8,  title='SROC_8',  color=#f37f20)
-plot(SROC_16, title='SROC_16', color=#f37f20)
-plot(SROC_32, title='SROC_32', color=#f37f20)
-plot(SROC_64, title='SROC_64', color=#f37f20)
-
-plot(ta.ema(close, 2),   title='EMA_2',   color=#f37f20)
-plot(ta.ema(close, 4),   title='EMA_4',   color=#f37f20)
-plot(ta.ema(close, 8),   title='EMA_8',   color=#f37f20)
-plot(ta.ema(close, 16),  title='EMA_16',  color=#f37f20)
-plot(ta.ema(close, 32),  title='EMA_32',  color=#f37f20)
-plot(ta.ema(close, 64),  title='EMA_64',  color=#f37f20)
-plot(ta.ema(close, 128), title='EMA_128', color=#f37f20)
-plot(ta.ema(close, 256), title='EMA_256', color=#f37f20)
-plot(ta.ema(close, 256), title='EMA_512', color=#f37f20)
-
-plot(ta.ema(close, 256), title='EMA_5', color=#f37f20)
-plot(ta.ema(close, 256), title='EMA_20', color=#f37f20)
-plot(ta.ema(close, 256), title='EMA_50', color=#f37f20)
-plot(ta.ema(close, 256), title='EMA_100', color=#f37f20)
-plot(ta.ema(close, 256), title='EMA_200', color=#f37f20)
+plot(USDIDX_close, title='USDIDX', color=color.fuchsia)
+plot(EURIDX_close, title='EURIDX', color=color.fuchsia)
+plot(AUDIDX_close, title='AUDIDX', color=color.fuchsia)
