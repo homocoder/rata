@@ -1,0 +1,152 @@
+//@version=5
+indicator("Dataset_Symbol", overlay=false)
+
+/// INPUTS
+// Define our inputs
+SYMBOL = input.string(defval="AUDUSD", title="Select Main Source Symbol", options=["AUDUSD", "AUDCNH", "AUDJPY", "AUDGBP", "AUDEUR", "AUDCAD", "AUDCHF", "AUDNZD", "USDEUR", "USDCNH", "USDJPY", "USDGBP", "USDAUD", "USDCAD", "USDCHF", "USDNZD", "EURUSD", "EURCNH", "EURJPY", "EURGBP", "EURAUD", "EURCAD", "EURCHF", "EURNZD", "SPX500", "EURO50", "AUS200", "XAUUSD", "WTIOIL", "USDIDX", "EURIDX", "AUDIDX"])
+
+SAR_1_start = input.float(defval=0.01, step=0.01, title="SAR_1 Start Value")
+SAR_1_inc   = input.float(defval=0.02, step=0.01, title="SAR_1 Increment Value")
+SAR_1_max   = input.float(defval=0.20, step=0.01, title="SAR_1 Max Value")
+SAR_2_start = input.float(defval=0.01, step=0.01, title="SAR_2 Start Value")
+SAR_2_inc   = input.float(defval=0.03, step=0.01, title="SAR_2 Increment Value")
+SAR_2_max   = input.float(defval=0.20, step=0.01, title="SAR_2 Max Value")
+SAR_3_start = input.float(defval=0.01, step=0.01, title="SAR_3 Start Value")
+SAR_3_inc   = input.float(defval=0.04, step=0.01, title="SAR_3 Increment Value")
+SAR_3_max   = input.float(defval=0.20, step=0.01, title="SAR_3 Max Value")
+
+// Calculate our stop loss and take profit levels
+// The basket of symbols
+USDEUR = "(1 / (FX:EURUSD))" // repeated
+USDCNH = "(1 * (FX:USDCNH))"
+USDJPY = "(1 * (FX:USDJPY))"
+USDGBP = "(1 / (FX:GBPUSD))"
+USDAUD = "(1 / (FX:AUDUSD))" // repeated
+USDCAD = "(1 * (FX:USDCAD))"
+USDCHF = "(1 * (FX:USDCHF))"
+USDNZD = "(1 / (FX:NZDUSD))"
+
+EURUSD = "(1 * (FX:EURUSD))"
+EURCNH = "(1 * (CAPITALCOM:EURCNH))"
+EURJPY = "(1 * (FX:EURJPY))"
+EURGBP = "(1 * (FX:EURGBP))"
+EURAUD = "(1 * (FX:EURAUD))" // repeated
+EURCAD = "(1 * (FX:EURCAD))"
+EURCHF = "(1 * (FX:EURCHF))"
+EURNZD = "(1 * (FX:EURNZD))"
+
+AUDUSD = "(1 * (FX:AUDUSD))"
+AUDCNH = "(1 * (CAPITALCOM:AUDCNH))"
+AUDJPY = "(1 * (FX:AUDJPY))"
+AUDGBP = "(1 / (FX:GBPAUD))"
+AUDEUR = "(1 / (FX:EURAUD))" 
+AUDCAD = "(1 * (FX:AUDCAD))"
+AUDCHF = "(1 * (FX:AUDCHF))"
+AUDNZD = "(1 * (FX:AUDNZD))"
+
+SPX500 = "FX:SPX500"
+EURO50 = "FX:EUSTX50"
+AUS200 = "FX:AUS200"
+XAUUSD = "FX:XAUUSD"
+WTIOIL = "FX:USOIL"
+
+USDIDX = "(" + USDEUR + " + " + USDCNH + " + " + USDJPY + " + " + USDGBP + " + " + USDAUD + " + " + USDCAD + " + " + USDCHF + " + " + USDNZD +  ") / 8"
+EURIDX = "(" + EURUSD + " + " + EURCNH + " + " + EURJPY + " + " + EURGBP + " + " + EURAUD + " + " + EURCAD + " + " + EURCHF + " + " + EURNZD +  ") / 8"
+AUDIDX = "(" + AUDUSD + " + " + AUDCNH + " + " + AUDJPY + " + " + AUDGBP + " + " + AUDEUR + " + " + AUDCAD + " + " + AUDCHF + " + " + AUDNZD +  ") / 8"
+
+/// GET INDICATORS
+// Calculate the Parabolic SAR
+SAR_1 = ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max)
+SAR_2 = ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max)
+SAR_3 = ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)
+SAR_A = (SAR_1 + SAR_2 + SAR_3) / 3
+
+ma(source, length, type) =>
+    switch type
+        "SMA" => ta.sma(source, length)
+        "EMA" => ta.ema(source, length)
+        "SMMA (RMA)" => ta.rma(source, length)
+        "WMA" => ta.wma(source, length)
+        "VWMA" => ta.vwma(source, length)
+typeMA = "EMA"
+
+ROC_open_1  = ta.roc(open, 1)
+ROC_high_1  = ta.roc(high, 1)
+ROC_low_1   = ta.roc(low, 1)
+ROC_close_1 = ta.roc(close, 1)
+
+ROC_open_2  = ta.roc(open, 2)
+ROC_high_2  = ta.roc(high, 2)
+ROC_low_2   = ta.roc(low, 2)
+ROC_close_2 = ta.roc(close, 2)
+
+ROC_3  = ta.roc(close, 3)
+SROC_3 = ma(ROC_3, 3, "EMA")
+
+ROC_6  = ta.roc(close, 6)
+SROC_6 = ma(ROC_6, 6, "EMA")
+
+ROC_9  = ta.roc(close, 9)
+SROC_9 = ma(ROC_9, 9, "EMA")
+
+ROC_12  = ta.roc(close, 12)
+SROC_12 = ma(ROC_12, 12, "EMA")
+
+ROC_2  = ta.roc(close, 2)
+SROC_2 = ma(ROC_2, 2, "EMA")
+
+ROC_4  = ta.roc(close, 4)
+SROC_4 = ma(ROC_4, 4, "EMA")
+
+ROC_8  = ta.roc(close, 8)
+SROC_8 = ma(ROC_8, 8, "EMA")
+
+ROC_16  = ta.roc(close, 16)
+SROC_16 = ma(ROC_16, 16, "EMA")
+
+ROC_32  = ta.roc(close, 32)
+SROC_32 = ma(ROC_32, 32, "EMA")
+
+ROC_64  = ta.roc(close, 64)
+SROC_64 = ma(ROC_64, 64, "EMA")
+
+plot(SAR_1,   title='SAR_1',   color=#f37f20)
+plot(SAR_2,   title='SAR_2',   color=#f37f20)
+plot(SAR_3,   title='SAR_3',   color=#f37f20)
+plot(SAR_A,   title='SAR_A',   color=#f37f20)
+
+plot(ROC_open_1,  title='ROC_open_1',  color=#f37f20)
+plot(ROC_high_1,  title='ROC_high_1',  color=#f37f20)
+plot(ROC_low_1,   title='ROC_low_1',   color=#f37f20)
+plot(ROC_close_1, title='ROC_close_1', color=#f37f20)
+plot(ROC_open_2,  title='ROC_open_2',  color=#f37f20)
+plot(ROC_high_2,  title='ROC_high_2',  color=#f37f20)
+plot(ROC_low_2,   title='ROC_low_2',   color=#f37f20)
+plot(ROC_close_2, title='ROC_close_2', color=#f37f20)
+
+plot(SROC_3,  title='SROC_3',  color=#f37f20)
+plot(SROC_6,  title='SROC_6',  color=#f37f20)
+plot(SROC_9,  title='SROC_9',  color=#f37f20)
+plot(SROC_12, title='SROC_12', color=#f37f20)
+plot(SROC_2,  title='SROC_2',  color=#f37f20)
+plot(SROC_4,  title='SROC_4',  color=#f37f20)
+plot(SROC_8,  title='SROC_8',  color=#f37f20)
+plot(SROC_16, title='SROC_16', color=#f37f20)
+plot(SROC_32, title='SROC_32', color=#f37f20)
+plot(SROC_64, title='SROC_64', color=#f37f20)
+
+plot(ta.ema(close, 2),   title='EMA_2',   color=#f37f20)
+plot(ta.ema(close, 4),   title='EMA_4',   color=#f37f20)
+plot(ta.ema(close, 8),   title='EMA_8',   color=#f37f20)
+plot(ta.ema(close, 16),  title='EMA_16',  color=#f37f20)
+plot(ta.ema(close, 32),  title='EMA_32',  color=#f37f20)
+plot(ta.ema(close, 64),  title='EMA_64',  color=#f37f20)
+plot(ta.ema(close, 128), title='EMA_128', color=#f37f20)
+plot(ta.ema(close, 256), title='EMA_256', color=#f37f20)
+plot(ta.ema(close, 256), title='EMA_512', color=#f37f20)
+
+plot(ta.ema(close, 256), title='EMA_5', color=#f37f20)
+plot(ta.ema(close, 256), title='EMA_20', color=#f37f20)
+plot(ta.ema(close, 256), title='EMA_50', color=#f37f20)
+plot(ta.ema(close, 256), title='EMA_100', color=#f37f20)
+plot(ta.ema(close, 256), title='EMA_200', color=#f37f20)

@@ -1,0 +1,121 @@
+//@version=5
+indicator("Dataset for Time Series Analysis and Forecasting", overlay=false)
+
+/// INPUTS
+// The basket of symbols
+USDEUR = "(1 / (FX:EURUSD))" // repeated
+USDCNH = "(1 * (FX:USDCNH))"
+USDJPY = "(1 * (FX:USDJPY))"
+USDGBP = "(1 / (FX:GBPUSD))"
+USDAUD = "(1 / (FX:AUDUSD))" // repeated
+USDCAD = "(1 * (FX:USDCAD))"
+USDCHF = "(1 * (FX:USDCHF))"
+USDNZD = "(1 / (FX:NZDUSD))"
+
+EURUSD = "(1 * (FX:EURUSD))"
+EURCNH = "(1 * (CAPITALCOM:EURCNH))"
+EURJPY = "(1 * (FX:EURJPY))"
+EURGBP = "(1 * (FX:EURGBP))"
+EURAUD = "(1 * (FX:EURAUD))" // repeated
+EURCAD = "(1 * (FX:EURCAD))"
+EURCHF = "(1 * (FX:EURCHF))"
+EURNZD = "(1 * (FX:EURNZD))"
+
+AUDUSD = "(1 * (FX:AUDUSD))"
+AUDCNH = "(1 * (CAPITALCOM:AUDCNH))"
+AUDJPY = "(1 * (FX:AUDJPY))"
+AUDGBP = "(1 / (FX:GBPAUD))"
+AUDEUR = "(1 / (FX:EURAUD))" 
+AUDCAD = "(1 * (FX:AUDCAD))"
+AUDCHF = "(1 * (FX:AUDCHF))"
+AUDNZD = "(1 * (FX:AUDNZD))"
+
+SPX500 = "FX:SPX500"
+EURO50 = "FX:EUSTX50"
+AUS200 = "FX:AUS200"
+XAUUSD = "FX:XAUUSD"
+WTIOIL = "FX:USOIL"
+DXYIDX = "CAPITALCOM:DXY"
+
+USDIDX = "(" + USDEUR + " + " + USDCNH + " + " + USDJPY + " + " + USDGBP + " + " + USDAUD + " + " + USDCAD + " + " + USDCHF + " + " + USDNZD +  ") / 8"
+EURIDX = "(" + EURUSD + " + " + EURCNH + " + " + EURJPY + " + " + EURGBP + " + " + EURAUD + " + " + EURCAD + " + " + EURCHF + " + " + EURNZD +  ") / 8"
+AUDIDX = "(" + AUDUSD + " + " + AUDCNH + " + " + AUDJPY + " + " + AUDGBP + " + " + AUDEUR + " + " + AUDCAD + " + " + AUDCHF + " + " + AUDNZD +  ") / 8"
+
+/// GET DATA
+// Get the closing prices of all assets
+AUDUSD_close = request.security(AUDUSD, timeframe.period, close) // target
+AUDCNH_close = request.security(AUDCNH, timeframe.period, close)
+AUDJPY_close = request.security(AUDJPY, timeframe.period, close)
+AUDGBP_close = request.security(AUDGBP, timeframe.period, close)
+AUDEUR_close = request.security(AUDEUR, timeframe.period, close)
+AUDCAD_close = request.security(AUDCAD, timeframe.period, close) 
+AUDCHF_close = request.security(AUDCHF, timeframe.period, close)
+AUDNZD_close = request.security(AUDNZD, timeframe.period, close)
+
+USDEUR_close = request.security(USDEUR, timeframe.period, close)
+USDCNH_close = request.security(USDCNH, timeframe.period, close)
+USDJPY_close = request.security(USDJPY, timeframe.period, close)
+USDGBP_close = request.security(USDGBP, timeframe.period, close)
+USDAUD_close = request.security(USDAUD, timeframe.period, close)
+USDCAD_close = request.security(USDCAD, timeframe.period, close)
+USDCHF_close = request.security(USDCHF, timeframe.period, close)
+USDNZD_close = request.security(USDNZD, timeframe.period, close)
+
+EURUSD_close = request.security(EURUSD, timeframe.period, close)
+EURCNH_close = request.security(EURCNH, timeframe.period, close)
+EURJPY_close = request.security(EURJPY, timeframe.period, close)
+EURGBP_close = request.security(EURGBP, timeframe.period, close)
+EURAUD_close = request.security(EURAUD, timeframe.period, close)
+EURCAD_close = request.security(EURCAD, timeframe.period, close)
+EURCHF_close = request.security(EURCHF, timeframe.period, close)
+EURNZD_close = request.security(EURNZD, timeframe.period, close)
+
+SPX500_close = request.security(SPX500, timeframe.period, close)
+EURO50_close = request.security(EURO50, timeframe.period, close)
+AUS200_close = request.security(AUS200, timeframe.period, close)
+XAUUSD_close = request.security(XAUUSD, timeframe.period, close)
+WTIOIL_close = request.security(WTIOIL, timeframe.period, close)
+DXYIDX_close = request.security(DXYIDX, timeframe.period, close)
+
+USDIDX_close = request.security(USDIDX, timeframe.period, close)
+EURIDX_close = request.security(EURIDX, timeframe.period, close)
+AUDIDX_close = request.security(AUDIDX, timeframe.period, close)
+
+/// VISUALIZATIONS
+// Plot the closing prices of all assets
+plot(AUDUSD_close, color=color.yellow, linewidth=1, title="AUDUSD")
+plot(AUDCNH_close, color=color.yellow, linewidth=1, title="AUDCNH")
+plot(AUDJPY_close, color=color.yellow, linewidth=1, title="AUDJPY")
+plot(AUDGBP_close, color=color.yellow, linewidth=1, title="AUDGBP")
+plot(AUDEUR_close, color=color.yellow, linewidth=1, title="AUDEUR")
+plot(AUDCAD_close, color=color.yellow, linewidth=1, title="AUDCAD")
+plot(AUDCHF_close, color=color.yellow, linewidth=1, title="AUDCHF")
+plot(AUDNZD_close, color=color.yellow, linewidth=1, title="AUDNZD")
+
+plot(USDEUR_close, color=color.yellow, linewidth=1, title="USDEUR")
+plot(USDCNH_close, color=color.yellow, linewidth=1, title="USDCNH")
+plot(USDJPY_close, color=color.yellow, linewidth=1, title="USDJPY")
+plot(USDGBP_close, color=color.yellow, linewidth=1, title="USDGBP")
+plot(USDCAD_close, color=color.yellow, linewidth=1, title="USDCAD")
+plot(USDCHF_close, color=color.yellow, linewidth=1, title="USDCHF")
+plot(USDNZD_close, color=color.yellow, linewidth=1, title="USDNZD")
+
+plot(EURUSD_close, color=color.yellow, linewidth=1, title="EURUSD")
+plot(EURCNH_close, color=color.yellow, linewidth=1, title="EURCNH")
+plot(EURJPY_close, color=color.yellow, linewidth=1, title="EURJPY")
+plot(EURGBP_close, color=color.yellow, linewidth=1, title="EURGBP")
+plot(EURAUD_close, color=color.yellow, linewidth=1, title="EURAUD")
+plot(EURCAD_close, color=color.yellow, linewidth=1, title="EURCAD")
+plot(EURCHF_close, color=color.yellow, linewidth=1, title="EURCHF")
+plot(EURNZD_close, color=color.yellow, linewidth=1, title="EURNZD")
+
+plot(SPX500_close, color=color.yellow, linewidth=1, title="SPX500")
+plot(EURO50_close, color=color.yellow, linewidth=1, title="EURO50")
+plot(AUS200_close, color=color.yellow, linewidth=1, title="AUS200")
+plot(XAUUSD_close, color=color.yellow, linewidth=1, title="XAUUSD")
+plot(WTIOIL_close, color=color.yellow, linewidth=1, title="WTIOIL")
+plot(DXYIDX_close, color=color.yellow, linewidth=1, title="DXYIDX")
+
+plot(USDIDX_close, color=color.yellow, linewidth=1, title="USDIDX")
+plot(EURIDX_close, color=color.yellow, linewidth=1, title="EURIDX")
+plot(AUDIDX_close, color=color.yellow, linewidth=1, title="AUDIDX")

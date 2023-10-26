@@ -26,6 +26,26 @@ Here is a list of some of these pairs, along with the factors that contribute to
 * NZD/USD: This is another commodity currency pair in the forex market, and it represents the exchange rate between the New Zealand dollar and the U.S. [dollar. This pair is frequently predictable because it has a clear trend and a low spread. It also respects technical analysis methods such as support and resistance levels, Fibonacci retracements, and chart patterns. Moreover, it is affected by commodity prices, especially dairy products, which are major exports of New Zealand. It also mirrors the economic strength and prospects of both countries and regions, such as China and Asia-Pacific](https://www.forexgdp.com/learn/most-predictable-currency-pairs/)[^4^](https://www.forexgdp.com/learn/most-predictable-currency-pairs/).
 * USD/CAD: This is also a commodity currency pair in the forex market, and it represents the exchange rate between the U.S. [dollar and the Canadian dollar. This pair is regularly predictable because it has a good memory for old support and resistance levels, which can act as potential reversal points. It also follows technical analysis tools such as moving averages, Bollinger Bands, and Fibonacci levels. Furthermore, it is influenced by oil prices, which are a major export of Canada. It also reflects the economic data and news from both countries, such as GDP, inflation, trade balance, etc.](https://www.forex.academy/what-are-the-easiest-most-predictable-pairs-in-forex/)[^5^](https://www.forex.academy/what-are-the-easiest-most-predictable-pairs-in-forex/)
 
+## Indicadores sentimiento de mercado
+Existen varios indicadores que se pueden utilizar para evaluar el sentimiento del mercado en el trading de divisas. Algunos de los indicadores más populares incluyen:
+
+- Índice de Sentimiento Especulativo (SSI)¹
+- OrderBook de Forex¹
+- Profit Ratio de Forex Trader²
+- Open Interest de Forex²
+- Informe de Compromiso de los Traders (CoT)²
+
+Es importante tener en cuenta que estos indicadores no son herramientas predictivas y no deben ser utilizados como la única fuente de información para tomar decisiones de inversión. Los indicadores deben ser utilizados en conjunto con otras herramientas y análisis para tomar decisiones informadas y evaluar el riesgo.
+
+¿Te gustaría saber más sobre algún aspecto específico?
+
+Origen: Conversación con Bing, 14-08-2023
+(1) Análisis de Sentimiento en Forex y los Indicadores Requeridos. https://es.fxssi.com/analisis-de-sentimiento-en-el-mercado.
+(2) Análisis de Sentimiento en Forex y los Indicadores Requeridos. https://bing.com/search?q=indicadores+para+evaluar+el+sentimiento+del+mercado+trading+de+divisas.
+(3) Indicadores de sentimiento del mercado de divisas - La Inversión Hoy. https://lainversionhoy.com/indicadores-de-sentimiento-del-mercado-de-divisas/.
+(4) Indicadores de sentimiento del mercado de divisas - Krypton Solid. https://kryptonsolid.com/indicadores-de-sentimiento-del-mercado-de-divisas/.
+
+
 ### Factores Generales
 
 Trading de corto plazo
@@ -45,3 +65,8 @@ Horarios para tradear y estabilidad de tendencias: Los horarios de mayor liquide
 Indicadores económicos para predicciones a corto plazo: Algunos indicadores económicos que los traders pueden observar para predicciones a corto plazo incluyen las nóminas no agrícolas (NFP), el índice de gerentes de compras (PMI), y las tasas de interés.
 
 Factores que influyen en el EUR/USD: Los cambios en el precio del EUR/USD pueden estar influenciados por factores como las tasas de interés, la situación económica de la Eurozona y Estados Unidos, eventos geopolíticos, datos económicos, entre otros.
+
+usuario 63850650
+contraseña xqb5whr
+inversor mr8bgzv
+FXCM-AUDDemo01

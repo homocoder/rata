@@ -1,0 +1,35 @@
+//@version=5
+strategy("Triple PSAR", overlay=true, pyramiding=300)
+
+/// INPUTS
+// Define our inputs
+SAR_1_start = input.float(defval=0.01, step=0.01, title="SAR_1 Start Value")
+SAR_1_inc   = input.float(defval=0.02, step=0.01, title="SAR_1 Increment Value")
+SAR_1_max   = input.float(defval=0.20, step=0.01, title="SAR_1 Max Value")
+SAR_2_start = input.float(defval=0.01, step=0.01, title="SAR_2 Start Value")
+SAR_2_inc   = input.float(defval=0.03, step=0.01, title="SAR_2 Increment Value")
+SAR_2_max   = input.float(defval=0.20, step=0.01, title="SAR_2 Max Value")
+SAR_3_start = input.float(defval=0.01, step=0.01, title="SAR_3 Start Value")
+SAR_3_inc   = input.float(defval=0.04, step=0.01, title="SAR_3 Increment Value")
+SAR_3_max   = input.float(defval=0.20, step=0.01, title="SAR_3 Max Value")
+
+/// GET INDICATORS
+// Get the parabolic SAR values
+SAR_1 = ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max)
+SAR_2 = ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max)
+SAR_3 = ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)
+
+/// VISUALIZATIONS
+// Plot the Parabolic SAR on the chart
+plot(SAR_1, color=color.orange, style=plot.style_cross, title="SAR_1")
+plot(SAR_2, color=color.green,  style=plot.style_cross, title="SAR_2")
+plot(SAR_3, color=color.purple, style=plot.style_cross, title="SAR_3")
+
+// Plot shapes for the crossovers
+plotshape(series=ta.crossover(source1=close,  source2=SAR_1),  title="SAR_1 Buy", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(source1=close,  source2=SAR_2),  title="SAR_2 Buy", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(source1=close,  source2=SAR_3),  title="SAR_3 Buy", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+
+plotshape(series=ta.crossunder(source1=close, source2=SAR_1), title="SAR1 Sell", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(source1=close, source2=SAR_2), title="SAR2 Sell", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(source1=close, source2=SAR_3), title="SAR3 Sell", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")

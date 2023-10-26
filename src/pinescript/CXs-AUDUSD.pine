@@ -1,0 +1,163 @@
+//@version=5
+indicator("CXs-AUDUSD", shorttitle="CXs", overlay=false)
+
+CXS_length = input(9, title="CXS_length")
+CXS_plag   = input(3, title="CXS_length")
+
+// The basket of symbols
+USDEUR = "(1 / (FX:EURUSD))" // repeated
+USDCNH = "(1 * (FX:USDCNH))"
+USDJPY = "(1 * (FX:USDJPY))"
+USDGBP = "(1 / (FX:GBPUSD))"
+USDAUD = "(1 / (FX:AUDUSD))" // repeated
+USDCAD = "(1 * (FX:USDCAD))"
+USDCHF = "(1 * (FX:USDCHF))"
+USDNZD = "(1 / (FX:NZDUSD))"
+
+EURUSD = "(1 * (FX:EURUSD))"
+EURCNH = "(1 * (CAPITALCOM:EURCNH))"
+EURJPY = "(1 * (FX:EURJPY))"
+EURGBP = "(1 * (FX:EURGBP))"
+EURAUD = "(1 * (FX:EURAUD))" // repeated
+EURCAD = "(1 * (FX:EURCAD))"
+EURCHF = "(1 * (FX:EURCHF))"
+EURNZD = "(1 * (FX:EURNZD))"
+
+AUDUSD = "(1 * (FX:AUDUSD))"
+AUDCNH = "(1 * (CAPITALCOM:AUDCNH))"
+AUDJPY = "(1 * (FX:AUDJPY))"
+AUDGBP = "(1 / (FX:GBPAUD))"
+AUDEUR = "(1 / (FX:EURAUD))" 
+AUDCAD = "(1 * (FX:AUDCAD))"
+AUDCHF = "(1 * (FX:AUDCHF))"
+AUDNZD = "(1 * (FX:AUDNZD))"
+
+SPX500 = "FX:SPX500"
+EURO50 = "FX:EUSTX50"
+AUS200 = "FX:AUS200"
+XAUUSD = "FX:XAUUSD"
+WTIOIL = "FX:USOIL"
+
+USDIDX = "(" + USDEUR + " + " + USDCNH + " + " + USDJPY + " + " + USDGBP + " + " + USDAUD + " + " + USDCAD + " + " + USDCHF + " + " + USDNZD +  ") / 8"
+EURIDX = "(" + EURUSD + " + " + EURCNH + " + " + EURJPY + " + " + EURGBP + " + " + EURAUD + " + " + EURCAD + " + " + EURCHF + " + " + EURNZD +  ") / 8"
+AUDIDX = "(" + AUDUSD + " + " + AUDCNH + " + " + AUDJPY + " + " + AUDGBP + " + " + AUDEUR + " + " + AUDCAD + " + " + AUDCHF + " + " + AUDNZD +  ") / 8"
+
+// Get the closing prices of all assets
+AUDUSD_close = request.security(AUDUSD, timeframe.period, close) // target
+AUDCNH_close = request.security(AUDCNH, timeframe.period, close)
+AUDJPY_close = request.security(AUDJPY, timeframe.period, close)
+AUDGBP_close = request.security(AUDGBP, timeframe.period, close) 
+AUDEUR_close = request.security(AUDEUR, timeframe.period, close)
+AUDCAD_close = request.security(AUDCAD, timeframe.period, close) 
+AUDCHF_close = request.security(AUDCHF, timeframe.period, close)
+AUDNZD_close = request.security(AUDNZD, timeframe.period, close)
+
+USDEUR_close = request.security(USDEUR, timeframe.period, close)
+USDCNH_close = request.security(USDCNH, timeframe.period, close)
+USDJPY_close = request.security(USDJPY, timeframe.period, close)
+USDGBP_close = request.security(USDGBP, timeframe.period, close)
+USDAUD_close = request.security(USDAUD, timeframe.period, close)
+USDCAD_close = request.security(USDCAD, timeframe.period, close)
+USDCHF_close = request.security(USDCHF, timeframe.period, close)
+USDNZD_close = request.security(USDNZD, timeframe.period, close)
+
+EURUSD_close = request.security(EURUSD, timeframe.period, close)
+EURCNH_close = request.security(EURCNH, timeframe.period, close)
+EURJPY_close = request.security(EURJPY, timeframe.period, close)
+EURGBP_close = request.security(EURGBP, timeframe.period, close)
+EURAUD_close = request.security(EURAUD, timeframe.period, close)
+EURCAD_close = request.security(EURCAD, timeframe.period, close)
+EURCHF_close = request.security(EURCHF, timeframe.period, close)
+EURNZD_close = request.security(EURNZD, timeframe.period, close)
+
+SPX500_close = request.security(SPX500, timeframe.period, close)
+EURO50_close = request.security(EURO50, timeframe.period, close)
+AUS200_close = request.security(AUS200, timeframe.period, close)
+XAUUSD_close = request.security(XAUUSD, timeframe.period, close)
+WTIOIL_close = request.security(WTIOIL, timeframe.period, close)
+
+USDIDX_close = request.security(USDIDX, timeframe.period, close)
+EURIDX_close = request.security(EURIDX, timeframe.period, close)
+AUDIDX_close = request.security(AUDIDX, timeframe.period, close)
+
+// Get indicators
+USDEUR_X_AUDUSD = ta.correlation(USDEUR_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDCNH_X_AUDUSD = ta.correlation(USDCNH_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDJPY_X_AUDUSD = ta.correlation(USDJPY_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDGBP_X_AUDUSD = ta.correlation(USDGBP_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDAUD_X_AUDUSD = ta.correlation(USDAUD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDCAD_X_AUDUSD = ta.correlation(USDCAD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDCHF_X_AUDUSD = ta.correlation(USDCHF_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDNZD_X_AUDUSD = ta.correlation(USDNZD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+
+EURUSD_X_AUDUSD = ta.correlation(EURUSD_close[CXS_plag], AUDUSD_close, CXS_length)
+EURCNH_X_AUDUSD = ta.correlation(EURCNH_close[CXS_plag], AUDUSD_close, CXS_length)
+EURJPY_X_AUDUSD = ta.correlation(EURJPY_close[CXS_plag], AUDUSD_close, CXS_length)
+EURGBP_X_AUDUSD = ta.correlation(EURGBP_close[CXS_plag], AUDUSD_close, CXS_length)
+EURAUD_X_AUDUSD = ta.correlation(EURAUD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+EURCAD_X_AUDUSD = ta.correlation(EURCAD_close[CXS_plag], AUDUSD_close, CXS_length)
+EURCHF_X_AUDUSD = ta.correlation(EURCHF_close[CXS_plag], AUDUSD_close, CXS_length)
+EURNZD_X_AUDUSD = ta.correlation(EURNZD_close[CXS_plag], AUDUSD_close, CXS_length)
+
+AUDEUR_X_AUDUSD = ta.correlation(AUDEUR_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDCHN_X_AUDUSD = ta.correlation(AUDCNH_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDJPY_X_AUDUSD = ta.correlation(AUDJPY_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDGBP_X_AUDUSD = ta.correlation(AUDGBP_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDUSD_X_AUDUSD = ta.correlation(AUDUSD_close[CXS_plag], AUDUSD_close, CXS_length) // to test auto-correlation
+AUDCAD_X_AUDUSD = ta.correlation(AUDCAD_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDCHF_X_AUDUSD = ta.correlation(AUDCHF_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDNZD_X_AUDUSD = ta.correlation(AUDNZD_close[CXS_plag], AUDUSD_close, CXS_length)
+
+SPX500_X_AUDUSD = ta.correlation(SPX500_close[CXS_plag], AUDUSD_close, CXS_length)
+EURO50_X_AUDUSD = ta.correlation(EURO50_close[CXS_plag], AUDUSD_close, CXS_length)
+AUS200_X_AUDUSD = ta.correlation(AUS200_close[CXS_plag], AUDUSD_close, CXS_length)
+XAUUSD_X_AUDUSD = ta.correlation(XAUUSD_close[CXS_plag], AUDUSD_close, CXS_length)
+WTIOIL_X_AUDUSD = ta.correlation(WTIOIL_close[CXS_plag], AUDUSD_close, CXS_length)
+
+USDIDX_X_AUDUSD = ta.correlation(USDIDX_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+EURIDX_X_AUDUSD = ta.correlation(EURIDX_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDIDX_X_AUDUSD = ta.correlation(AUDIDX_close[CXS_plag], AUDUSD_close, CXS_length)
+
+// Plot the correlations
+plot(USDEUR_X_AUDUSD, color=color.green,  title="USDEUR", display=display.none)
+plot(USDCNH_X_AUDUSD, color=color.green,  title="USDCNH")
+plot(USDJPY_X_AUDUSD, color=color.green,  title="USDJPY")
+plot(USDGBP_X_AUDUSD, color=color.green,  title="USDGBP")
+plot(USDAUD_X_AUDUSD, color=color.red,    title="USDAUD")
+plot(USDCAD_X_AUDUSD, color=color.green,  title="USDCAD")
+plot(USDCHF_X_AUDUSD, color=color.green,  title="USDCHF")
+plot(USDNZD_X_AUDUSD, color=color.green,  title="USDNZD")
+
+plot(EURUSD_X_AUDUSD, color=color.blue,   title="EURUSD")
+plot(EURCNH_X_AUDUSD, color=color.blue,   title="EURCNH")
+plot(EURJPY_X_AUDUSD, color=color.blue,   title="EURJPY")
+plot(EURGBP_X_AUDUSD, color=color.blue,   title="EURGBP")
+plot(EURAUD_X_AUDUSD, color=color.blue,   title="EURAUD", display=display.none) 
+plot(EURCAD_X_AUDUSD, color=color.blue,   title="EURCAD")
+plot(EURCHF_X_AUDUSD, color=color.blue,   title="EURCHF")
+plot(EURNZD_X_AUDUSD, color=color.blue,   title="EURNZD")
+
+plot(AUDEUR_X_AUDUSD, color=color.white,  title="AUDEUR")
+plot(AUDCHN_X_AUDUSD, color=color.white,  title="AUDCNH")
+plot(AUDJPY_X_AUDUSD, color=color.white,  title="AUDJPY")
+plot(AUDGBP_X_AUDUSD, color=color.white,  title="AUDGBP")
+plot(AUDUSD_X_AUDUSD, color=color.white,  title="AUDUSD")
+plot(AUDCAD_X_AUDUSD, color=color.white,  title="AUDCAD")
+plot(AUDCHF_X_AUDUSD, color=color.white,  title="AUDCHF")
+plot(AUDNZD_X_AUDUSD, color=color.white,  title="AUDNZD")
+
+plot(SPX500_X_AUDUSD, color=color.yellow, title="SPX500")
+plot(EURO50_X_AUDUSD, color=color.yellow, title="EURO50")
+plot(AUS200_X_AUDUSD, color=color.yellow, title="AUS200")
+plot(XAUUSD_X_AUDUSD, color=color.yellow, title="XAUUSD")
+plot(WTIOIL_X_AUDUSD, color=color.yellow, title="WTIOIL")
+
+plot(USDIDX_X_AUDUSD, color=color.gray,   title="USDIDX")
+plot(EURIDX_X_AUDUSD, color=color.gray,   title="EURIDX")
+plot(AUDIDX_X_AUDUSD, color=color.gray,   title="AUDIDX")
+
+hline(1.0,  "Zero", color=color.gray)
+hline(0.8,  "Zero", color=color.gray)
+hline(0.0,  "Zero", color=color.gray)
+hline(-0.8, "Zero", color=color.gray)
+hline(-1-0, "Zero", color=color.gray)

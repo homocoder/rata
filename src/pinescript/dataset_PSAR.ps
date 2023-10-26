@@ -1,0 +1,142 @@
+//@version=5
+indicator("Dataset PSAR", overlay=false)
+
+/// INPUTS
+SAR_1_start = input.float(defval=0.01, step=0.01, title="SAR_1 Start Value")
+SAR_1_inc   = input.float(defval=0.02, step=0.01, title="SAR_1 Increment Value")
+SAR_1_max   = input.float(defval=0.20, step=0.01, title="SAR_1 Max Value")
+SAR_2_start = input.float(defval=0.01, step=0.01, title="SAR_2 Start Value")
+SAR_2_inc   = input.float(defval=0.03, step=0.01, title="SAR_2 Increment Value")
+SAR_2_max   = input.float(defval=0.20, step=0.01, title="SAR_2 Max Value")
+SAR_3_start = input.float(defval=0.01, step=0.01, title="SAR_3 Start Value")
+SAR_3_inc   = input.float(defval=0.04, step=0.01, title="SAR_3 Increment Value")
+SAR_3_max   = input.float(defval=0.20, step=0.01, title="SAR_3 Max Value")
+
+// The basket of symbols
+// Basket for AUDUSD: AUDNZD, SPX500, USDNZD, XAUUSD, AUDGBP
+// Basket for EURUSD: DXYIDX, SPX500, EURIDX, EURCAD
+// Basket for XAUUSD: SPX500, AUDUSD, DXYIDX, USDGBP
+// Basket for DXYIDX: EURUSD, SPX500, USDGBP, AUDNZD
+// Basket for USDGBP: EURUSD, DXYIDX, EURIDX, 
+// The basket of symbols
+USDEUR = "(1 / (FX:EURUSD))" // repeated
+USDCNH = "(1 * (FX:USDCNH))"
+USDJPY = "(1 * (FX:USDJPY))"
+USDGBP = "(1 / (FX:GBPUSD))"
+USDAUD = "(1 / (FX:AUDUSD))" // repeated
+USDCAD = "(1 * (FX:USDCAD))"
+USDCHF = "(1 * (FX:USDCHF))"
+USDNZD = "(1 / (FX:NZDUSD))"
+
+EURUSD = "(1 * (FX:EURUSD))"
+EURCNH = "(1 * (CAPITALCOM:EURCNH))"
+EURJPY = "(1 * (FX:EURJPY))"
+EURGBP = "(1 * (FX:EURGBP))"
+EURAUD = "(1 * (FX:EURAUD))" // repeated
+EURCAD = "(1 * (FX:EURCAD))"
+EURCHF = "(1 * (FX:EURCHF))"
+EURNZD = "(1 * (FX:EURNZD))"
+
+AUDUSD = "(1 * (FX:AUDUSD))"
+AUDCNH = "(1 * (CAPITALCOM:AUDCNH))"
+AUDJPY = "(1 * (FX:AUDJPY))"
+AUDGBP = "(1 / (FX:GBPAUD))"
+AUDEUR = "(1 / (FX:EURAUD))" 
+AUDCAD = "(1 * (FX:AUDCAD))"
+AUDCHF = "(1 * (FX:AUDCHF))"
+AUDNZD = "(1 * (FX:AUDNZD))"
+
+SPX500 = "FX:SPX500"
+EURO50 = "FX:EUSTX50"
+AUS200 = "FX:AUS200"
+XAUUSD = "FX:XAUUSD"
+WTIOIL = "FX:USOIL"
+DXYIDX = "CAPITALCOM:DXY"
+
+USDIDX = "(" + USDEUR + " + " + USDCNH + " + " + USDJPY + " + " + USDGBP + " + " + USDAUD + " + " + USDCAD + " + " + USDCHF + " + " + USDNZD +  ") / 8"
+EURIDX = "(" + EURUSD + " + " + EURCNH + " + " + EURJPY + " + " + EURGBP + " + " + EURAUD + " + " + EURCAD + " + " + EURCHF + " + " + EURNZD +  ") / 8"
+AUDIDX = "(" + AUDUSD + " + " + AUDCNH + " + " + AUDJPY + " + " + AUDGBP + " + " + AUDEUR + " + " + AUDCAD + " + " + AUDCHF + " + " + AUDNZD +  ") / 8"
+/// GET DATA
+// Get the closing prices of all 
+USDGBP_close = request.security(USDGBP, timeframe.period, close)
+USDNZD_close = request.security(USDNZD, timeframe.period, close)
+EURUSD_close = request.security(EURUSD, timeframe.period, close)
+EURCAD_close = request.security(EURCAD, timeframe.period, close)
+AUDUSD_close = request.security(AUDUSD, timeframe.period, close)
+AUDGBP_close = request.security(AUDGBP, timeframe.period, close)
+AUDNZD_close = request.security(AUDNZD, timeframe.period, close)
+SPX500_close = request.security(SPX500, timeframe.period, close)
+XAUUSD_close = request.security(XAUUSD, timeframe.period, close)
+DXYIDX_close = request.security(DXYIDX, timeframe.period, close)
+EURIDX_close = request.security(EURIDX, timeframe.period, close)
+AUDIDX_close = request.security(AUDIDX, timeframe.period, close)
+
+//
+USDGBP_SAR_A = request.security(USDGBP, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+USDNZD_SAR_A = request.security(USDNZD, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+EURUSD_SAR_A = request.security(EURUSD, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+EURCAD_SAR_A = request.security(EURCAD, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+AUDUSD_SAR_A = request.security(AUDUSD, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+AUDGBP_SAR_A = request.security(AUDGBP, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+AUDNZD_SAR_A = request.security(AUDNZD, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+SPX500_SAR_A = request.security(SPX500, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+XAUUSD_SAR_A = request.security(XAUUSD, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+DXYIDX_SAR_A = request.security(DXYIDX, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+EURIDX_SAR_A = request.security(EURIDX, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+AUDIDX_SAR_A = request.security(AUDIDX, timeframe.period, (ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max) + ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max) + ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max)) / 3)
+
+/// VISUALIZATIONS
+// Plot the closing prices of all assets
+plot(USDGBP_close, color=color.yellow, linewidth=1, title="USDGBP")
+plot(USDNZD_close, color=color.yellow, linewidth=1, title="USDNZD")
+plot(EURUSD_close, color=color.yellow, linewidth=1, title="EURUSD")
+plot(EURCAD_close, color=color.yellow, linewidth=1, title="EURCAD")
+plot(AUDUSD_close, color=color.yellow, linewidth=1, title="AUDUSD")
+plot(AUDGBP_close, color=color.yellow, linewidth=1, title="AUDGBP")
+plot(AUDNZD_close, color=color.yellow, linewidth=1, title="AUDNZD")
+plot(SPX500_close, color=color.yellow, linewidth=1, title="SPX500")
+plot(XAUUSD_close, color=color.yellow, linewidth=1, title="XAUUSD")
+plot(DXYIDX_close, color=color.yellow, linewidth=1, title="DXYIDX")
+plot(EURIDX_close, color=color.yellow, linewidth=1, title="EURIDX")
+plot(AUDIDX_close, color=color.yellow, linewidth=1, title="AUDIDX")
+
+// Plot the SAR of all assets
+plot(USDGBP_SAR_A, color=color.red, linewidth=1, title="USDGBP_SAR")
+plot(USDNZD_SAR_A, color=color.red, linewidth=1, title="USDNZD_SAR")
+plot(EURUSD_SAR_A, color=color.red, linewidth=1, title="EURUSD_SAR")
+plot(EURCAD_SAR_A, color=color.red, linewidth=1, title="EURCAD_SAR")
+plot(AUDUSD_SAR_A, color=color.red, linewidth=1, title="AUDUSD_SAR")
+plot(AUDGBP_SAR_A, color=color.red, linewidth=1, title="AUDGBP_SAR")
+plot(AUDNZD_SAR_A, color=color.red, linewidth=1, title="AUDNZD_SAR")
+plot(SPX500_SAR_A, color=color.red, linewidth=1, title="SPX500_SAR")
+plot(XAUUSD_SAR_A, color=color.red, linewidth=1, title="XAUUSD_SAR")
+plot(DXYIDX_SAR_A, color=color.red, linewidth=1, title="DXYIDX_SAR")
+plot(EURIDX_SAR_A, color=color.red, linewidth=1, title="EURIDX_SAR")
+plot(AUDIDX_SAR_A, color=color.red, linewidth=1, title="AUDIDX_SAR")
+
+// Plot shapes for the crossovers
+plotshape(series=ta.crossover(USDGBP_close, USDGBP_SAR_A), title="Bullish_USDGBP", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(USDNZD_close, USDNZD_SAR_A), title="Bullish_USDNZD", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(EURUSD_close, EURUSD_SAR_A), title="Bullish_EURUSD", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(EURCAD_close, EURCAD_SAR_A), title="Bullish_EURCAD", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(AUDUSD_close, AUDUSD_SAR_A), title="Bullish_AUDUSD", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(AUDGBP_close, AUDGBP_SAR_A), title="Bullish_AUDGBP", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(AUDNZD_close, AUDNZD_SAR_A), title="Bullish_AUDNZD", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(SPX500_close, SPX500_SAR_A), title="Bullish_SPX500", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(XAUUSD_close, XAUUSD_SAR_A), title="Bullish_XAUUSD", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(DXYIDX_close, DXYIDX_SAR_A), title="Bullish_DXYIDX", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(EURIDX_close, EURIDX_SAR_A), title="Bullish_EURIDX", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+plotshape(series=ta.crossover(AUDIDX_close, AUDIDX_SAR_A), title="Bullish_AUDIDX", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+
+plotshape(series=ta.crossunder(USDGBP_close, USDGBP_SAR_A), title="Bearish_USDGBP", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(USDNZD_close, USDNZD_SAR_A), title="Bearish_USDNZD", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(EURUSD_close, EURUSD_SAR_A), title="Bearish_EURUSD", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(EURCAD_close, EURCAD_SAR_A), title="Bearish_EURCAD", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(AUDUSD_close, AUDUSD_SAR_A), title="Bearish_AUDUSD", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(AUDGBP_close, AUDGBP_SAR_A), title="Bearish_AUDGBP", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(AUDNZD_close, AUDNZD_SAR_A), title="Bearish_AUDNZD", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(SPX500_close, SPX500_SAR_A), title="Bearish_SPX500", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(XAUUSD_close, XAUUSD_SAR_A), title="Bearish_XAUUSD", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(DXYIDX_close, DXYIDX_SAR_A), title="Bearish_DXYIDX", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(EURIDX_close, EURIDX_SAR_A), title="Bearish_EURIDX", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+plotshape(series=ta.crossunder(AUDIDX_close, AUDIDX_SAR_A), title="Bearish_AUDIDX", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")

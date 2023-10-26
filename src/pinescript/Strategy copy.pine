@@ -1,0 +1,340 @@
+//@version=5
+strategy("Triple PSAR Crossover Strategy", overlay=true, pyramiding=300)
+
+/// INPUTS
+// Define our inputs
+SYMBOL = input.string(defval="AUDUSD", title="Select Main Source Symbol", options=["AUDUSD", "AUDCNH", "AUDJPY", "AUDGBP", "AUDEUR", "AUDCAD", "AUDCHF", "AUDNZD", "USDEUR", "USDCNH", "USDJPY", "USDGBP", "USDAUD", "USDCAD", "USDCHF", "USDNZD", "EURUSD", "EURCNH", "EURJPY", "EURGBP", "EURAUD", "EURCAD", "EURCHF", "EURNZD", "SPX500", "EURO50", "AUS200", "XAUUSD", "WTIOIL", "USDIDX", "EURIDX", "AUDIDX"])
+
+stop_loss_percent   = input.float(defval=0.1, step=0.01, title="Stop Loss (%)")   / 100
+take_profit_percent = input.float(defval=0.1, step=0.01, title="Take Profit (%)") / 100
+
+SAR_1_start = input.float(defval=0.01, step=0.01, title="SAR_1 Start Value")
+SAR_1_inc   = input.float(defval=0.02, step=0.01, title="SAR_1 Increment Value")
+SAR_1_max   = input.float(defval=0.20, step=0.01, title="SAR_1 Max Value")
+SAR_2_start = input.float(defval=0.01, step=0.01, title="SAR_2 Start Value")
+SAR_2_inc   = input.float(defval=0.03, step=0.01, title="SAR_2 Increment Value")
+SAR_2_max   = input.float(defval=0.20, step=0.01, title="SAR_2 Max Value")
+SAR_3_start = input.float(defval=0.01, step=0.01, title="SAR_3 Start Value")
+SAR_3_inc   = input.float(defval=0.04, step=0.01, title="SAR_3 Increment Value")
+SAR_3_max   = input.float(defval=0.20, step=0.01, title="SAR_3 Max Value")
+
+condition = input.string(defval="C1", title="Select Long Entry Trigger", options=["C1", "C2", "C3", "CA"])
+
+CXS_length = input(9, title="CXS_length")
+CXS_plag   = input(3, title="CXS_length")
+
+// Calculate our stop loss and take profit levels
+long_sl = strategy.position_avg_price * (1 - stop_loss_percent)
+long_tp = strategy.position_avg_price * (1 + take_profit_percent)
+short_stop = close * (1 + stop_loss_percent)
+short_tp   = close * (1 - take_profit_percent)
+
+// The basket of symbols
+USDEUR = "(1 / (FX:EURUSD))" // repeated
+USDCNH = "(1 * (FX:USDCNH))"
+USDJPY = "(1 * (FX:USDJPY))"
+USDGBP = "(1 / (FX:GBPUSD))"
+USDAUD = "(1 / (FX:AUDUSD))" // repeated
+USDCAD = "(1 * (FX:USDCAD))"
+USDCHF = "(1 * (FX:USDCHF))"
+USDNZD = "(1 / (FX:NZDUSD))"
+
+EURUSD = "(1 * (FX:EURUSD))"
+EURCNH = "(1 * (CAPITALCOM:EURCNH))"
+EURJPY = "(1 * (FX:EURJPY))"
+EURGBP = "(1 * (FX:EURGBP))"
+EURAUD = "(1 * (FX:EURAUD))" // repeated
+EURCAD = "(1 * (FX:EURCAD))"
+EURCHF = "(1 * (FX:EURCHF))"
+EURNZD = "(1 * (FX:EURNZD))"
+
+AUDUSD = "(1 * (FX:AUDUSD))"
+AUDCNH = "(1 * (CAPITALCOM:AUDCNH))"
+AUDJPY = "(1 * (FX:AUDJPY))"
+AUDGBP = "(1 / (FX:GBPAUD))"
+AUDEUR = "(1 / (FX:EURAUD))" 
+AUDCAD = "(1 * (FX:AUDCAD))"
+AUDCHF = "(1 * (FX:AUDCHF))"
+AUDNZD = "(1 * (FX:AUDNZD))"
+
+SPX500 = "FX:SPX500"
+EURO50 = "FX:EUSTX50"
+AUS200 = "FX:AUS200"
+XAUUSD = "FX:XAUUSD"
+WTIOIL = "FX:USOIL"
+
+USDIDX = "(" + USDEUR + " + " + USDCNH + " + " + USDJPY + " + " + USDGBP + " + " + USDAUD + " + " + USDCAD + " + " + USDCHF + " + " + USDNZD +  ") / 8"
+EURIDX = "(" + EURUSD + " + " + EURCNH + " + " + EURJPY + " + " + EURGBP + " + " + EURAUD + " + " + EURCAD + " + " + EURCHF + " + " + EURNZD +  ") / 8"
+AUDIDX = "(" + AUDUSD + " + " + AUDCNH + " + " + AUDJPY + " + " + AUDGBP + " + " + AUDEUR + " + " + AUDCAD + " + " + AUDCHF + " + " + AUDNZD +  ") / 8"
+
+/// GET DATA
+// Get the closing prices of all assets
+AUDUSD_close = request.security(AUDUSD, timeframe.period, close) // target
+AUDCNH_close = request.security(AUDCNH, timeframe.period, close)
+AUDJPY_close = request.security(AUDJPY, timeframe.period, close)
+AUDGBP_close = request.security(AUDGBP, timeframe.period, close)
+AUDEUR_close = request.security(AUDEUR, timeframe.period, close)
+AUDCAD_close = request.security(AUDCAD, timeframe.period, close) 
+AUDCHF_close = request.security(AUDCHF, timeframe.period, close)
+AUDNZD_close = request.security(AUDNZD, timeframe.period, close)
+
+USDEUR_close = request.security(USDEUR, timeframe.period, close)
+USDCNH_close = request.security(USDCNH, timeframe.period, close)
+USDJPY_close = request.security(USDJPY, timeframe.period, close)
+USDGBP_close = request.security(USDGBP, timeframe.period, close)
+USDAUD_close = request.security(USDAUD, timeframe.period, close)
+USDCAD_close = request.security(USDCAD, timeframe.period, close)
+USDCHF_close = request.security(USDCHF, timeframe.period, close)
+USDNZD_close = request.security(USDNZD, timeframe.period, close)
+
+EURUSD_close = request.security(EURUSD, timeframe.period, close)
+EURCNH_close = request.security(EURCNH, timeframe.period, close)
+EURJPY_close = request.security(EURJPY, timeframe.period, close)
+EURGBP_close = request.security(EURGBP, timeframe.period, close)
+EURAUD_close = request.security(EURAUD, timeframe.period, close)
+EURCAD_close = request.security(EURCAD, timeframe.period, close)
+EURCHF_close = request.security(EURCHF, timeframe.period, close)
+EURNZD_close = request.security(EURNZD, timeframe.period, close)
+
+SPX500_close = request.security(SPX500, timeframe.period, close)
+EURO50_close = request.security(EURO50, timeframe.period, close)
+AUS200_close = request.security(AUS200, timeframe.period, close)
+XAUUSD_close = request.security(XAUUSD, timeframe.period, close)
+WTIOIL_close = request.security(WTIOIL, timeframe.period, close)
+
+USDIDX_close = request.security(USDIDX, timeframe.period, close)
+EURIDX_close = request.security(EURIDX, timeframe.period, close)
+AUDIDX_close = request.security(AUDIDX, timeframe.period, close)
+
+/// GET INDICATORS
+// Get correlations
+USDEUR_X_AUDUSD = ta.correlation(USDEUR_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDCNH_X_AUDUSD = ta.correlation(USDCNH_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDJPY_X_AUDUSD = ta.correlation(USDJPY_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDGBP_X_AUDUSD = ta.correlation(USDGBP_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDAUD_X_AUDUSD = ta.correlation(USDAUD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDCAD_X_AUDUSD = ta.correlation(USDCAD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDCHF_X_AUDUSD = ta.correlation(USDCHF_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+USDNZD_X_AUDUSD = ta.correlation(USDNZD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+
+EURUSD_X_AUDUSD = ta.correlation(EURUSD_close[CXS_plag], AUDUSD_close, CXS_length)
+EURCNH_X_AUDUSD = ta.correlation(EURCNH_close[CXS_plag], AUDUSD_close, CXS_length)
+EURJPY_X_AUDUSD = ta.correlation(EURJPY_close[CXS_plag], AUDUSD_close, CXS_length)
+EURGBP_X_AUDUSD = ta.correlation(EURGBP_close[CXS_plag], AUDUSD_close, CXS_length)
+EURAUD_X_AUDUSD = ta.correlation(EURAUD_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+EURCAD_X_AUDUSD = ta.correlation(EURCAD_close[CXS_plag], AUDUSD_close, CXS_length)
+EURCHF_X_AUDUSD = ta.correlation(EURCHF_close[CXS_plag], AUDUSD_close, CXS_length)
+EURNZD_X_AUDUSD = ta.correlation(EURNZD_close[CXS_plag], AUDUSD_close, CXS_length) 
+
+AUDEUR_X_AUDUSD = ta.correlation(AUDEUR_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDCHN_X_AUDUSD = ta.correlation(AUDCNH_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDJPY_X_AUDUSD = ta.correlation(AUDJPY_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDGBP_X_AUDUSD = ta.correlation(AUDGBP_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDUSD_X_AUDUSD = ta.correlation(AUDUSD_close[CXS_plag], AUDUSD_close, CXS_length) // to test auto-correlation
+AUDCAD_X_AUDUSD = ta.correlation(AUDCAD_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDCHF_X_AUDUSD = ta.correlation(AUDCHF_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDNZD_X_AUDUSD = ta.correlation(AUDNZD_close[CXS_plag], AUDUSD_close, CXS_length)
+
+SPX500_X_AUDUSD = ta.correlation(SPX500_close[CXS_plag], AUDUSD_close, CXS_length)
+EURO50_X_AUDUSD = ta.correlation(EURO50_close[CXS_plag], AUDUSD_close, CXS_length)
+AUS200_X_AUDUSD = ta.correlation(AUS200_close[CXS_plag], AUDUSD_close, CXS_length)
+XAUUSD_X_AUDUSD = ta.correlation(XAUUSD_close[CXS_plag], AUDUSD_close, CXS_length)
+WTIOIL_X_AUDUSD = ta.correlation(WTIOIL_close[CXS_plag], AUDUSD_close, CXS_length)
+
+USDIDX_X_AUDUSD = ta.correlation(USDIDX_close[CXS_plag], AUDUSD_close, CXS_length) * -1
+EURIDX_X_AUDUSD = ta.correlation(EURIDX_close[CXS_plag], AUDUSD_close, CXS_length)
+AUDIDX_X_AUDUSD = ta.correlation(AUDIDX_close[CXS_plag], AUDUSD_close, CXS_length)
+
+// Get the source symbol for PSAR
+choose_symbol() =>
+    if SYMBOL == "AUDUSD"
+        AUDUSD
+    else if SYMBOL == "AUDCNH"
+        AUDCNH
+    else if SYMBOL == "AUDJPY"
+        AUDJPY
+    else if SYMBOL == "AUDGBP"
+        AUDGBP
+    else if SYMBOL == "AUDEUR"
+        AUDEUR
+    else if SYMBOL == "AUDCAD"
+        AUDCAD
+    else if SYMBOL == "AUDCHF"
+        AUDCHF
+    else if SYMBOL == "AUDNZD"
+        AUDNZD
+    else if SYMBOL == "USDEUR"
+        USDEUR
+    else if SYMBOL == "USDCNH"
+        USDCNH
+    else if SYMBOL == "USDJPY"
+        USDJPY
+    else if SYMBOL == "USDGBP"
+        USDGBP
+    else if SYMBOL == "USDAUD"
+        USDAUD
+    else if SYMBOL == "USDCAD"
+        USDCAD
+    else if SYMBOL == "USDCHF"
+        USDCHF
+    else if SYMBOL == "USDNZD"
+        USDNZD
+    else if SYMBOL == "EURUSD"
+        EURUSD
+    else if SYMBOL == "EURCNH"
+        EURCNH
+    else if SYMBOL == "EURJPY"
+        EURJPY
+    else if SYMBOL == "EURGBP"
+        EURGBP
+    else if SYMBOL == "EURAUD"
+        EURAUD
+    else if SYMBOL == "EURCAD"
+        EURCAD
+    else if SYMBOL == "EURCHF"
+        EURCHF
+    else if SYMBOL == "EURNZD"
+        EURNZD
+    else if SYMBOL == "SPX500"
+        SPX500
+    else if SYMBOL == "EURO50"
+        EURO50
+    else if SYMBOL == "AUS200"
+        AUS200
+    else if SYMBOL == "XAUUSD"
+        XAUUSD
+    else if SYMBOL == "WTIOIL"
+        WTIOIL
+    else if SYMBOL == "USDIDX"
+        USDIDX
+    else if SYMBOL == "EURIDX"
+        EURIDX
+    else if SYMBOL == "AUDIDX"
+        AUDIDX
+
+// Get the symbol close
+choose_close() =>
+    if SYMBOL == "AUDUSD"
+        AUDUSD_close
+    else if SYMBOL == "AUDCNH"
+        AUDCNH_close
+    else if SYMBOL == "AUDJPY"
+        AUDJPY_close
+    else if SYMBOL == "AUDGBP"
+        AUDGBP_close
+    else if SYMBOL == "AUDEUR"
+        AUDEUR_close
+    else if SYMBOL == "AUDCAD"
+        AUDCAD_close
+    else if SYMBOL == "AUDCHF"
+        AUDCHF_close
+    else if SYMBOL == "AUDNZD"
+        AUDNZD_close
+    else if SYMBOL == "USDEUR"
+        USDEUR_close
+    else if SYMBOL == "USDCNH"
+        USDCNH_close
+    else if SYMBOL == "USDJPY"
+        USDJPY_close
+    else if SYMBOL == "USDGBP"
+        USDGBP_close
+    else if SYMBOL == "USDAUD"
+        USDAUD_close
+    else if SYMBOL == "USDCAD"
+        USDCAD_close
+    else if SYMBOL == "USDCHF"
+        USDCHF_close
+    else if SYMBOL == "USDNZD"
+        USDNZD_close
+    else if SYMBOL == "EURUSD"
+        EURUSD_close
+    else if SYMBOL == "EURCNH"
+        EURCNH_close
+    else if SYMBOL == "EURJPY"
+        EURJPY_close
+    else if SYMBOL == "EURGBP"
+        EURGBP_close
+    else if SYMBOL == "EURAUD"
+        EURAUD_close
+    else if SYMBOL == "EURCAD"
+        EURCAD_close
+    else if SYMBOL == "EURCHF"
+        EURCHF_close
+    else if SYMBOL == "EURNZD"
+        EURNZD_close
+    else if SYMBOL == "SPX500"
+        SPX500_close
+    else if SYMBOL == "EURO50"
+        EURO50_close
+    else if SYMBOL == "AUS200"
+        AUS200_close
+    else if SYMBOL == "XAUUSD"
+        XAUUSD_close
+    else if SYMBOL == "WTIOIL"
+        WTIOIL_close
+    else if SYMBOL == "USDIDX"
+        USDIDX_close
+    else if SYMBOL == "EURIDX"
+        EURIDX_close
+    else if SYMBOL == "AUDIDX"
+        AUDIDX_close
+
+// Calculate the Parabolic SAR
+SAR_1 = request.security(choose_symbol(), timeframe.period, ta.sar(SAR_1_start, SAR_1_inc, SAR_1_max))
+SAR_2 = request.security(choose_symbol(), timeframe.period, ta.sar(SAR_2_start, SAR_2_inc, SAR_2_max))
+SAR_3 = request.security(choose_symbol(), timeframe.period, ta.sar(SAR_3_start, SAR_3_inc, SAR_3_max))
+SAR_A = (SAR_1 + SAR_2 + SAR_3) / 3
+
+
+/// FILTERS AND ENTRY CONDITIONS
+// Identify crossovers
+long_condition() =>
+    if      condition == "C1"
+        ta.crossover (choose_close(), SAR_1) and ta.crossover (choose_close(), SAR_2)
+    else if condition == "C2"
+        ta.crossover (choose_close(), SAR_2) and ta.crossover (choose_close(), SAR_3)
+    else if condition == "C3"
+        ta.crossover (choose_close(), SAR_1) and ta.crossover (choose_close(), SAR_2) and ta.crossover (choose_close(), SAR_3)
+    else if condition == "CA"
+        ta.crossover (choose_close(), SAR_A)
+
+short_condition() =>
+    if      condition == "C1"
+        ta.crossunder(choose_close(), SAR_1) and ta.crossunder(choose_close(), SAR_2)
+    else if condition == "C2"
+        ta.crossunder(choose_close(), SAR_2) and ta.crossunder(choose_close(), SAR_3)
+    else if condition == "C3"
+        ta.crossunder(choose_close(), SAR_1) and ta.crossunder(choose_close(), SAR_2) and ta.crossunder(choose_close(), SAR_3)
+    else if condition == "CA"
+        ta.crossunder(choose_close(), SAR_A)
+
+// Submit our orders
+if (long_condition())
+    strategy.entry(id="EnterLong",  direction=strategy.long)
+    
+if (short_condition())
+    strategy.entry(id="Short", direction=strategy.short)
+
+// Submit exit orders based on calculated stop loss price
+if (strategy.position_size > 0)
+    strategy.exit(id="ExitLong",  stop=long_sl,  limit=long_tp)
+
+if (strategy.position_size < 0)
+    strategy.exit(id="ExitShort", stop=short_stop, limit=short_tp)
+
+
+/// VISUALIZATIONS
+// Plot the Parabolic SAR on the chart
+plot(SAR_1[0], color=color.orange, linewidth=2, title="SAR_1")
+plot(SAR_2[0], color=color.green,  linewidth=2, title="SAR_2")
+plot(SAR_3[0], color=color.purple, linewidth=2, title="SAR_3")
+plot(SAR_A,    color=color.white,  linewidth=1, title="SAR_A")
+
+
+// Plot shapes for the crossovers
+//plotshape(series=long_condition(),  title="Bullish Cross", location=location.belowbar, color=color.green, style=shape.labelup, text="↑")
+//plotshape(series=short_condition, title="Bearish Cross", location=location.abovebar, color=color.red, style=shape.labeldown, text="↓")
+
+ 
+////////////////////////////////////////////////////////////
+  
