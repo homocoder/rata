@@ -6,11 +6,9 @@ indicator("Dataset_Symbol", overlay=false)
 //SYMBOL = input.string(defval="AUDUSD", title="Select Main Source Symbol", options=["AUDUSD", "AUDCNH", "AUDJPY", "AUDGBP", "AUDEUR", "AUDCAD", "AUDCHF", "AUDNZD", "USDEUR", "USDCNH", "USDJPY", "USDGBP", "USDAUD", "USDCAD", "USDCHF", "USDNZD", "EURUSD", "EURCNH", "EURJPY", "EURGBP", "EURAUD", "EURCAD", "EURCHF", "EURNZD", "SPX500", "EURO50", "AUS200", "XAUUSD", "WTIOIL", "USDIDX", "EURIDX", "AUDIDX"])
 
 // The basket of symbols
-USDEUR = "(1 / (FX:EURUSD))" // repeated
 USDCNH = "(1 * (FX:USDCNH))"
 USDJPY = "(1 * (FX:USDJPY))"
 USDGBP = "(1 / (FX:GBPUSD))"
-USDAUD = "(1 / (FX:AUDUSD))" // repeated
 USDCAD = "(1 * (FX:USDCAD))"
 USDCHF = "(1 * (FX:USDCHF))"
 USDNZD = "(1 / (FX:NZDUSD))"
@@ -19,7 +17,6 @@ EURUSD = "(1 * (FX:EURUSD))"
 EURCNH = "(1 * (CAPITALCOM:EURCNH))"
 EURJPY = "(1 * (FX:EURJPY))"
 EURGBP = "(1 * (FX:EURGBP))"
-EURAUD = "(1 * (FX:EURAUD))" // repeated
 EURCAD = "(1 * (FX:EURCAD))"
 EURCHF = "(1 * (FX:EURCHF))"
 EURNZD = "(1 * (FX:EURNZD))"
@@ -39,83 +36,188 @@ AUS200 = "FX:AUS200"
 XAUUSD = "FX:XAUUSD"
 WTIOIL = "FX:USOIL"
 
-USDIDX = "(" + USDEUR + " + " + USDCNH + " + " + USDJPY + " + " + USDGBP + " + " + USDAUD + " + " + USDCAD + " + " + USDCHF + " + " + USDNZD +  ") / 8"
-EURIDX = "(" + EURUSD + " + " + EURCNH + " + " + EURJPY + " + " + EURGBP + " + " + EURAUD + " + " + EURCAD + " + " + EURCHF + " + " + EURNZD +  ") / 8"
-AUDIDX = "(" + AUDUSD + " + " + AUDCNH + " + " + AUDJPY + " + " + AUDGBP + " + " + AUDEUR + " + " + AUDCAD + " + " + AUDCHF + " + " + AUDNZD +  ") / 8"
-
 // Get the closing prices of all assets
-USDEUR_close = request.security(AUDUSD, timeframe.period, close)
-USDCNH_close = request.security(USDCNH, timeframe.period, close)
-USDJPY_close = request.security(USDJPY, timeframe.period, close)
-USDGBP_close = request.security(USDGBP, timeframe.period, close)
-USDAUD_close = request.security(USDAUD, timeframe.period, close)
-USDCAD_close = request.security(USDCAD, timeframe.period, close)
-USDCHF_close = request.security(USDCHF, timeframe.period, close)
-USDNZD_close = request.security(USDNZD, timeframe.period, close)
+USDCNH_close  = request.security(USDCNH, timeframe.period, close)
+// USDCNH_open   = request.security(USDCNH, timeframe.period, open)
+// USDCNH_high   = request.security(USDCNH, timeframe.period, high)
+// USDCNH_low    = request.security(USDCNH, timeframe.period, low)
+// USDCNH_volume = request.security(USDCNH, timeframe.period, volume)
 
-EURUSD_close = request.security(EURUSD, timeframe.period, close)
-EURCNH_close = request.security(EURCNH, timeframe.period, close)
-EURJPY_close = request.security(EURJPY, timeframe.period, close)
-EURGBP_close = request.security(EURGBP, timeframe.period, close)
-EURAUD_close = request.security(EURAUD, timeframe.period, close)
-EURCAD_close = request.security(EURCAD, timeframe.period, close)
-EURCHF_close = request.security(EURCHF, timeframe.period, close)
-EURNZD_close = request.security(EURNZD, timeframe.period, close)
+USDJPY_close  = request.security(USDJPY, timeframe.period, close)
+// USDJPY_open   = request.security(USDJPY, timeframe.period, open)
+// USDJPY_high   = request.security(USDJPY, timeframe.period, high)
+// USDJPY_low    = request.security(USDJPY, timeframe.period, low)
+// USDJPY_volume = request.security(USDJPY, timeframe.period, volume)
 
-AUDUSD_close = request.security(AUDUSD, timeframe.period, close)
-AUDCNH_close = request.security(AUDCNH, timeframe.period, close)
-AUDJPY_close = request.security(AUDJPY, timeframe.period, close)
-AUDGBP_close = request.security(AUDGBP, timeframe.period, close)
-AUDEUR_close = request.security(AUDEUR, timeframe.period, close)
-AUDCAD_close = request.security(AUDCAD, timeframe.period, close)
-AUDCHF_close = request.security(AUDCHF, timeframe.period, close)
-AUDNZD_close = request.security(AUDNZD, timeframe.period, close)
+USDGBP_close  = request.security(USDGBP, timeframe.period, close)
+// USDGBP_open   = request.security(USDGBP, timeframe.period, open)
+// USDGBP_high   = request.security(USDGBP, timeframe.period, high)
+// USDGBP_low    = request.security(USDGBP, timeframe.period, low)
+// USDGBP_volume = request.security(USDGBP, timeframe.period, volume)
 
-SPX500_close = request.security(SPX500, timeframe.period, close)
-EURO50_close = request.security(EURO50, timeframe.period, close)
-AUS200_close = request.security(AUS200, timeframe.period, close)
-XAUUSD_close = request.security(XAUUSD, timeframe.period, close)
-WTIOIL_close = request.security(WTIOIL, timeframe.period, close)
+USDCAD_close  = request.security(USDCAD, timeframe.period, close)
+// USDCAD_open   = request.security(USDCAD, timeframe.period, open)
+// USDCAD_high   = request.security(USDCAD, timeframe.period, high)
+// USDCAD_low    = request.security(USDCAD, timeframe.period, low)
+// USDCAD_volume = request.security(USDCAD, timeframe.period, volume)
 
-USDIDX_close = request.security(USDIDX, timeframe.period, close)
-EURIDX_close = request.security(EURIDX, timeframe.period, close)
-AUDIDX_close = request.security(AUDIDX, timeframe.period, close)
+USDCHF_close  = request.security(USDCHF, timeframe.period, close)
+// USDCHF_open   = request.security(USDCHF, timeframe.period, open)
+// USDCHF_high   = request.security(USDCHF, timeframe.period, high)
+// USDCHF_low    = request.security(USDCHF, timeframe.period, low)
+// USDCHF_volume = request.security(USDCHF, timeframe.period, volume)
 
-// Plot all closing prices
+USDNZD_close  = request.security(USDNZD, timeframe.period, close)
+// USDNZD_open   = request.security(USDNZD, timeframe.period, open)
+// USDNZD_high   = request.security(USDNZD, timeframe.period, high)
+// USDNZD_low    = request.security(USDNZD, timeframe.period, low)
+// USDNZD_volume = request.security(USDNZD, timeframe.period, volume)
 
-plot(USDEUR_close, title='USDEUR', color=color.green)
-plot(USDCNH_close, title='USDCNH', color=color.green)
-plot(USDJPY_close, title='USDJPY', color=color.green)
-plot(USDGBP_close, title='USDGBP', color=color.green)
-plot(USDAUD_close, title='USDAUD', color=color.green)
-plot(USDCAD_close, title='USDCAD', color=color.green)
-plot(USDCHF_close, title='USDCHF', color=color.green)
-plot(USDNZD_close, title='USDNZD', color=color.green)
+EURUSD_close  = request.security(EURUSD, timeframe.period, close)
+// EURUSD_open   = request.security(EURUSD, timeframe.period, open)
+// EURUSD_high   = request.security(EURUSD, timeframe.period, high)
+// EURUSD_low    = request.security(EURUSD, timeframe.period, low)
+// EURUSD_volume = request.security(EURUSD, timeframe.period, volume)
 
-plot(EURUSD_close, title='EURUSD', color=color.blue)
-plot(EURCNH_close, title='EURCNH', color=color.blue)
-plot(EURJPY_close, title='EURJPY', color=color.blue)
-plot(EURGBP_close, title='EURGBP', color=color.blue)
-plot(EURAUD_close, title='EURAUD', color=color.blue)
-plot(EURCAD_close, title='EURCAD', color=color.blue)
-plot(EURCHF_close, title='EURCHF', color=color.blue)
-plot(EURNZD_close, title='EURNZD', color=color.blue)
+EURCNH_close  = request.security(EURCNH, timeframe.period, close)
+// EURCNH_open   = request.security(EURCNH, timeframe.period, open)
+// EURCNH_high   = request.security(EURCNH, timeframe.period, high)
+// EURCNH_low    = request.security(EURCNH, timeframe.period, low)
+// EURCNH_volume = request.security(EURCNH, timeframe.period, volume)
 
-plot(AUDUSD_close, title='AUDUSD', color=color.white)
-plot(AUDCNH_close, title='AUDCNH', color=color.white)
-plot(AUDJPY_close, title='AUDJPY', color=color.white)
-plot(AUDGBP_close, title='AUDGBP', color=color.white)
-plot(AUDEUR_close, title='AUDEUR', color=color.white)
-plot(AUDCAD_close, title='AUDCAD', color=color.white)
-plot(AUDCHF_close, title='AUDCHF', color=color.white)
-plot(AUDNZD_close, title='AUDNZD', color=color.white)
+EURJPY_close  = request.security(EURJPY, timeframe.period, close)
+// EURJPY_open   = request.security(EURJPY, timeframe.period, open)
+// EURJPY_high   = request.security(EURJPY, timeframe.period, high)
+// EURJPY_low    = request.security(EURJPY, timeframe.period, low)
+// EURJPY_volume = request.security(EURJPY, timeframe.period, volume)
 
-plot(SPX500_close, title='SPX500', color=color.gray)
-plot(EURO50_close, title='EURO50', color=color.gray)
-plot(AUS200_close, title='AUS200', color=color.gray)
-plot(XAUUSD_close, title='XAUUSD', color=color.gray)
-plot(WTIOIL_close, title='WTIOIL', color=color.gray)
+EURGBP_close  = request.security(EURGBP, timeframe.period, close)
+// EURGBP_open   = request.security(EURGBP, timeframe.period, open)
+// EURGBP_high   = request.security(EURGBP, timeframe.period, high)
+// EURGBP_low    = request.security(EURGBP, timeframe.period, low)
+// EURGBP_volume = request.security(EURGBP, timeframe.period, volume)
 
-plot(USDIDX_close, title='USDIDX', color=color.fuchsia)
-plot(EURIDX_close, title='EURIDX', color=color.fuchsia)
-plot(AUDIDX_close, title='AUDIDX', color=color.fuchsia)
+EURCAD_close  = request.security(EURCAD, timeframe.period, close)
+// EURCAD_open   = request.security(EURCAD, timeframe.period, open)
+// EURCAD_high   = request.security(EURCAD, timeframe.period, high)
+// EURCAD_low    = request.security(EURCAD, timeframe.period, low)
+// EURCAD_volume = request.security(EURCAD, timeframe.period, volume)
+
+EURCHF_close  = request.security(EURCHF, timeframe.period, close)
+// EURCHF_open   = request.security(EURCHF, timeframe.period, open)
+// EURCHF_high   = request.security(EURCHF, timeframe.period, high)
+// EURCHF_low    = request.security(EURCHF, timeframe.period, low)
+// EURCHF_volume = request.security(EURCHF, timeframe.period, volume)
+
+EURNZD_close  = request.security(EURNZD, timeframe.period, close)
+// EURNZD_open   = request.security(EURNZD, timeframe.period, open)
+// EURNZD_high   = request.security(EURNZD, timeframe.period, high)
+// EURNZD_low    = request.security(EURNZD, timeframe.period, low)
+// EURNZD_volume = request.security(EURNZD, timeframe.period, volume)
+
+AUDUSD_close  = request.security(AUDUSD, timeframe.period, close)
+// AUDUSD_open   = request.security(AUDUSD, timeframe.period, open)
+// AUDUSD_high   = request.security(AUDUSD, timeframe.period, high)
+// AUDUSD_low    = request.security(AUDUSD, timeframe.period, low)
+// AUDUSD_volume = request.security(AUDUSD, timeframe.period, volume)
+
+AUDCNH_close  = request.security(AUDCNH, timeframe.period, close)
+// AUDCNH_open   = request.security(AUDCNH, timeframe.period, open)
+// AUDCNH_high   = request.security(AUDCNH, timeframe.period, high)
+// AUDCNH_low    = request.security(AUDCNH, timeframe.period, low)
+// AUDCNH_volume = request.security(AUDCNH, timeframe.period, volume)
+
+AUDJPY_close  = request.security(AUDJPY, timeframe.period, close)
+// AUDJPY_open   = request.security(AUDJPY, timeframe.period, open)
+// AUDJPY_high   = request.security(AUDJPY, timeframe.period, high)
+// AUDJPY_low    = request.security(AUDJPY, timeframe.period, low)
+// AUDJPY_volume = request.security(AUDJPY, timeframe.period, volume)
+
+AUDGBP_close  = request.security(AUDGBP, timeframe.period, close)
+// AUDGBP_open   = request.security(AUDGBP, timeframe.period, open)
+// AUDGBP_high   = request.security(AUDGBP, timeframe.period, high)
+// AUDGBP_low    = request.security(AUDGBP, timeframe.period, low)
+// AUDGBP_volume = request.security(AUDGBP, timeframe.period, volume)
+
+AUDEUR_close  = request.security(AUDEUR, timeframe.period, close)
+// AUDEUR_open   = request.security(AUDEUR, timeframe.period, open)
+// AUDEUR_high   = request.security(AUDEUR, timeframe.period, high)
+// AUDEUR_low    = request.security(AUDEUR, timeframe.period, low)
+// AUDEUR_volume = request.security(AUDEUR, timeframe.period, volume)
+
+AUDCAD_close  = request.security(AUDCAD, timeframe.period, close)
+// AUDCAD_open   = request.security(AUDCAD, timeframe.period, open)
+// AUDCAD_high   = request.security(AUDCAD, timeframe.period, high)
+// AUDCAD_low    = request.security(AUDCAD, timeframe.period, low)
+// AUDCAD_volume = request.security(AUDCAD, timeframe.period, volume)
+
+AUDCHF_close  = request.security(AUDCHF, timeframe.period, close)
+// AUDCHF_open   = request.security(AUDCHF, timeframe.period, open)
+// AUDCHF_high   = request.security(AUDCHF, timeframe.period, high)
+// AUDCHF_low    = request.security(AUDCHF, timeframe.period, low)
+// AUDCHF_volume = request.security(AUDCHF, timeframe.period, volume)
+
+AUDNZD_close  = request.security(AUDNZD, timeframe.period, close)
+// AUDNZD_open   = request.security(AUDNZD, timeframe.period, open)
+// AUDNZD_high   = request.security(AUDNZD, timeframe.period, high)
+// AUDNZD_low    = request.security(AUDNZD, timeframe.period, low)
+// AUDNZD_volume = request.security(AUDNZD, timeframe.period, volume)
+
+SPX500_close  = request.security(SPX500, timeframe.period, close)
+// SPX500_open   = request.security(SPX500, timeframe.period, open)
+// SPX500_high   = request.security(SPX500, timeframe.period, high)
+// SPX500_low    = request.security(SPX500, timeframe.period, low)
+// SPX500_volume = request.security(SPX500, timeframe.period, volume)
+
+EURO50_close  = request.security(EURO50, timeframe.period, close)
+// EURO50_open   = request.security(EURO50, timeframe.period, open)
+// EURO50_high   = request.security(EURO50, timeframe.period, high)
+// EURO50_low    = request.security(EURO50, timeframe.period, low)
+// EURO50_volume = request.security(EURO50, timeframe.period, volume)
+
+AUS200_close  = request.security(AUS200, timeframe.period, close)
+// AUS200_open   = request.security(AUS200, timeframe.period, open)
+// AUS200_high   = request.security(AUS200, timeframe.period, high)
+// AUS200_low    = request.security(AUS200, timeframe.period, low)
+// AUS200_volume = request.security(AUS200, timeframe.period, volume)
+
+XAUUSD_close  = request.security(XAUUSD, timeframe.period, close)
+// XAUUSD_open   = request.security(XAUUSD, timeframe.period, open)
+// XAUUSD_high   = request.security(XAUUSD, timeframe.period, high)
+// XAUUSD_low    = request.security(XAUUSD, timeframe.period, low)
+// XAUUSD_volume = request.security(XAUUSD, timeframe.period, volume)
+
+WTIOIL_close  = request.security(WTIOIL, timeframe.period, close)
+// WTIOIL_open   = request.security(WTIOIL, timeframe.period, open)
+// WTIOIL_high   = request.security(WTIOIL, timeframe.period, high)
+// WTIOIL_low    = request.security(WTIOIL, timeframe.period, low)
+// WTIOIL_volume = request.security(WTIOIL, timeframe.period, volume)
+
+
+// Plot the data
+plot(USDCNH_close, title="USDCNH_close",  color=color.green)
+plot(USDJPY_close, title="USDJPY_close",  color=color.green)
+plot(USDGBP_close, title="USDGBP_close",  color=color.green)
+plot(USDCAD_close, title="USDCAD_close",  color=color.green)
+plot(USDCHF_close, title="USDCHF_close",  color=color.green)
+plot(USDNZD_close, title="USDNZD_close",  color=color.green)
+plot(EURUSD_close, title="EURUSD_close",  color=color.green)
+plot(EURCNH_close, title="EURCNH_close",  color=color.green)
+plot(EURJPY_close, title="EURJPY_close",  color=color.green)
+plot(EURGBP_close, title="EURGBP_close",  color=color.green)
+plot(EURCAD_close, title="EURCAD_close",  color=color.green)
+plot(EURCHF_close, title="EURCHF_close",  color=color.green)
+plot(EURNZD_close, title="EURNZD_close",  color=color.green)
+plot(AUDUSD_close, title="AUDUSD_close",  color=color.green)
+plot(AUDCNH_close, title="AUDCNH_close",  color=color.green)
+plot(AUDJPY_close, title="AUDJPY_close",  color=color.green)
+plot(AUDGBP_close, title="AUDGBP_close",  color=color.green)
+plot(AUDEUR_close, title="AUDEUR_close",  color=color.green)
+plot(AUDCAD_close, title="AUDCAD_close",  color=color.green)
+plot(AUDCHF_close, title="AUDCHF_close",  color=color.green)
+plot(AUDNZD_close, title="AUDNZD_close",  color=color.green)
+plot(SPX500_close, title="SPX500_close",  color=color.green)
+plot(EURO50_close, title="EURO50_close",  color=color.green)
+plot(AUS200_close, title="AUS200_close",  color=color.green)
+plot(XAUUSD_close, title="XAUUSD_close",  color=color.green)
+plot(WTIOIL_close, title="WTIOIL_close",  color=color.green)
